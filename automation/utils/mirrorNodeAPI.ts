@@ -141,7 +141,7 @@ export const getAccountDetails = async (
 
 export const getTransactionDetails = async (
   transactionId: string,
-  timeout: number = 90000,
+  timeout: number = 120000,
   interval: number = 3000,
 ) => {
   const formatedTransactionId = formatTransactionId(transactionId);
