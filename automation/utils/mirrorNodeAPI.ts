@@ -127,8 +127,8 @@ const logRecentTransactionsForDebug = async (payerAccountId: string) => {
 
 export const getAccountDetails = async (
   accountId: string,
-  timeout: number = 30000,
-  interval: number = 2000,
+  timeout: number = 90000,
+  interval: number = 3000,
 ) => {
   return pollWithRetry(
     'accounts',
@@ -141,8 +141,8 @@ export const getAccountDetails = async (
 
 export const getTransactionDetails = async (
   transactionId: string,
-  timeout: number = 30000,
-  interval: number = 2000,
+  timeout: number = 90000,
+  interval: number = 3000,
 ) => {
   const formatedTransactionId = formatTransactionId(transactionId);
   const payerAccountId = transactionId.split('@')[0];
