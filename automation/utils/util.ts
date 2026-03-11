@@ -6,10 +6,13 @@ import { SettingsPage } from '../pages/SettingsPage.js';
 import * as fsp from 'fs/promises';
 import _ from 'lodash';
 import Diff from 'deep-diff';
+import { generateEd25519KeyPair } from './keyUtil.js';
+import { TransactionPage } from '../pages/TransactionPage.js';
 
 /**
- * Fixed LOCALNET payer account used by automation.
+ * Localnet payer account ID corresponding to the PRIVATE_KEY in .env
  * Solo account 0.0.1022 with key: 44162cd9b9a2f5582bd13b43cfd8be3bc20b8a81ee77f6bf77391598bcfbae4c
+ * Used as fallback if Mirror Node auto-population fails
  */
 export const LOCALNET_PAYER_ACCOUNT_ID = '0.0.1022';
 
@@ -73,65 +76,82 @@ export async function closeApp(app: ElectronApplication) {
   await app.close();
 }
 
-const LOCALNET_PK_KEY = '44162cd9b9a2f5582bd13b43cfd8be3bc20b8a81ee77f6bf77391598bcfbae4c';
 const LOCALNET_OPERATOR_KEY = '0x91132178e72057a1d7528025956fe39b0b847f200ab59b2fdd367017f3087137'; // genesis account key
+const LOCALNET_OPERATOR_ACCOUNT = '0.0.2'; // genesis account ID
 
 export function getPrivateKeyEnv(): string | null {
-  if (getNetworkEnv().toUpperCase() === 'LOCALNET') {
-    return LOCALNET_PK_KEY;
-  }
-
-  return process.env.PRIVATE_KEY && process.env.PRIVATE_KEY !== ''
-    ? process.env.PRIVATE_KEY
-    : null;
+  return process.env.PRIVATE_KEY && process.env.PRIVATE_KEY !== '' ? process.env.PRIVATE_KEY : null;
 }
 
 export function getOperatorKeyEnv(): string {
-  return process.env.OPERATOR_KEY && process.env.OPERATOR_KEY !== '' ? process.env.OPERATOR_KEY : LOCALNET_OPERATOR_KEY;
+  return process.env.OPERATOR_KEY && process.env.OPERATOR_KEY !== ''
+    ? process.env.OPERATOR_KEY
+    : LOCALNET_OPERATOR_KEY;
 }
 
 export function getNetworkEnv(): string {
-  return process.env.ENVIRONMENT && process.env.ENVIRONMENT !== '' ? process.env.ENVIRONMENT : 'LOCALNET';
+  return process.env.ENVIRONMENT && process.env.ENVIRONMENT !== ''
+    ? process.env.ENVIRONMENT
+    : 'LOCALNET';
 }
 
 export async function setupEnvironmentForTransactions(
   window: Page,
   privateKey = getPrivateKeyEnv(),
-  isLocalNet = false,
-): Promise<string | null> {
+) {
   const network = getNetworkEnv().toUpperCase();
   let resolvedPrivateKey = privateKey;
   console.log('[setupEnvironmentForTransactions] resolvedPrivateKey:', resolvedPrivateKey
-      ? '[configured]'
-      : '[missing]',
-  );
+    ? '[configured]'
+    : '[missing]');
 
-  if (isLocalNet || network === 'LOCALNET') {
-    console.log(
-      '[setupEnvironmentForTransactions] branch: LOCALNET',
-      isLocalNet ? '(forced)' : '(from ENVIRONMENT)',
-    );
-    const operatorPrivateKey = getOperatorKeyEnv();
-    const isExplicitOperatorKey =
-      resolvedPrivateKey !== null && resolvedPrivateKey === operatorPrivateKey;
-    if (isExplicitOperatorKey) {
-      console.log('[setupEnvironmentForTransactions] LOCALNET path: importing explicit operator key');
-    } else {
-      resolvedPrivateKey = LOCALNET_PK_KEY;
-      console.log(
-        '[setupEnvironmentForTransactions] LOCALNET path: importing fixed payer key for 0.0.1022',
-      );
-    }
-
+  if (network === 'LOCALNET') {
     const settingsPage = new SettingsPage(window);
     await settingsPage.clickOnSettingsButton();
     await settingsPage.clickOnLocalNodeTab();
     await settingsPage.clickOnKeysTab();
     await settingsPage.clickOnImportButton();
     await settingsPage.clickOnED25519DropDown();
-    await settingsPage.fillInED25519PrivateKey(resolvedPrivateKey ?? '');
-    await settingsPage.fillInED25519Nickname('Payer Account');
-    await settingsPage.clickOnED25519ImportButton();
+
+    if (privateKey === null) {
+      // The private key is not configured so we are going to create a payer account using the
+      // operator key, so we need to:
+      //  - import the operator key
+      //  - generate a key pair for the payer account
+      //  - create the payer account using operator as payer, and transfer 10000 HBARs to it
+      //  - delete the operator key
+      //  - import the payer key which will further be used for all transactions
+      await settingsPage.fillInED25519PrivateKey(getOperatorKeyEnv());
+      await settingsPage.fillInED25519Nickname('Operator Account');
+      await settingsPage.clickOnED25519ImportButton();
+
+      const { publicKey, privateKey } = generateEd25519KeyPair();
+
+      const transactionPage = new TransactionPage(window);
+      await transactionPage.clickOnTransactionsMenuButton();
+      await transactionPage.createNewAccount({
+        initialFunds: '10000',
+        publicKey: publicKey,
+        payerAccountId: LOCALNET_OPERATOR_ACCOUNT,
+      });
+
+      await settingsPage.clickOnSettingsButton();
+      await settingsPage.clickOnKeysTab();
+      await settingsPage.clickOnDeleteButtonAtIndex(1);
+      await settingsPage.clickOnDeleteKeyPairButton();
+
+      await settingsPage.clickOnImportButton();
+      await settingsPage.clickOnED25519DropDown();
+      await settingsPage.fillInED25519PrivateKey(privateKey);
+      await settingsPage.fillInED25519Nickname('Payer Account');
+      await settingsPage.clickOnED25519ImportButton();
+      resolvedPrivateKey = privateKey;
+    } else {
+      // The private key is configured so this is the one which will be used as payer for all transactions
+      await settingsPage.fillInED25519PrivateKey(privateKey);
+      await settingsPage.fillInED25519Nickname('Payer Account');
+      await settingsPage.clickOnED25519ImportButton();
+    }
   } else if (network === 'TESTNET') {
     console.log('[setupEnvironmentForTransactions] branch: TESTNET');
     const settingsPage = new SettingsPage(window);
@@ -140,7 +160,7 @@ export async function setupEnvironmentForTransactions(
     await settingsPage.clickOnKeysTab();
     await settingsPage.clickOnImportButton();
     await settingsPage.clickOnECDSADropDown();
-    await settingsPage.fillInECDSAPrivateKey(resolvedPrivateKey ?? '');
+    await settingsPage.fillInECDSAPrivateKey(privateKey ?? '');
     await settingsPage.fillInECDSANickname('Payer Account');
     await settingsPage.clickOnECDSAImportButton();
   } else if (network === 'PREVIEWNET') {
@@ -151,7 +171,7 @@ export async function setupEnvironmentForTransactions(
     await settingsPage.clickOnKeysTab();
     await settingsPage.clickOnImportButton();
     await settingsPage.clickOnECDSADropDown();
-    await settingsPage.fillInECDSAPrivateKey(resolvedPrivateKey ?? '');
+    await settingsPage.fillInECDSAPrivateKey(privateKey ?? '');
     await settingsPage.fillInECDSANickname('Payer Account');
     await settingsPage.clickOnECDSAImportButton();
   } else {
@@ -163,7 +183,7 @@ export async function setupEnvironmentForTransactions(
     await settingsPage.clickOnKeysTab();
     await settingsPage.clickOnImportButton();
     await settingsPage.clickOnED25519DropDown();
-    await settingsPage.fillInED25519PrivateKey(resolvedPrivateKey ?? '');
+    await settingsPage.fillInED25519PrivateKey(privateKey ?? '');
     await settingsPage.fillInED25519Nickname('Payer Account');
     await settingsPage.clickOnED25519ImportButton();
   }
