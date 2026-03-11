@@ -10,8 +10,9 @@ import Diff from 'deep-diff';
 /**
  * Fixed LOCALNET payer account used by automation.
  * Solo account 0.0.1022 with key: 44162cd9b9a2f5582bd13b43cfd8be3bc20b8a81ee77f6bf77391598bcfbae4c
+ * Solo account 0.0.1003 with key: afcf6b413ca6a7cfef60d8ee1783af2a8a016f612c914d2fedba1b0ef93bad4d
  */
-export const LOCALNET_PAYER_ACCOUNT_ID = '0.0.1022';
+export const LOCALNET_PAYER_ACCOUNT_ID = '0.0.1003';
 
 export async function setupApp() {
   console.log(asciiArt);
@@ -73,7 +74,8 @@ export async function closeApp(app: ElectronApplication) {
   await app.close();
 }
 
-const LOCALNET_PK_KEY = '44162cd9b9a2f5582bd13b43cfd8be3bc20b8a81ee77f6bf77391598bcfbae4c';
+const LOCALNET_PK_KEY = 'afcf6b413ca6a7cfef60d8ee1783af2a8a016f612c914d2fedba1b0ef93bad4d';
+// const LOCALNET_PK_KEY = '44162cd9b9a2f5582bd13b43cfd8be3bc20b8a81ee77f6bf77391598bcfbae4c';
 const LOCALNET_OPERATOR_KEY = '0x91132178e72057a1d7528025956fe39b0b847f200ab59b2fdd367017f3087137'; // genesis account key
 
 export function getPrivateKeyEnv(): string | null {
@@ -119,7 +121,7 @@ export async function setupEnvironmentForTransactions(
     } else {
       resolvedPrivateKey = LOCALNET_PK_KEY;
       console.log(
-        '[setupEnvironmentForTransactions] LOCALNET path: importing fixed payer key for 0.0.1022',
+        '[setupEnvironmentForTransactions] LOCALNET path: importing fixed payer key for 0.0.1003',
       );
     }
 
