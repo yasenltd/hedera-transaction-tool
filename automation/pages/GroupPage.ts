@@ -330,7 +330,7 @@ export class GroupPage extends BasePage {
       // Backend cache linking can take 10-30s+ depending on mirror node latency
       const found = await this.waitForTransactionInTab(
         this.organizationPage.readyToSignTabSelector,
-        30,
+        90,
         this.DEFAULT_TIMEOUT,
       );
 
@@ -414,8 +414,8 @@ export class GroupPage extends BasePage {
    */
   async waitForTransactionInTab(
     tabSelector: string,
-    maxRetries: number = 30,
-    delayMs: number = 2000,
+    maxRetries: number = 60,
+    delayMs: number = this.DEFAULT_TIMEOUT,
   ): Promise<boolean> {
     for (let i = 0; i < maxRetries; i++) {
       try {
@@ -428,7 +428,7 @@ export class GroupPage extends BasePage {
         // Use Playwright's native waitFor for better reliability
         await this.window
           .locator('[data-testid="button-transaction-node-details-0"]')
-          .waitFor({ state: 'visible', timeout: 3000 });
+          .waitFor({ state: 'visible', timeout: this.LONG_TIMEOUT });
 
         console.log(`Transaction found in tab after ${i + 1} attempt(s)`);
         return true;

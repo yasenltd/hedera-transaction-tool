@@ -13,8 +13,8 @@ export default defineConfig({
     trace: 'retain-on-failure',
   },
   reportSlowTests: null,
-  retries: process.env.CI ? 1 : 0,
-  timeout: process.env.CI ? 180_000 : 3600_000,
+  retries: process.env.CI ? 0 : 0,
+  timeout: process.env.CI ? 210_000 : 3600_000,
   workers: 1,
 
   projects: [
