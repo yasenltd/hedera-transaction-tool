@@ -65,6 +65,8 @@ jobs:
     name: Automation | ${{ matrix.test-suite.name }}
     runs-on: transaction-tools-linux-medium
     needs: build
+    env:
+      BACKEND_COMPOSE_FILE: docker-compose.ci.yaml
     strategy:
       fail-fast: false
       matrix:
@@ -125,21 +127,23 @@ jobs:
       - name: Install pnpm
         run: npm install -g pnpm@9.15.3
 
-      - name: Install Docker Compose Plugin
+      - name: Ensure Docker Compose Plugin
         if: ${{ matrix.test-suite.backendRequired }}
         run: |
+          set -euo pipefail
+          if docker compose version >/dev/null 2>&1; then
+            docker compose version
+            exit 0
+          fi
+
+          sudo install -d /usr/local/lib/docker/cli-plugins
           sudo curl -fLo /usr/local/lib/docker/cli-plugins/docker-compose https://github.com/docker/compose/releases/download/v2.29.1/docker-compose-linux-x86_64
           sudo chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
-          sudo ln -sf /usr/local/lib/docker/cli-plugins/docker-compose /usr/local/bin/docker-compose
+          docker compose version
 
       - name: Install Automation Dependencies
         run: pnpm install --frozen-lockfile
         working-directory: automation
-
-      - name: Install Back-end Dependencies
-        if: ${{ matrix.test-suite.backendRequired }}
-        run: SKIP_NOTICE_GEN=true pnpm install --frozen-lockfile
-        working-directory: back-end
 
       - name: Setup Kind
         if: ${{ matrix.test-suite.soloRequired }}
@@ -177,11 +181,20 @@ jobs:
         if: ${{ matrix.test-suite.soloRequired }}
         run: |
           set -euo pipefail
+
+          wait_for_tcp() {
+            local host="$1"
+            local port="$2"
+            timeout 1 bash -c ">/dev/tcp/${host}/${port}" >/dev/null 2>&1
+          }
+
           ps -ef | grep port-forward || true
 
           for attempt in $(seq 1 60); do
             if curl -fsS http://localhost:8080/api/v1/network/nodes >/dev/null 2>&1 && \
-               curl -fsS http://localhost:8081/api/v1/network/nodes >/dev/null 2>&1; then
+               curl -fsS http://localhost:8081/api/v1/network/nodes >/dev/null 2>&1 && \
+               wait_for_tcp 127.0.0.1 5600 && \
+               wait_for_tcp 127.0.0.1 50211; then
               echo "Solo port forwarding is ready on attempt ${attempt}"
               break
             fi
@@ -189,6 +202,7 @@ jobs:
             if [ "${attempt}" -eq 60 ]; then
               echo "Solo port forwarding did not become ready in time" >&2
               ps -ef | grep port-forward || true
+              kubectl get pods -A || true
               exit 1
             fi
 
@@ -198,6 +212,8 @@ jobs:
 
           curl -fsS http://localhost:8080/api/v1/network/nodes
           curl -fsS http://localhost:8081/api/v1/network/nodes
+          wait_for_tcp 127.0.0.1 5600
+          wait_for_tcp 127.0.0.1 50211
 
       - name: Deploy Back-end
         if: ${{ matrix.test-suite.backendRequired }}
@@ -205,58 +221,40 @@ jobs:
         run: |
           set -euo pipefail
 
-          # Install Python setuptools (required: >= 75.6.0) on Linux runners.
+          wait_for_tcp() {
+            local host="$1"
+            local port="$2"
+            timeout 1 bash -c ">/dev/tcp/${host}/${port}" >/dev/null 2>&1
+          }
+
+          # Install Linux packages required for mkcert and host-to-container port proxies.
           sudo apt-get update -q
-          sudo apt-get install -y --no-install-recommends python3-pip
-          python3 -m pip install --user --upgrade "setuptools>=75.6.0" || \
-            sudo python3 -m pip install --upgrade --break-system-packages "setuptools>=75.6.0"
-          python3 - <<'PY'
-          import re
-          import setuptools
-          import sys
-
-          required = (75, 6, 0)
-          current = tuple(int(part) for part in re.findall(r'\d+', setuptools.__version__)[:3])
-          current = current + (0,) * (3 - len(current))
-          if current < required:
-              sys.exit(f"setuptools {setuptools.__version__} is below required 75.6.0")
-          print(f"setuptools version: {setuptools.__version__}")
-          PY
-
-          # Install mkcert for generating a locally-trusted TLS certificate.
-          # libnss3-tools provides certutil, required by mkcert -install on Linux.
-          # socat exposes Solo's localhost-bound ports to Docker containers via the bridge gateway.
           sudo apt-get install -y --no-install-recommends libnss3-tools socat
 
-          curl -fsSL https://github.com/FiloSottile/mkcert/releases/download/v1.4.4/mkcert-v1.4.4-linux-amd64 \
-            -o /tmp/mkcert
-          sudo install -m755 /tmp/mkcert /usr/local/bin/mkcert
+          if ! command -v mkcert >/dev/null 2>&1; then
+            curl -fsSL https://github.com/FiloSottile/mkcert/releases/download/v1.4.4/mkcert-v1.4.4-linux-amd64 \
+              -o /tmp/mkcert
+            sudo install -m755 /tmp/mkcert /usr/local/bin/mkcert
+          fi
 
-          # Install the local CA so the cert is trusted by Chromium/Electron.
           mkcert -install
 
-          # Create cert directory and generate TLS certificates for localhost.
           mkdir -p cert
           mkcert -key-file cert/key.pem -cert-file cert/cert.pem localhost
 
-          # Copy .env files from examples for all back-end packages.
           for dir in . apps/api apps/chain apps/notifications typeorm scripts; do
             cp "${dir}/example.env" "${dir}/.env"
           done
 
-          # Align frontend version compatibility constraints with the built app.
           FE_VERSION="$(node -p "require('../front-end/package.json').version")"
           sed -i "s/^LATEST_SUPPORTED_FRONTEND_VERSION=.*/LATEST_SUPPORTED_FRONTEND_VERSION=${FE_VERSION}/" apps/api/.env
           sed -i "s/^MINIMUM_SUPPORTED_FRONTEND_VERSION=.*/MINIMUM_SUPPORTED_FRONTEND_VERSION=${FE_VERSION}/" apps/api/.env
           sed -i "s/^MINIMUM_SUPPORTED_FRONTEND_VERSION=.*/MINIMUM_SUPPORTED_FRONTEND_VERSION=${FE_VERSION}/" apps/notifications/.env
 
-          # Notifications service requires EMAIL_API_SECURE to be a boolean.
           sed -i 's/^EMAIL_API_SECURE=.*/EMAIL_API_SECURE=false/' apps/notifications/.env
 
           export COMPOSE_PARALLEL_LIMIT=4
 
-          # Ensure Docker daemon is reachable before deploying.
-          # Do not restart dockerd here; restarting is disruptive on shared/self-hosted runners.
           if ! docker info &>/dev/null; then
             echo "Docker daemon is not reachable; attempting to start it..."
             sudo service docker start || true
@@ -278,15 +276,17 @@ jobs:
           done
 
           for attempt in $(seq 1 60); do
-            if curl -fsS http://localhost:8081/api/v1/network/nodes >/dev/null 2>&1; then
-              echo "Mirror node is ready on attempt ${attempt}"
+            if curl -fsS http://localhost:8081/api/v1/network/nodes >/dev/null 2>&1 && \
+               wait_for_tcp 127.0.0.1 5600 && \
+               wait_for_tcp 127.0.0.1 50211; then
+              echo "Solo network endpoints are ready on attempt ${attempt}"
               break
             fi
             if [ "${attempt}" -eq 60 ]; then
-              echo "Mirror node did not become ready in time" >&2
+              echo "Solo network endpoints did not become ready in time" >&2
               exit 1
             fi
-            echo "Waiting for mirror node... attempt ${attempt}/60"
+            echo "Waiting for Solo network endpoints... attempt ${attempt}/60"
             sleep 5
           done
 
@@ -297,29 +297,33 @@ jobs:
           fi
           echo "Docker bridge gateway: ${DOCKER_HOST_GATEWAY}"
 
-          # Solo exposes localnet services on localhost. Docker containers reach the host via the
-          # bridge gateway, so we proxy the required mirror-node REST port before starting compose.
-          for port in 8081; do
+          # Solo binds its localnet services to localhost on the runner.
+          # Docker containers reach the host via the bridge gateway, so expose the ports there first.
+          for port in 50211 5600 8081; do
             sudo bash -c "nohup socat TCP-LISTEN:${port},bind=${DOCKER_HOST_GATEWAY},fork,reuseaddr TCP:127.0.0.1:${port} >/tmp/socat-${port}.log 2>&1 &"
           done
 
           sleep 2
 
-          if ! curl -fsS "http://${DOCKER_HOST_GATEWAY}:8081/api/v1/network/nodes" >/dev/null 2>&1; then
-            echo "Mirror node proxy on ${DOCKER_HOST_GATEWAY}:8081 is not reachable" >&2
+          if ! curl -fsS "http://${DOCKER_HOST_GATEWAY}:8081/api/v1/network/nodes" >/dev/null 2>&1 || \
+             ! wait_for_tcp "${DOCKER_HOST_GATEWAY}" 5600 || \
+             ! wait_for_tcp "${DOCKER_HOST_GATEWAY}" 50211; then
+            echo "One or more Solo port proxies are not reachable on ${DOCKER_HOST_GATEWAY}" >&2
             ss -lnt || true
+            sudo tail -n 50 /tmp/socat-50211.log || true
+            sudo tail -n 50 /tmp/socat-5600.log || true
             sudo tail -n 50 /tmp/socat-8081.log || true
             exit 1
           fi
 
           for attempt in $(seq 1 5); do
-            if docker-compose up -d; then
+            if docker compose -f "${BACKEND_COMPOSE_FILE}" up -d --build; then
               break
             fi
             if [ "${attempt}" -eq 5 ]; then
               echo "docker compose up failed after 5 attempts" >&2
-              docker-compose ps || true
-              docker-compose logs --tail=200 || true
+              docker compose -f "${BACKEND_COMPOSE_FILE}" ps || true
+              docker compose -f "${BACKEND_COMPOSE_FILE}" logs --tail=200 || true
               exit 1
             fi
             echo "Attempt ${attempt} failed; retrying in 15s..."
@@ -337,19 +341,19 @@ jobs:
             fi
             if (( attempt % 10 == 0 )); then
               echo "Waiting for back-end... attempt ${attempt}/${MAX_ATTEMPTS} (HTTP ${code})"
-              docker-compose ps
-              docker-compose logs --tail=50 api || true
+              docker compose -f "${BACKEND_COMPOSE_FILE}" ps
+              docker compose -f "${BACKEND_COMPOSE_FILE}" logs --tail=50 api || true
             fi
             if [ "${attempt}" -eq "${MAX_ATTEMPTS}" ]; then
               echo "Back-end did not become ready in time" >&2
-              docker-compose ps || true
-              docker-compose logs --tail=300 || true
+              docker compose -f "${BACKEND_COMPOSE_FILE}" ps || true
+              docker compose -f "${BACKEND_COMPOSE_FILE}" logs --tail=300 || true
               exit 1
             fi
             sleep 5
           done
 
-          docker-compose ps
+          docker compose -f "${BACKEND_COMPOSE_FILE}" ps
 
       - name: Test API connectivity
         if: ${{ matrix.test-suite.backendRequired }}
@@ -412,12 +416,12 @@ jobs:
 
       - name: Show Back-end Logs
         if: ${{ failure() && matrix.test-suite.backendRequired }}
-        run: docker-compose logs --tail=300
+        run: docker compose -f "${BACKEND_COMPOSE_FILE}" logs --tail=300
         working-directory: back-end
 
       - name: Stop Back-end Services
         if: ${{ always() && matrix.test-suite.backendRequired }}
-        run: docker-compose down --remove-orphans || true
+        run: docker compose -f "${BACKEND_COMPOSE_FILE}" down --volumes --remove-orphans || true
         working-directory: back-end
 
   unit-test:
