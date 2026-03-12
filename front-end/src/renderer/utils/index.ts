@@ -3,8 +3,11 @@ import type { HederaAccount } from '@prisma/client';
 
 import { AccountId, Client, Hbar, HbarUnit, Long, Transaction } from '@hashgraph/sdk';
 
+import pLimit from 'p-limit';
+
 import useUserStore from '@renderer/stores/storeUser';
 import useNetworkStore from '@renderer/stores/storeNetwork';
+import useNotificationsStore from '@renderer/stores/storeNotifications.ts';
 
 import { getOne } from '@renderer/services/accountsService';
 import { uploadSignatures } from '@renderer/services/organization';
@@ -19,8 +22,7 @@ import { isAccountId } from './validator';
 import { usersPublicRequiredToSign } from '@renderer/utils/transactionSignatureModels';
 import { NodeByIdCache } from '@renderer/caches/mirrorNode/NodeByIdCache.ts';
 import { AccountByIdCache } from '@renderer/caches/mirrorNode/AccountByIdCache.ts';
-import { errorToastOptions } from '@renderer/utils/toastOptions.ts';
-import { useToast } from 'vue-toast-notification';
+import { ToastManager } from '@renderer/utils/ToastManager';
 import type { SignatureItem } from '@renderer/types';
 import type { PublicKeyOwnerCache } from '@renderer/caches/backend/PublicKeyOwnerCache.ts';
 
@@ -190,72 +192,77 @@ export async function signTransactions(
   accountInfoCache: AccountByIdCache,
   nodeInfoCache: NodeByIdCache,
   publicKeyOwnerCache: PublicKeyOwnerCache,
+  toastManager: ToastManager,
 ): Promise<boolean> {
   const user = useUserStore();
   const network = useNetworkStore();
-  const toast = useToast();
+  const notificationStore = useNotificationsStore();
   assertUserLoggedIn(user.personal);
   assertIsLoggedInOrganization(user.selectedOrganization);
+
+  // Capture the narrowed, non-null organization for use across async callbacks
+  const selectedOrganization = user.selectedOrganization;
 
   const items: SignatureItem[] = [];
   let signed = false;
 
-  for (const tx of transactions) {
-    const tid = tx.id;
-    const transaction = Transaction.fromBytes(hexToUint8Array(tx.transactionBytes));
+  const limit = pLimit(10);
 
-    const publicKeysRequired = await usersPublicRequiredToSign(
-      transaction,
-      user.selectedOrganization.userKeys,
-      network.mirrorNodeBaseURL,
-      accountInfoCache,
-      nodeInfoCache,
-      publicKeyOwnerCache,
-      user.selectedOrganization,
-    );
+  const results = await Promise.all(
+    transactions.map(tx =>
+      limit(async () => {
+        const transaction = Transaction.fromBytes(hexToUint8Array(tx.transactionBytes));
 
-    const restoredRequiredKeys = [];
-    const nonRestoredRequiredKeys = [];
+        const publicKeysRequired = await usersPublicRequiredToSign(
+          transaction,
+          selectedOrganization.userKeys,
+          network.mirrorNodeBaseURL,
+          accountInfoCache,
+          nodeInfoCache,
+          publicKeyOwnerCache,
+          selectedOrganization,
+        );
 
-    // Separate keys into restored and non-restored, where restored indicates that the
-    // key is locally present.
-    for (const requiredKey of publicKeysRequired) {
-      if (user.keyPairs.some(k => k.public_key === requiredKey)) {
-        restoredRequiredKeys.push(requiredKey);
-      } else {
-        nonRestoredRequiredKeys.push(requiredKey);
-      }
-    }
+        return { id: tx.id, transaction, publicKeysRequired };
+      }),
+    ),
+  );
 
-    if (nonRestoredRequiredKeys.length > 0) {
-      toast.error(
-        `You need to restore the following public keys to fully sign the transaction: ${nonRestoredRequiredKeys.join(
+  const userPublicKeys = new Set(user.keyPairs.map(k => k.public_key)); // hoist Set outside loop
+
+  for (const { id, transaction, publicKeysRequired } of results) {
+    const missingKeys = publicKeysRequired.filter(k => !userPublicKeys.has(k));
+
+    if (missingKeys.length > 0) {
+      toastManager.error(
+        `You need to restore the following public keys to fully sign the transaction: ${missingKeys.join(
           ', ',
         )}`,
-        errorToastOptions,
       );
-      break;
+      return false;
     }
 
-    if (restoredRequiredKeys.length > 0) {
-      items.push({
-        publicKeys: publicKeysRequired,
-        transaction: transaction,
-        transactionId: tid,
-      });
+    if (publicKeysRequired.length > 0) {
+      items.push({ publicKeys: publicKeysRequired, transaction, transactionId: id });
     }
   }
 
   if (items.length > 0) {
-    await uploadSignatures(
+    const uploadResults = await uploadSignatures(
       user.personal.id,
       password,
-      user.selectedOrganization,
+      selectedOrganization,
       undefined,
       undefined,
       undefined,
       items,
     );
+
+    const notificationReceiverIds = uploadResults?.data?.notificationReceiverIds;
+    if (Array.isArray(notificationReceiverIds) && notificationReceiverIds.length > 0) {
+      notificationStore.dismissNotifications(selectedOrganization.serverUrl, notificationReceiverIds);
+    }
+
     signed = true;
   }
   return signed;
