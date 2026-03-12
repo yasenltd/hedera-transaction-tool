@@ -127,7 +127,7 @@ const logRecentTransactionsForDebug = async (payerAccountId: string) => {
 
 export const getAccountDetails = async (
   accountId: string,
-  timeout: number = 90000,
+  timeout: number = 180000,
   interval: number = 3000,
 ) => {
   return pollWithRetry(
@@ -141,7 +141,7 @@ export const getAccountDetails = async (
 
 export const getTransactionDetails = async (
   transactionId: string,
-  timeout: number = 120000,
+  timeout: number = 180000,
   interval: number = 3000,
 ) => {
   const formatedTransactionId = formatTransactionId(transactionId);
@@ -169,8 +169,8 @@ export const getTransactionDetails = async (
 
 export const getAssociatedAccounts = async (
   publicKey: string,
-  timeout: number = 30000,
-  interval: number = 2000,
+  timeout: number = 90000,
+  interval: number = 3000,
 ) => {
   let allAccounts: string[] = [];
   let params: Object | null = { 'account.publickey': publicKey, order: 'asc' };
