@@ -65,8 +65,6 @@ jobs:
     name: Automation | ${{ matrix.test-suite.name }}
     runs-on: transaction-tools-linux-medium
     needs: build
-    env:
-      BACKEND_COMPOSE_FILE: docker-compose.ci.yaml
     strategy:
       fail-fast: false
       matrix:
@@ -91,22 +89,10 @@ jobs:
 #            command: WorkflowTests
 #            soloRequired: true
 #            backendRequired: false
-#          - name: OrganizationContactList
-#            command: OrganizationContactListTests
-#            soloRequired: true
-#            backendRequired: true
-#          - name: OrganizationSettings
-#            command: OrganizationSettingsTests
-#            soloRequired: true
-#            backendRequired: true
           - name: OrganizationGroup
             command: OrganizationGroupTests
             soloRequired: true
             backendRequired: true
-    #          - name: OrganizationTransaction
-    #            command: OrganizationTransactionTests
-    #            soloRequired: true
-    #            backendRequired: true
     steps:
       - name: Harden Runner
         uses: step-security/harden-runner@58077d3c7e43986b6b15fba718e8ea69e387dfcc # v2.15.1
@@ -127,7 +113,7 @@ jobs:
       - name: Install pnpm
         run: npm install -g pnpm@9.15.3
 
-      - name: Ensure Docker Compose Plugin
+      - name: Install Docker Compose Plugin
         if: ${{ matrix.test-suite.backendRequired }}
         run: |
           set -euo pipefail
@@ -216,6 +202,8 @@ jobs:
       - name: Deploy Back-end
         if: ${{ matrix.test-suite.backendRequired }}
         working-directory: back-end
+        env:
+          BACKEND_COMPOSE_FILE: docker-compose.ci.yaml
         run: |
           set -euo pipefail
 
@@ -377,16 +365,15 @@ jobs:
       - name: Run Automation
         env:
           EXECUTABLE_PATH: ../front-end/release/linux-unpacked/hedera-transaction-tool
-          PLAYWRIGHT_STEP_SCREENSHOTS: 'true'
-          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY_TEST }}
+          PRIVATE_KEY: ${{ secrets.SOLO_PRIVATE_KEY }}
           OPERATOR_KEY: ${{ secrets.OPERATOR_KEY }}
           ENVIRONMENT: LOCALNET
-          ORGANIZATION_URL: https://localhost:3001
-          POSTGRES_HOST: localhost
-          POSTGRES_PORT: 5432
-          POSTGRES_DATABASE: postgres
-          POSTGRES_USERNAME: postgres
-          POSTGRES_PASSWORD: postgres
+          ORGANIZATION_URL: ${{ matrix.test-suite.backendRequired && 'https://localhost:3001' || '' }}
+          POSTGRES_HOST: ${{ matrix.test-suite.backendRequired && 'localhost' || '' }}
+          POSTGRES_PORT: ${{ matrix.test-suite.backendRequired && '5432' || '' }}
+          POSTGRES_DATABASE: ${{ matrix.test-suite.backendRequired && 'postgres' || '' }}
+          POSTGRES_USERNAME: ${{ matrix.test-suite.backendRequired && 'postgres' || '' }}
+          POSTGRES_PASSWORD: ${{ matrix.test-suite.backendRequired && 'postgres' || '' }}
         run: xvfb-run -a npx playwright test tests/${{ matrix.test-suite.command }}
         working-directory: automation
 
@@ -409,13 +396,60 @@ jobs:
           if-no-files-found: warn
           retention-days: 3
 
+      - name: Upload Solo Deploy Log
+        if: ${{ always() && matrix.test-suite.soloRequired }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: solo-deploy-log-${{ matrix.test-suite.name }}
+          path: solo-deploy.log
+          if-no-files-found: warn
+          retention-days: 3
+
       - name: Show Back-end Logs
         if: ${{ failure() && matrix.test-suite.backendRequired }}
+        env:
+          BACKEND_COMPOSE_FILE: docker-compose.ci.yaml
         run: docker compose -f "${BACKEND_COMPOSE_FILE}" logs --tail=300
         working-directory: back-end
 
+      - name: Collect Solo Diagnostics
+        if: ${{ failure() && matrix.test-suite.soloRequired }}
+        run: |
+          set -euo pipefail
+          mkdir -p solo-diagnostics
+          kubectl get pods -A -o wide > solo-diagnostics/pods.txt || true
+          kubectl get events -A --sort-by=.lastTimestamp > solo-diagnostics/events.txt || true
+          kubectl describe pods -A > solo-diagnostics/pod-describe.txt || true
+          kubectl logs -A --all-containers --tail=500 > solo-diagnostics/all-pod-logs.txt || true
+          cp solo-deploy.log solo-diagnostics/solo-deploy.log || true
+          cp /tmp/socat-*.log solo-diagnostics/ 2>/dev/null || true
+
+      - name: Upload Solo Diagnostics
+        if: ${{ always() && matrix.test-suite.soloRequired }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: solo-diagnostics-${{ matrix.test-suite.name }}
+          path: solo-diagnostics
+          if-no-files-found: warn
+          retention-days: 3
+
+      - name: Export Kind Logs
+        if: ${{ failure() && matrix.test-suite.soloRequired }}
+        run: kind export logs kind-logs --name solo || true
+
+      - name: Upload Kind Logs
+        if: ${{ always() && matrix.test-suite.soloRequired }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: kind-logs-${{ matrix.test-suite.name }}
+          path: kind-logs
+          if-no-files-found: warn
+          retention-days: 3
+
       - name: Stop Back-end Services
         if: ${{ always() && matrix.test-suite.backendRequired }}
+        env:
+          BACKEND_COMPOSE_FILE: docker-compose.ci.yaml
         run: docker compose -f "${BACKEND_COMPOSE_FILE}" down --volumes --remove-orphans || true
         working-directory: back-end
 
