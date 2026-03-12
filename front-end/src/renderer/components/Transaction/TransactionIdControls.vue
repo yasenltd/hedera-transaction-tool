@@ -112,13 +112,13 @@ const columnClass = 'col-4 col-xxxl-3';
             : '-'
         }}</label
       >
-      <AccountIdInput
-        :modelValue="payerId"
-        @update:modelValue="handlePayerChange"
-        :filled="true"
-        placeholder="Enter Payer ID"
-        data-testid="input-payer-account"
-      />
+        <AccountIdInput
+          :modelValue="payerId"
+          @update:modelValue="handlePayerChange"
+          :filled="true"
+          placeholder="Enter Payer ID"
+          data-testid="input-payer-account"
+        />
     </div>
     <div class="form-group" :class="[columnClass]">
       <label class="form-label"
