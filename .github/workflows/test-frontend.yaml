@@ -139,6 +139,65 @@ jobs:
         run: pnpm install --frozen-lockfile
         working-directory: automation
 
+      - name: Prepare Docker Base Images
+        if: ${{ matrix.test-suite.backendRequired }}
+        run: |
+          set -euo pipefail
+
+          wait_for_docker() {
+            for attempt in $(seq 1 20); do
+              if docker info >/dev/null 2>&1; then
+                return 0
+              fi
+              sleep 2
+            done
+            return 1
+          }
+
+          cleanup_docker_pull_state() {
+            local image="$1"
+            docker image rm -f "${image}" >/dev/null 2>&1 || true
+            docker builder prune -af >/dev/null 2>&1 || true
+          }
+
+          if ! docker info >/dev/null 2>&1; then
+            echo "Docker daemon is not reachable; attempting to start it..."
+            sudo service docker start || true
+            sudo systemctl start docker || true
+          fi
+
+          if ! wait_for_docker; then
+            echo "Docker daemon is unavailable before backend image preparation" >&2
+            ls -l /var/run/docker.sock || true
+            sudo ls -l /var/run/docker.sock || true
+            ps -ef | grep -E 'dockerd|containerd' | grep -v grep || true
+            exit 1
+          fi
+
+          for image in node:22-alpine postgres nats:2.10 redis:latest; do
+            for attempt in $(seq 1 5); do
+              if docker pull --platform linux/amd64 "${image}"; then
+                break
+              fi
+
+              cleanup_docker_pull_state "${image}"
+
+              if [ "${attempt}" -lt 5 ]; then
+                echo "Pull for ${image} failed on attempt ${attempt}; restarting Docker and retrying in 10s..."
+                sudo systemctl restart docker || sudo service docker restart || true
+                if ! wait_for_docker; then
+                  echo "Docker daemon did not recover after restart" >&2
+                  exit 1
+                fi
+                sleep 10
+                continue
+              fi
+
+              echo "Failed to pull ${image} after 5 attempts" >&2
+              exit 1
+            done
+          done
+
       - name: Setup Kind
         if: ${{ matrix.test-suite.soloRequired }}
         uses: helm/kind-action@ef37e7f390d99f746eb8b610417061a60e82a6cc # v1.14.0
@@ -307,25 +366,15 @@ jobs:
             exit 1
           fi
 
-          for image in node:22-alpine postgres nats:2.10 redis:latest; do
-            for attempt in $(seq 1 3); do
-              if docker pull "${image}"; then
-                break
-              fi
-
-              if [ "${attempt}" -eq 3 ]; then
-                echo "Failed to pull ${image} after 3 attempts" >&2
-                exit 1
-              fi
-
-              echo "Pull for ${image} failed on attempt ${attempt}; retrying in 10s..."
-              sleep 10
-            done
-          done
-
           for service in redis migration api chain notifications; do
             for attempt in $(seq 1 3); do
-              if docker compose -f "${BACKEND_COMPOSE_FILE}" build --progress plain "${service}"; then
+              build_flags=(--progress plain)
+              if [ "${attempt}" -gt 1 ]; then
+                docker builder prune -af >/dev/null 2>&1 || true
+                build_flags=(--pull --no-cache --progress plain)
+              fi
+
+              if docker compose -f "${BACKEND_COMPOSE_FILE}" build "${build_flags[@]}" "${service}"; then
                 break
               fi
 
