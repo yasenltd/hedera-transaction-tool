@@ -436,24 +436,15 @@ jobs:
           if-no-files-found: warn
           retention-days: 3
 
-      - name: Upload Solo Deploy Log
-        if: ${{ always() && matrix.test-suite.soloRequired }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: solo-deploy-log-${{ matrix.test-suite.name }}
-          path: solo-deploy.log
-          if-no-files-found: warn
-          retention-days: 3
-
       - name: Show Back-end Logs
-        if: ${{ failure() && matrix.test-suite.backendRequired }}
+        if: ${{ always() && matrix.test-suite.backendRequired }}
         env:
           BACKEND_COMPOSE_FILE: docker-compose.yaml
         run: docker compose -f "${BACKEND_COMPOSE_FILE}" logs --tail=300
         working-directory: back-end
 
       - name: Collect Solo Diagnostics
-        if: ${{ failure() && matrix.test-suite.soloRequired }}
+        if: ${{ always() && matrix.test-suite.soloRequired }}
         run: |
           set -euo pipefail
           mkdir -p solo-diagnostics
@@ -474,7 +465,7 @@ jobs:
           retention-days: 3
 
       - name: Export Kind Logs
-        if: ${{ failure() && matrix.test-suite.soloRequired }}
+        if: ${{ always() && matrix.test-suite.soloRequired }}
         run: kind export logs kind-logs --name solo || true
 
       - name: Upload Kind Logs
