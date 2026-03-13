@@ -89,6 +89,10 @@ jobs:
             command: WorkflowTests
             soloRequired: true
             backendRequired: false
+          - name: GroupTransaction
+            command: GroupTransactionTests
+            soloRequired: true
+            backendRequired: false
           - name: OrganizationSettings
             command: OrganizationSettingsTests
             soloRequired: true

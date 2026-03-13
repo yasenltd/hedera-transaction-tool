@@ -867,7 +867,7 @@ export class TransactionPage extends BasePage {
   async clickOnCancelTransaction() {
     const modalSelector = `[data-testid="${this.confirmTransactionModalSelector}"][style*="display: block"]`;
     const cancelButtonSelector = `${modalSelector} [data-testid="${this.buttonCancelTransactionSelector}"]`;
-    await this.click(cancelButtonSelector, null, 15000);
+    await this.click(cancelButtonSelector, null, this.LONG_TIMEOUT * 3);
   }
 
   async clickAddButton(depth: string) {
@@ -1342,7 +1342,7 @@ export class TransactionPage extends BasePage {
 
   async clickOnConfirmDeleteAccountButton() {
     await this.waitForElementPresentInDOM(this.confirmDeleteAccountButtonSelector);
-    await this.click(this.confirmDeleteAccountButtonSelector, null, 5000);
+    await this.click(this.confirmDeleteAccountButtonSelector);
   }
 
   async getMaxTransactionFee() {

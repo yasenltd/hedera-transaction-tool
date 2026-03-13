@@ -38,6 +38,9 @@ export class GroupPage extends BasePage {
   confirmGroupTransactionButtonSelector = 'button-confirm-group-transaction';
   detailsGroupButtonSelector = 'button-transaction-node-details-';
   importCsvButtonSelector = 'button-import-csv';
+  moreDropdownButtonSelector = 'button-more-dropdown-lg';
+  cancelAllButtonSelector = 'button-more-dropdown-lg-item-Cancel All';
+  firstTransactionDetailsButtonLocator = '[data-testid="button-transaction-node-details-0"]';
   // Text
   toastMessageSelector = 'css=.v-toast__text';
   emptyTransactionTextSelector = 'p-empty-transaction-text';
@@ -53,9 +56,9 @@ export class GroupPage extends BasePage {
   orgTransactionDetailsButtonIndexSelector = 'button-group-transaction-';
 
   async closeModalIfVisible(selector: string) {
-    const modalButton = this.window.getByTestId(selector);
+    const modalButton = this.getElement(selector);
 
-    await modalButton.waitFor({ state: 'visible', timeout: 3000 }).catch(() => {});
+    await this.waitForElementToBeVisible(selector).catch(() => {});
 
     if (await modalButton.isVisible()) {
       await modalButton.click();
@@ -140,7 +143,7 @@ export class GroupPage extends BasePage {
     return await this.getText(this.transactionTypeIndexSelector + index);
   }
 
-  async getTransactionTimestamp(index: number, timeout: number): Promise<string | null> {
+  async getTransactionTimestamp(index: number, timeout?: number): Promise<string | null> {
     return await this.getText(this.transactionTimestampIndexSelector + index, null, timeout);
   }
 
@@ -230,7 +233,7 @@ export class GroupPage extends BasePage {
     );
     // Wait for all transactions to be loaded before proceeding
     const lastTxIndex = numberOfTransactions - 1;
-    await this.waitForElementToBeVisible(`span-transaction-type-${lastTxIndex}`, this.LONG_TIMEOUT);
+    await this.waitForElementToBeVisible(this.transactionTypeIndexSelector + lastTxIndex);
   }
 
   async importCsvExpectingError(
@@ -385,11 +388,9 @@ export class GroupPage extends BasePage {
   }
 
   async clickOnCancelAllButton() {
-    const dropdownSelector = 'button-more-dropdown-lg';
-    const cancelItemSelector = 'button-more-dropdown-lg-item-Cancel All';
-    await this.waitForElementToBeVisible(dropdownSelector, this.LONG_TIMEOUT * 3);
-    await this.click(dropdownSelector);
-    await this.click(cancelItemSelector);
+    await this.waitForElementToBeVisible(this.moreDropdownButtonSelector, this.LONG_TIMEOUT * 3);
+    await this.click(this.moreDropdownButtonSelector);
+    await this.click(this.cancelAllButtonSelector);
   }
 
   async clickOnConfirmGroupActionButton() {
@@ -425,10 +426,10 @@ export class GroupPage extends BasePage {
         // SKIP loader wait - it never disappears (stays visible in DOM with display:block)
         // Transaction renders immediately even with loader visible
 
-        // Use Playwright's native waitFor for better reliability
-        await this.window
-          .locator('[data-testid="button-transaction-node-details-0"]')
-          .waitFor({ state: 'visible', timeout: this.LONG_TIMEOUT });
+        await this.waitForElementToBeVisible(
+          this.firstTransactionDetailsButtonLocator,
+          this.LONG_TIMEOUT,
+        );
 
         console.log(`Transaction found in tab after ${i + 1} attempt(s)`);
         return true;

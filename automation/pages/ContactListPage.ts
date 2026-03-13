@@ -60,7 +60,7 @@ export class ContactListPage extends BasePage {
   async isExpandAssociatedAccountsButtonVisible(index: number) {
     return await this.isElementVisible(
       this.contactListExpandAssociatedAccountsButtonSelector + index.toString(),
-      10000,
+      this.LONG_TIMEOUT,
     );
   }
 
@@ -70,12 +70,10 @@ export class ContactListPage extends BasePage {
 
   async clickOnChangeNicknameButton() {
     await this.click(this.changeContactNicknameButtonSelector);
-    await new Promise(resolve => setTimeout(resolve, 500));
   }
 
   async fillInContactNickname(nickname: string) {
     await this.fill(this.inputChangeNicknameSelector, nickname);
-    await new Promise(resolve => setTimeout(resolve, 500));
   }
 
   async getContactNicknameText(nickname: string) {
