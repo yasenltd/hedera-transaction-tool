@@ -58,8 +58,7 @@ export class GroupPage extends BasePage {
 
   async closeModalIfVisible(selector: string) {
     const modalButton = this.getElement(selector);
-    await this.waitForElementToBeVisible(selector).catch(() => {});
-    if (await modalButton.isVisible()) {
+    if (await this.isElementVisible(selector, null, this.LONG_TIMEOUT)) {
       await modalButton.click();
       await this.captureStepScreenshot(`${this.closeModalScreenshotPrefixSelector}${selector}`);
     }

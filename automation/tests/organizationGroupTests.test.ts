@@ -135,10 +135,9 @@ test.describe('Organization Group Tx tests', () => {
     await resetPostgresDbState();
   });
 
-  test.only('Verify user can execute group transaction in organization', async () => {
+  test('Verify user can execute group transaction in organization', async () => {
     await groupPage.addOrgAllowanceTransactionToGroup(2, complexKeyAccountId, '10');
     await groupPage.clickOnSignAndExecuteButton();
-    // Handle "Save Group?" modal if it appears (can happen with fast test execution)
     await groupPage.closeGroupDraftModal();
 
     const txId = await groupPage.getTransactionTimestamp(0, 100) ?? '';
@@ -146,8 +145,8 @@ test.describe('Organization Group Tx tests', () => {
     await groupPage.clickOnConfirmGroupTransactionButton();
     await groupPage.clickOnSignAllButton();
     await groupPage.clickOnConfirmGroupActionButton();
-    await loginPage.waitForToastToDisappear();
 
+    await loginPage.waitForToastToDisappear();
     await transactionPage.clickOnTransactionsMenuButton();
     await organizationPage.logoutFromOrganization();
     await groupPage.logInAndSignGroupTransactionsByAllUsers(globalCredentials.password);
@@ -162,6 +161,7 @@ test.describe('Organization Group Tx tests', () => {
     const result = transactionDetails?.result;
     expect(transactionType).toBe('CRYPTOAPPROVEALLOWANCE');
     expect(result).toBe('SUCCESS');
+
     const secondTransactionDetails = await transactionPage.mirrorGetTransactionResponse(secondTxId);
     const secondTransactionType = secondTransactionDetails?.name;
     const secondResult = secondTransactionDetails?.result;
@@ -198,7 +198,6 @@ test.describe('Organization Group Tx tests', () => {
     expect(message).toBe('Import complete');
 
     await groupPage.clickOnSignAndExecuteButton();
-    // Handle "Save Group?" modal if it appears (can happen with fast test execution)
     await groupPage.closeGroupDraftModal();
     await groupPage.clickOnConfirmGroupTransactionButton();
     await groupPage.clickOnSignAllButton();
@@ -213,7 +212,6 @@ test.describe('Organization Group Tx tests', () => {
     await transactionPage.clickOnTransactionsMenuButton();
     await organizationPage.clickOnHistoryTab();
     const timestamps = await groupPage.getAllTransactionTimestamps(numberOfTransactions, 100);
-
     return groupPage.verifyAllTransactionsAreSuccessful(timestamps);
   }
 

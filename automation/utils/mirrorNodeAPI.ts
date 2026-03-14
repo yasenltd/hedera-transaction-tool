@@ -148,8 +148,6 @@ export const getTransactionDetails = async (
   const formatedTransactionId = formatTransactionId(transactionId);
   const payerAccountId = transactionId.split('@')[0];
 
-  await logRecentTransactionsForDebug(payerAccountId);
-
   try {
     return await pollWithRetry(
       `transactions/${formatedTransactionId}`,
