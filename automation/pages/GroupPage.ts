@@ -54,15 +54,14 @@ export class GroupPage extends BasePage {
   transactionDuplicateButtonIndexSelector = 'button-transaction-duplicate-';
   transactionEditButtonIndexSelector = 'button-transaction-edit-';
   orgTransactionDetailsButtonIndexSelector = 'button-group-transaction-';
+  closeModalScreenshotPrefixSelector = 'close-modal-';
 
   async closeModalIfVisible(selector: string) {
     const modalButton = this.getElement(selector);
-
     await this.waitForElementToBeVisible(selector).catch(() => {});
-
     if (await modalButton.isVisible()) {
       await modalButton.click();
-      await this.captureStepScreenshot(`close-modal-${selector}`);
+      await this.captureStepScreenshot(`${this.closeModalScreenshotPrefixSelector}${selector}`);
     }
   }
 

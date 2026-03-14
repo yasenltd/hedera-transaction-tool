@@ -1,17 +1,18 @@
 import axios from 'axios';
 import retry from 'async-retry';
 
-import { formatTransactionId, getNetworkEnv } from './util.js';
+import { DEFAULT_NETWORK, PREVIEWNET, TESTNET } from '../constants/index.js';
+import { formatTransactionId, getNetworkEnv } from './automationSupport.js';
 import { AccountInfo, AccountsResponse } from '../../front-end/src/shared/interfaces/index.js';
 
  const getBaseURL = () => {
    const network = getNetworkEnv().toUpperCase();
    switch (network) {
-     case 'TESTNET':
+     case TESTNET:
        return 'https://testnet.mirrornode.hedera.com/api/v1';
-     case 'PREVIEWNET':
+     case PREVIEWNET:
        return 'https://previewnet.mirrornode.hedera.com/api/v1';
-     case 'LOCALNET':
+     case DEFAULT_NETWORK:
      default:
        return 'http://localhost:8081/api/v1';
    }
@@ -102,7 +103,7 @@ const logRecentTransactionsForDebug = async (payerAccountId: string) => {
    params: Object,
    validateResult: (result: any) => boolean,
    timeout: number = 30000,
-   interval: number = 2000,
+   interval: number = 3000,
  ): Promise<any> => {
    return retry(
      async () => {
@@ -127,7 +128,7 @@ const logRecentTransactionsForDebug = async (payerAccountId: string) => {
 
 export const getAccountDetails = async (
   accountId: string,
-  timeout: number = 180000,
+  timeout: number = 90000,
   interval: number = 3000,
 ) => {
   return pollWithRetry(
@@ -141,7 +142,7 @@ export const getAccountDetails = async (
 
 export const getTransactionDetails = async (
   transactionId: string,
-  timeout: number = 180000,
+  timeout: number = 90000,
   interval: number = 3000,
 ) => {
   const formatedTransactionId = formatTransactionId(transactionId);

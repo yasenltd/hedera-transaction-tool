@@ -11,7 +11,7 @@ import {
   setupEnvironmentForTransactions,
   waitForValidStart,
   getPrivateKeyEnv
-} from '../utils/util.js';
+} from '../utils/automationSupport.js';
 import { createTestUsersBatch } from '../utils/databaseUtil.js';
 import { Mnemonic } from '@hashgraph/sdk';
 import {
@@ -102,6 +102,7 @@ export class OrganizationPage extends BasePage {
   confirmGroupActionButtonSelector = 'button-confirm-group-action';
   cancelGroupActionButtonSelector = 'button-cancel-group-action';
   discardGroupModalButtonSelector = 'button-discard-group-modal';
+  discardDraftForGroupModalButtonSelector = 'button-discard-draft-for-group-modal';
   deleteGroupModalButtonSelector = 'button-delete-group-modal';
   // Inputs
   organizationNicknameInputSelector = 'input-organization-nickname';
@@ -116,6 +117,7 @@ export class OrganizationPage extends BasePage {
   transactionValidStartSelector = 'p-transaction-details-valid-start';
   secondSignerCheckmarkSelector = 'span-checkmark-public-key-1-0';
   spanNotificationNumberSelector = 'span-notification-number';
+  toastMessageSelector = 'css=.v-toast__text';
   transactionIdInGroupSelector = 'td-group-transaction-id';
   validStartTimeInGroupSelector = 'td-group-valid-start-time';
   // Indexes
@@ -517,7 +519,7 @@ export class OrganizationPage extends BasePage {
       const currentNickname = await this.getOrganizationNicknameText();
       if (currentNickname !== newNickname) {
         await this.clickOnEditNicknameOrganizationButton();
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise(resolve => setTimeout(resolve, this.SHORT_TIMEOUT));
         await this.fillInNewOrganizationNickname(newNickname);
         await this.settingsPage.clickOnOrganisationsTab();
         retries++;
@@ -749,14 +751,12 @@ export class OrganizationPage extends BasePage {
     for (let i = 1; i < this.users.length; i++) {
       console.log(`Signing transaction for user ${i}`);
       const user = this.users[i];
-      // Close any lingering draft modals before login
-      await this.closeDraftModal('button-discard-draft-for-group-modal', 2000);
+      await this.closeDraftModal(this.discardDraftForGroupModalButtonSelector);
       await this.signInOrganization(user.email, user.password, encryptionPassword);
       await this.transactionPage.clickOnTransactionsMenuButton();
       await this.clickOnReadyToSignTab();
       await this.clickOnSubmitSignButtonByTransactionId(txId);
-      await this.waitForElementToDisappear('.v-toast__text');
-
+      await this.waitForElementToDisappear(this.toastMessageSelector);
       await this.logoutFromOrganization();
     }
   }
@@ -856,7 +856,7 @@ export class OrganizationPage extends BasePage {
     // Retrieve and store the transaction ID
     const transactionId = (await this.getTransactionDetailsId()) ?? '';
     await this.clickOnSignTransactionButton();
-    await new Promise(resolve => setTimeout(resolve, 6000));
+    await new Promise(resolve => setTimeout(resolve, this.LONG_TIMEOUT));
 
     // Store the complex account ID
     const transactionResponse =
@@ -1381,7 +1381,7 @@ export class OrganizationPage extends BasePage {
   }
 
   async clickOnSignAllTransactionsButton() {
-    await this.waitForElementToBeVisible(this.signAllTransactionsButtonSelector, 10000);
+    await this.waitForElementToBeVisible(this.signAllTransactionsButtonSelector, this.LONG_TIMEOUT * 2);
     await this.click(this.signAllTransactionsButtonSelector);
   }
 
@@ -1496,7 +1496,7 @@ export class OrganizationPage extends BasePage {
       getter: (index: number) => Promise<any>;
     }>,
     maxRetries = 10,
-    retryDelay = 500,
+    retryDelay = this.SHORT_TIMEOUT,
   ): Promise<{
     transactionId: string | null;
     transactionType: string | null;
@@ -1588,8 +1588,8 @@ export class OrganizationPage extends BasePage {
 
   async clickOnSubmitSignButtonByTransactionId(
     transactionId: string,
-    maxRetries = 10,
-    retryDelay = 1000,
+    maxRetries = 20,
+    retryDelay = this.SHORT_TIMEOUT,
   ) {
     for (let attempt = 0; attempt < maxRetries; attempt++) {
       const count = await this.countElements(this.transactionNodeTransactionIdIndexSelector);
@@ -1607,8 +1607,8 @@ export class OrganizationPage extends BasePage {
 
   async clickOnReadyToSignDetailsButtonByTransactionId(
     transactionId: string,
-    maxRetries = 10,
-    retryDelay = 1000,
+    maxRetries = 20,
+    retryDelay = this.SHORT_TIMEOUT,
   ) {
     for (let attempt = 0; attempt < maxRetries; attempt++) {
       const count = await this.countElements(this.transactionNodeTransactionIdIndexSelector);
@@ -1626,8 +1626,8 @@ export class OrganizationPage extends BasePage {
 
   async clickOnReadyForExecutionDetailsButtonByTransactionId(
     transactionId: string,
-    maxRetries = 10,
-    retryDelay = 1000,
+    maxRetries = 20,
+    retryDelay = this.SHORT_TIMEOUT,
   ) {
     for (let attempt = 0; attempt < maxRetries; attempt++) {
       const count = await this.countElements(this.transactionNodeTransactionIdIndexSelector);
@@ -1644,8 +1644,8 @@ export class OrganizationPage extends BasePage {
 
   async clickOnHistoryDetailsButtonByTransactionId(
     transactionId: string,
-    maxRetries = 10,
-    retryDelay = 1000,
+    maxRetries = 20,
+    retryDelay = this.SHORT_TIMEOUT,
   ) {
     for (let attempt = 0; attempt < maxRetries; attempt++) {
       const count = await this.countElements(this.transactionNodeTransactionIdIndexSelector);
@@ -1668,7 +1668,7 @@ export class OrganizationPage extends BasePage {
           return true;
         }
       }
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise(resolve => setTimeout(resolve, this.SHORT_TIMEOUT));
     }
     return false;
   }
@@ -1681,7 +1681,7 @@ export class OrganizationPage extends BasePage {
           return true;
         }
       }
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise(resolve => setTimeout(resolve, this.SHORT_TIMEOUT));
     }
     return false;
   }
@@ -1768,7 +1768,7 @@ export class OrganizationPage extends BasePage {
             const status = await getLatestInAppNotificationStatusByEmail(secondUser.email);
             return status !== null && !status.isRead;
           },
-          { timeout: 10000, intervals: [500] },
+          { timeout: this.LONG_TIMEOUT * 2, intervals: [this.SHORT_TIMEOUT] },
         )
         .toBe(true);
     }
