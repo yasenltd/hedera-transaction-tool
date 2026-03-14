@@ -441,7 +441,7 @@ jobs:
           retention-days: 3
 
       - name: Show Back-end Logs
-        if: ${{ always() && matrix.test-suite.backendRequired }}
+        if: ${{ failure() && matrix.test-suite.backendRequired }}
         env:
           BACKEND_COMPOSE_FILE: docker-compose.yaml
         run: docker compose -f "${BACKEND_COMPOSE_FILE}" logs --tail=300
@@ -473,7 +473,7 @@ jobs:
         run: kind export logs kind-logs --name solo || true
 
       - name: Upload Kind Logs
-        if: ${{ always() && matrix.test-suite.soloRequired }}
+        if: ${{ failure() && matrix.test-suite.soloRequired }}
         uses: actions/upload-artifact@v4
         with:
           name: kind-logs-${{ matrix.test-suite.name }}

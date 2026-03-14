@@ -95,6 +95,10 @@ export function getNetworkEnv(): string {
     : 'LOCALNET';
 }
 
+export function isLocalnetEnvironment(environment = getNetworkEnv()): boolean {
+  return environment.toUpperCase() === 'LOCALNET';
+}
+
 export async function setupEnvironmentForTransactions(
   window: Page,
   privateKey = getPrivateKeyEnv(),
@@ -105,7 +109,7 @@ export async function setupEnvironmentForTransactions(
     ? '[configured]'
     : '[missing]');
 
-  if (network === 'LOCALNET') {
+  if (isLocalnetEnvironment(network)) {
     const settingsPage = new SettingsPage(window);
     await settingsPage.clickOnSettingsButton();
     await settingsPage.clickOnLocalNodeTab();
@@ -139,7 +143,6 @@ export async function setupEnvironmentForTransactions(
       await settingsPage.clickOnKeysTab();
       await settingsPage.clickOnDeleteButtonAtIndex(1);
       await settingsPage.clickOnDeleteKeyPairButton();
-
       await settingsPage.clickOnImportButton();
       await settingsPage.clickOnED25519DropDown();
       await settingsPage.fillInED25519PrivateKey(privateKey);

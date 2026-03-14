@@ -902,7 +902,7 @@ export class OrganizationPage extends BasePage {
   }
 
   async clickOnSignTransactionButton() {
-    await this.click(this.signTransactionButton, 0, this.LONG_TIMEOUT * 6);
+    await this.click(this.signTransactionButton, 0, this.VERY_LONG_TIMEOUT);
   }
 
   async isSignTransactionButtonVisible() {
@@ -1142,7 +1142,7 @@ export class OrganizationPage extends BasePage {
       await this.transactionPage.clickOnTransactionsMenuButton();
       await waitForValidStart(validStart ?? '');
       // Wait a bit for mirror node to index the executed transaction
-      await new Promise(resolve => setTimeout(resolve, 5000));
+      await new Promise(resolve => setTimeout(resolve, this.LONG_TIMEOUT));
       await this.clickOnHistoryTab();
       const txResponse = await this.transactionPage.mirrorGetTransactionResponse(txId ?? '');
       fileId = txResponse?.entity_id;

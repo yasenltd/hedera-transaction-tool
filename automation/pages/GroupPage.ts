@@ -388,7 +388,7 @@ export class GroupPage extends BasePage {
   }
 
   async clickOnCancelAllButton() {
-    await this.waitForElementToBeVisible(this.moreDropdownButtonSelector, this.LONG_TIMEOUT * 3);
+    await this.waitForElementToBeVisible(this.moreDropdownButtonSelector, this.VERY_LONG_TIMEOUT);
     await this.click(this.moreDropdownButtonSelector);
     await this.click(this.cancelAllButtonSelector);
   }

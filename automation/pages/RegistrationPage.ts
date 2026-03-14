@@ -321,7 +321,7 @@ export class RegistrationPage extends BasePage {
   }
 
   async clickOnClearButton() {
-    const maxRetries = 10;
+    const maxRetries = 3;
     let retries = 0;
 
     while (retries < maxRetries) {
@@ -333,7 +333,7 @@ export class RegistrationPage extends BasePage {
         break;
       }
 
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, this.SHORT_TIMEOUT));
       retries++;
     }
 
@@ -399,7 +399,7 @@ export class RegistrationPage extends BasePage {
   }
 
   async getToastMessage() {
-    return await this.getText(this.toastMessageSelector, null, this.LONG_TIMEOUT * 5);
+    return await this.getText(this.toastMessageSelector, null, this.VERY_LONG_TIMEOUT);
   }
 
   async clickOnGenerateAgainButton() {
@@ -410,7 +410,7 @@ export class RegistrationPage extends BasePage {
     return await this.isElementVisible(
       this.confirmPasswordInputSelector,
       null,
-      this.LONG_TIMEOUT * 5,
+      this.VERY_LONG_TIMEOUT,
     );
   }
 

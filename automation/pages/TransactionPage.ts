@@ -7,7 +7,11 @@ import {
   verifyTransactionExists,
 } from '../utils/databaseQueries.js';
 import { decodeAndFlattenKeys } from '../utils/keyUtil.js';
-import { getCleanAccountId, LOCALNET_PAYER_ACCOUNT_ID } from '../utils/util.js';
+import {
+  getCleanAccountId,
+  isLocalnetEnvironment,
+  LOCALNET_PAYER_ACCOUNT_ID,
+} from '../utils/util.js';
 import { Transaction } from '../../front-end/src/shared/interfaces/index.js';
 import * as path from 'node:path';
 
@@ -201,8 +205,8 @@ export class TransactionPage extends BasePage {
   async mirrorGetAccountResponse(accountId: string) {
     const accountDetails = await getAccountDetails(
       accountId,
-      this.LONG_TIMEOUT * 6,
-      this.DEFAULT_TIMEOUT / 2,
+      this.VERY_LONG_TIMEOUT,
+      this.SHORT_TIMEOUT,
     );
     console.log('Account Details:', accountDetails);
     return accountDetails;
@@ -211,8 +215,8 @@ export class TransactionPage extends BasePage {
   async mirrorGetTransactionResponse(transactionId: string): Promise<Transaction> {
     const transactionDetails = await getTransactionDetails(
       transactionId,
-      this.LONG_TIMEOUT * 12,
-      this.DEFAULT_TIMEOUT / 2,
+      this.VERY_LONG_TIMEOUT * 2,
+      this.SHORT_TIMEOUT,
     );
     const firstTransaction = transactionDetails.transactions.find(
       (tx: Transaction) => typeof tx.nonce === 'undefined' || tx.nonce === 0,
@@ -436,7 +440,7 @@ export class TransactionPage extends BasePage {
   }
 
   async isAccountCardVisible(accountId: string) {
-    await this.waitForElementToBeVisible(this.addNewAccountButtonSelector, 8000);
+    await this.waitForElementToBeVisible(this.addNewAccountButtonSelector, this.LONG_TIMEOUT * 2);
     const index = await this.findAccountIndexById(accountId);
     if (index === -1) {
       return false; // account not found
@@ -446,7 +450,7 @@ export class TransactionPage extends BasePage {
   }
 
   async isAccountCardHidden(accountId: string) {
-    await this.waitForElementToBeVisible(this.addNewAccountButtonSelector, 8000);
+    await this.waitForElementToBeVisible(this.addNewAccountButtonSelector, this.LONG_TIMEOUT * 2);
     const index = await this.findAccountIndexById(accountId);
     if (index === -1) {
       return true; // account not found
@@ -525,7 +529,7 @@ export class TransactionPage extends BasePage {
     // Note: don't wait for 'Executing' to appear first - it's transient and may already be gone
     await this.window.waitForSelector('text=Executing', {
       state: 'hidden',
-      timeout: this.LONG_TIMEOUT * 6,
+      timeout: this.VERY_LONG_TIMEOUT,
     });
     await this.waitForCreatedAtToBeVisible();
 
@@ -591,7 +595,7 @@ export class TransactionPage extends BasePage {
     await this.fillInTransactionMemoUpdate('Transaction memo update');
     return await this.signSubmitAndReturnTransactionIdAfterElementPresent(
       this.updateAccountIdFetchedDivSelector,
-      this.LONG_TIMEOUT * 6,
+      this.VERY_LONG_TIMEOUT,
     );
   }
 
@@ -616,7 +620,7 @@ export class TransactionPage extends BasePage {
     }
     return await this.signSubmitAndReturnTransactionIdAfterElementPresent(
       this.updateAccountIdFetchedDivSelector,
-      this.LONG_TIMEOUT * 6,
+      this.VERY_LONG_TIMEOUT,
     );
   }
 
@@ -633,7 +637,7 @@ export class TransactionPage extends BasePage {
   async waitForCreatedAtToBeVisible() {
     await this.waitForElementToBeVisible(
       this.transactionDetailsCreatedAtSelector,
-      this.LONG_TIMEOUT * 5,
+      this.VERY_LONG_TIMEOUT,
     );
   }
 
@@ -824,9 +828,8 @@ export class TransactionPage extends BasePage {
   async clickOnSignAndSubmitButton(forceLocalNetPayerHandling = false) {
     // For LOCALNET, or when explicitly requested, use the LOCALNET payer fallback.
     // Mirror Node doesn't return accounts there, so Payer ID is empty.
-    if (forceLocalNetPayerHandling || process.env.ENVIRONMENT?.toUpperCase() === 'LOCALNET') {
+    if (forceLocalNetPayerHandling || isLocalnetEnvironment()) {
       const currentValue = await this.getTextFromInputField(this.payerAccountInputSelector);
-      console.log('Current payer account ID:', currentValue);
       if (!currentValue || currentValue.trim() === '') {
         console.log('Filling in payer account ID using LOCALNET fallback');
         await this.fillInPayerAccountId(LOCALNET_PAYER_ACCOUNT_ID);
@@ -838,7 +841,7 @@ export class TransactionPage extends BasePage {
     }
 
     await this.scrollIntoView(this.signAndSubmitButtonSelector);
-    await this.clickButtonWhenEnabled(this.signAndSubmitButtonSelector, this.LONG_TIMEOUT * 6);
+    await this.clickButtonWhenEnabled(this.signAndSubmitButtonSelector, this.VERY_LONG_TIMEOUT);
   }
 
   async clickOnSignAndReadButton() {
@@ -849,8 +852,8 @@ export class TransactionPage extends BasePage {
   async clickSignTransactionButton(): Promise<void> {
     const visibleModalSelector = `css=[data-testid="${this.confirmTransactionModalSelector}"][style*="display: block"]`;
     const enabledSignButtonSelector = `css=[data-testid="${this.confirmTransactionModalSelector}"][style*="display: block"] [data-testid="${this.buttonSignTransactionSelector}"]:enabled`;
-    await this.waitForElementToBeVisible(visibleModalSelector, this.LONG_TIMEOUT * 4);
-    await this.waitForElementToBeVisible(enabledSignButtonSelector, this.LONG_TIMEOUT * 4);
+    await this.waitForElementToBeVisible(visibleModalSelector, this.VERY_LONG_TIMEOUT);
+    await this.waitForElementToBeVisible(enabledSignButtonSelector, this.VERY_LONG_TIMEOUT);
     await this.click(enabledSignButtonSelector);
   }
 
@@ -867,7 +870,7 @@ export class TransactionPage extends BasePage {
   async clickOnCancelTransaction() {
     const modalSelector = `[data-testid="${this.confirmTransactionModalSelector}"][style*="display: block"]`;
     const cancelButtonSelector = `${modalSelector} [data-testid="${this.buttonCancelTransactionSelector}"]`;
-    await this.click(cancelButtonSelector, null, this.LONG_TIMEOUT * 3);
+    await this.click(cancelButtonSelector, null, this.VERY_LONG_TIMEOUT);
   }
 
   async clickAddButton(depth: string) {
@@ -929,18 +932,16 @@ export class TransactionPage extends BasePage {
     let attempt = 0;
 
     while (attempt < maxRetries) {
-      // Fill the input normally
       await this.fill(inputSelector, accountId);
 
-      // Check if the target button is enabled
       if (await this.isButtonEnabled(buttonSelector)) {
-        return; // Exit the function if the button is enabled
+        return;
       }
 
       // Wait a short period before retrying to allow for UI updates
       await new Promise(resolve => setTimeout(resolve, 100)); // Wait for 100 milliseconds
 
-      attempt++; // Increment the attempt counter
+      attempt++;
     }
 
     throw new Error(

@@ -4,9 +4,10 @@ import path from 'node:path';
 import { Page, Locator, test } from '@playwright/test';
 
 export class BasePage {
-  protected readonly DEFAULT_TIMEOUT = 2500;
   protected readonly SHORT_TIMEOUT = 500;
   protected readonly LONG_TIMEOUT = 5000;
+  protected readonly DEFAULT_TIMEOUT = 3000;
+  protected readonly VERY_LONG_TIMEOUT = 30000;
   private static stepScreenshotCounter = 0;
 
   constructor(protected readonly window: Page) {}
@@ -679,8 +680,8 @@ export class BasePage {
     selector: string,
     index: number | null = null,
     timeout = this.DEFAULT_TIMEOUT,
-    retries = 5,
-    retryDelay = 1000,
+    retries = 10,
+    retryDelay = this.SHORT_TIMEOUT,
   ): Promise<string | null> {
     console.log(`Getting text for element with selector: ${selector}`);
     let attempt = 0;

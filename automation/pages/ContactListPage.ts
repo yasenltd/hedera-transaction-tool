@@ -227,8 +227,8 @@ export class ContactListPage extends BasePage {
   async mirrorGetAssociatedAccounts(publicKey: string) {
     const accountIds = await getAssociatedAccounts(
       publicKey,
-      this.LONG_TIMEOUT * 6,
-      this.DEFAULT_TIMEOUT / 2,
+      this.VERY_LONG_TIMEOUT,
+      this.SHORT_TIMEOUT,
     );
 
     if (accountIds.length > 0) {
@@ -259,12 +259,12 @@ export class ContactListPage extends BasePage {
   }
 
   async verifyUserExistsInOrganization(email: string) {
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise(resolve => setTimeout(resolve, this.SHORT_TIMEOUT));
     return await verifyUserExistsInOrganization(email);
   }
 
   async isUserDeleted(email: string) {
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise(resolve => setTimeout(resolve, this.SHORT_TIMEOUT));
     return await isUserDeleted(email);
   }
 }
