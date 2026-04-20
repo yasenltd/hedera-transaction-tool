@@ -168,6 +168,13 @@ test.describe('Workflow account navigation tests @local-transactions', () => {
     await transactionPage.clickOnTransactionsMenuButton();
     await accountPage.clickOnAccountsLink();
     await accountPage.clickOnSelectManyAccountsButton();
+
+    // Assert select mode enables multi-select state (checkboxes and remove button visible)
+    const isRemoveMultipleVisible = await accountPage.isElementVisible(
+      accountPage.removeMultipleButtonSelector,
+    );
+    expect(isRemoveMultipleVisible).toBe(true);
+
     await accountPage.clickOnAccountCheckbox(accountFromList);
     await accountPage.clickOnAccountCheckbox(newAccountId ?? '');
     await loginPage.waitForToastToDisappear();
@@ -191,6 +198,23 @@ test.describe('Workflow account navigation tests @local-transactions', () => {
     await accountPage.clickOnAccountsLink();
     const isAccountCardVisible = await transactionPage.isAccountCardVisible(accountFromList);
     expect(isAccountCardVisible).toBe(true);
+  });
+
+  test('Verify duplicate account link shows error toast', async () => {
+    await transactionPage.ensureAccountExists();
+    const accountFromList = await transactionPage.getFirstAccountFromList();
+    await transactionPage.mirrorGetAccountResponse(accountFromList);
+    await transactionPage.clickOnTransactionsMenuButton();
+    await accountPage.clickOnAccountsLink();
+
+    // Attempt to link the same account that is already linked
+    await accountPage.clickOnAddNewButton();
+    await accountPage.clickOnAddExistingLink();
+    await accountPage.fillInExistingAccountId(accountFromList);
+    await accountPage.clickOnLinkAccountButton();
+
+    const toastText = await registrationPage.getToastMessageByVariant('error');
+    expect(toastText).toContain('Account link failed');
   });
 
 });

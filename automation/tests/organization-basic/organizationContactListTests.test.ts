@@ -158,4 +158,15 @@ test.describe('Organization Contact List tests @organization-basic', () => {
     const isUsedDeleted = await contactListPage.isUserDeleted(newUserEmail);
     expect(isUsedDeleted).toBe(true);
   });
+
+  test('Verify adding user with invalid email shows error', async () => {
+    await signInOrganizationUser(organizationPage, adminUser, globalCredentials.password);
+    const malformedEmail = 'not-a-valid-email';
+    await organizationPage.clickOnContactListButton();
+    await contactListPage.addNewUser(malformedEmail);
+
+    // The malformed email should not be registered in the organization
+    const isUserRegistered = await contactListPage.verifyUserExistsInOrganization(malformedEmail);
+    expect(isUserRegistered).toBe(false);
+  });
 });

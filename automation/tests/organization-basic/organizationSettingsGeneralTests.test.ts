@@ -128,6 +128,13 @@ test.describe('Organization Settings (General) tests @organization-basic', () =>
     expect(await organizationPage.returnAllTabsVisible()).toBe(true);
   });
 
+  test('Verify "Import Signatures from File" option is available in organization mode', async () => {
+    await transactionPage.clickOnTransactionsMenuButton();
+    await transactionPage.clickOnTransactionFileActionsDropdown();
+    const isVisible = await transactionPage.isImportSignaturesFromFileOptionVisible();
+    expect(isVisible).toBe(true);
+  });
+
   test('Verify user can delete an organization', async () => {
     await organizationPage.selectPersonalMode();
     await settingsPage.clickOnSettingsButton();

@@ -193,7 +193,7 @@ This document enumerates all user-facing scenarios in the Hedera Transaction Too
 | 3.5.7  | Organization user can change org password                                        | Yes       | Verify organization user can change password    |
 | 3.5.8  | Keychain user sees reset application form instead of password change             | No        |                                                 |
 | 3.5.9  | User can log out (personal mode)                                                 | Yes       | Verify logout redirects user to sign-in screen  |
-| 3.5.10 | User can log out (organization mode)                                             | No        |                                                 |
+| 3.5.10 | User can log out (organization mode)                                             | Yes       | Verify organization login form is visible after logout |
 | 3.5.11 | Logout redirects to login                                                        | Yes       | Verify logout redirects user to sign-in screen  |
 | 3.5.12 | Change Password button is disabled when new password fails strength requirements | Yes       | Verify change password button is disabled for weak new password |
 | 3.5.13 | Inline `Invalid password` error appears under new password field on blur         | Yes       | Verify invalid password inline message appears on blur in profile tab |
@@ -238,7 +238,7 @@ This document enumerates all user-facing scenarios in the Hedera Transaction Too
 | ----- | ------------------------------------------------------------------------------------------------------------------ | --------- | ----------------------------------------------------------------------------------------------------------- |
 | 4.2.1 | Transaction page shows 6 tabs (Drafts, Ready for Review, Ready to Sign, In Progress, Ready for Execution, History) | Yes       | Verify that tabs on Transaction page are visible                                                            |
 | 4.2.2 | Notification badges appear on relevant tabs                                                                        | No        |                                                                                                             |
-| 4.2.3 | "Import Signatures from File" option is available (org only)                                                       | No        |                                                                                                             |
+| 4.2.3 | "Import Signatures from File" option is available (org only)                                                       | Yes       | Verify "Import Signatures from File" option is available in organization mode                               |
 | 4.2.4 | User can import .tx2 (V2) signatures                                                                               | Yes       | Verify user can export and import transaction and a large number of signatures for TTv1->TTv2 compatibility |
 | 4.2.5 | User can import .zip (V1) signatures                                                                               | Yes       | Verify user can import superfluous signatures from TTv1 format                                              |
 | 4.2.6 | Import fails when user lacks transaction visibility                                                                | Yes       | Verify user cannot import signatures without visibility of transaction from TTv1 format                     |
@@ -248,7 +248,7 @@ This document enumerates all user-facing scenarios in the Hedera Transaction Too
 
 | #     | Scenario                                                                             | Automated | Covered By                                                                                         |
 | ----- | ------------------------------------------------------------------------------------ | --------- | -------------------------------------------------------------------------------------------------- |
-| 4.3.1 | Drafts table shows Date Created, Transaction Type, Description, Is Template, Actions | No        |                                                                                                    |
+| 4.3.1 | Drafts table shows Date Created, Transaction Type, Description, Is Template, Actions | Yes       | Verify user can save draft and is visible in the draft page                                        |
 | 4.3.2 | Drafts table is sortable by date, type, description                                  | No        |                                                                                                    |
 | 4.3.3 | Drafts table is paginated (10 per page)                                              | No        |                                                                                                    |
 | 4.3.4 | User can delete a draft                                                              | Yes       | Verify user can delete a draft transaction                                                         |
@@ -264,7 +264,7 @@ This document enumerates all user-facing scenarios in the Hedera Transaction Too
 | 4.4.2 | Status badge shows green (success) or red (failed)                        | No        |                                                                               |
 | 4.4.3 | History table is sortable                                                 | No        |                                                                               |
 | 4.4.4 | History table is paginated                                                | No        |                                                                               |
-| 4.4.5 | "Details" button navigates to the transaction details page                | No        |                                                                               |
+| 4.4.5 | "Details" button navigates to the transaction details page                | Yes       | Verify transaction details are displayed for account tx                       |
 | 4.4.6 | All 8 transaction types appear correctly in history                       | Yes       | Verify account create tx is displayed in history page (+ other history tests) |
 
 ### 4.5 Organization Tabs (TransactionNodeTable)
@@ -589,8 +589,8 @@ This document enumerates all user-facing scenarios in the Hedera Transaction Too
 | 8.1.5 | "Add New" dropdown shows Create New and Add Existing | Yes       | Verify clicking on "Create New" button navigates the user on create account tx page |
 | 8.1.6 | "Create New" navigates to Account Create transaction | Yes       | Verify clicking on "Create New" button navigates the user on create account tx page |
 | 8.1.7 | "Add Existing" navigates to /accounts/link-existing  | Yes       | Verify user can add an existing account                                             |
-| 8.1.8 | Select mode enables multi-select checkboxes          | No        |                                                                                     |
-| 8.1.9 | Bulk remove works in select mode                     | No        |                                                                                     |
+| 8.1.8 | Select mode enables multi-select checkboxes          | Yes       | Verify user can unlink accounts                                                     |
+| 8.1.9 | Bulk remove works in select mode                     | Yes       | Verify user can unlink accounts                                                     |
 
 ### 8.2 Account Details Panel
 
@@ -630,7 +630,7 @@ This document enumerates all user-facing scenarios in the Hedera Transaction Too
 | 8.4.4 | "Link Account" navigates to /accounts on success                                                           | Yes       | Verify user can add an existing account |
 | 8.4.5 | Linked account appears in account list                                                                     | Yes       | Verify user can add an existing account |
 | 8.4.6 | Link Account button is disabled until entered account ID resolves as valid                                 | Yes       | Verify user can add an existing account |
-| 8.4.7 | `Account link failed` error toast when attempting to link an already-linked account                        | No        |                                         |
+| 8.4.7 | `Account link failed` error toast when attempting to link an already-linked account                        | Yes       | Verify duplicate account link shows error toast |
 | 8.4.8 | "Account already linked" label shown on transaction details when created account is already in local store | No        |                                         |
 
 ---
@@ -672,8 +672,8 @@ This document enumerates all user-facing scenarios in the Hedera Transaction Too
 | 9.3.1 | Update button navigates to File Update transaction | No        |            |
 | 9.3.2 | Append button navigates to File Append transaction | No        |            |
 | 9.3.3 | Read button navigates to File Read transaction     | No        |            |
-| 9.3.4 | Remove (unlink) opens confirmation modal           | No        |            |
-| 9.3.5 | File is removed from list after unlinking          | No        |            |
+| 9.3.4 | Remove (unlink) opens confirmation modal           | Yes       | Verify user can unlink multiple files |
+| 9.3.5 | File is removed from list after unlinking          | Yes       | Verify user can unlink multiple files |
 
 ### 9.4 Link Existing File
 
@@ -683,7 +683,7 @@ This document enumerates all user-facing scenarios in the Hedera Transaction Too
 | 9.4.2 | Nickname input is available                                                                          | No        |            |
 | 9.4.3 | Linked file appears in file list                                                                     | No        |            |
 | 9.4.4 | Link File button is disabled when entered file ID format is invalid                                  | Yes       | Verify user can add an existing file to files card |
-| 9.4.5 | `File link failed` error toast when attempting to link an already-linked file                        | No        |            |
+| 9.4.5 | `File link failed` error toast when attempting to link an already-linked file                        | Yes       | Verify duplicate file link shows error toast |
 | 9.4.6 | "File already linked" label shown on transaction details when created file is already in local store | No        |            |
 
 ---
@@ -712,7 +712,7 @@ This document enumerates all user-facing scenarios in the Hedera Transaction Too
 | 10.2.4  | "Add New" button is NOT visible for regular role                                           | Yes       | Verify "Add new" button is invisible for a regular role               |
 | 10.2.5  | Admin can add a new user to the organization                                               | Yes       | Verify admin user can add new user to the organization                |
 | 10.2.6  | Admin can add multiple users via comma-separated emails                                    | No        |                                                                       |
-| 10.2.7  | Invalid email shows error toast during user creation                                       | No        |                                                                       |
+| 10.2.7  | Invalid email shows error toast during user creation                                       | Yes       | Verify adding user with invalid email shows error                     |
 | 10.2.8  | Admin can remove a user from the organization                                              | Yes       | Verify admin user can remove user from the organization               |
 | 10.2.9  | Delete contact modal appears on remove click                                               | Yes       | Verify admin user can remove user from the organization               |
 | 10.2.10 | Admin can elevate a user to admin role                                                     | No        |                                                                       |
@@ -851,7 +851,7 @@ This document enumerates all user-facing scenarios in the Hedera Transaction Too
 | ------ | ---------------------------------------------- | --------- | ------------------------------------------------------------- |
 | 14.1.1 | Success toast appears on successful operations | Yes       | Verify successful registration through "Create New" flow      |
 | 14.1.2 | Error toast appears on failed operations       | Yes       | Verify error message when user adds non-existing organization |
-| 14.1.3 | Toast auto-dismisses after timeout             | No        |                                                               |
+| 14.1.3 | Toast auto-dismisses after timeout             | Yes       | Verify user can copy public key to clipboard                  |
 
 ### 14.2 Password Modal
 
@@ -909,20 +909,20 @@ This document enumerates all user-facing scenarios in the Hedera Transaction Too
 | ------------------------------- | --------------- | --------- | ------- | ---------- |
 | 1. Registration                 | 22              | 20        | 2       | 91%        |
 | 2. Login                        | 17              | 17        | 0       | 100%       |
-| 3. Settings                     | 78              | 54        | 24      | 69%        |
-| 4. Transactions List            | 34              | 21        | 13      | 62%        |
+| 3. Settings                     | 78              | 55        | 23      | 71%        |
+| 4. Transactions List            | 34              | 23        | 11      | 68%        |
 | 5. Transaction Creation         | 101             | 69        | 32      | 68%        |
 | 6. Transaction Details          | 26              | 23        | 3       | 88%        |
 | 7. Transaction Groups           | 39              | 34        | 5       | 87%        |
-| 8. Accounts                     | 30              | 19        | 11      | 63%        |
-| 9. Files                        | 29              | 9         | 20      | 31%        |
-| 10. Contact List                | 23              | 12        | 11      | 52%        |
+| 8. Accounts                     | 30              | 22        | 8       | 73%        |
+| 9. Files                        | 29              | 12        | 17      | 41%        |
+| 10. Contact List                | 23              | 13        | 10      | 57%        |
 | 11. Org Transaction Workflows   | 24              | 22        | 2       | 92%        |
 | 12. Notifications               | 10              | 5         | 5       | 50%        |
 | 13. Navigation and Layout       | 12              | 8         | 4       | 67%        |
-| 14. Error Handling / Edge Cases | 17              | 5         | 12      | 29%        |
+| 14. Error Handling / Edge Cases | 17              | 6         | 11      | 35%        |
 | 15. Upgrade                     | 3               | 0         | 3       | 0%         |
-| **Total**                       | **465**         | **318**   | **147** | **68%**    |
+| **Total**                       | **465**         | **330**   | **135** | **71%**    |
 
 ### Release Testing Guide
 
@@ -980,9 +980,9 @@ These scenarios cover edge cases and error handling. Verify periodically or afte
 ### Priority Areas for Additional Automation
 
 1. **Upgrade (0%)** - Update notifications, version enforcement for org features, version status badges
-2. **Error Handling / Edge Cases (29%)** - Network failures, validation edge cases, form limits
-3. **Files (31%)** - File list sorting, file details panel, file actions, link existing and already-linked file scenarios
+2. **Error Handling / Edge Cases (35%)** - Network failures, validation edge cases, form limits
+3. **Files (41%)** - File list sorting, file details panel, file actions, link existing file scenarios
 4. **Notifications (50%)** - Email preference toggles, real-time badge delivery
-5. **Contact List (52%)** - Bulk user add validation, duplicate email, approver duplicate handling
-6. **Transactions List (62%)** - Org tab notification badges, history table features, drafts table sort and pagination
+5. **Contact List (57%)** - Bulk user add validation, duplicate email, approver duplicate handling
+6. **Transactions List (68%)** - Org tab notification badges, history table features, drafts table sort and pagination
 7. **Login (65%)** - Remaining gaps are mostly organization login validation and error flows

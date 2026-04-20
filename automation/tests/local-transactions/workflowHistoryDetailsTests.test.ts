@@ -62,6 +62,12 @@ test.describe('Workflow history/detail account and transfer tests @local-transac
     });
     await transactionPage.clickOnTransactionsMenuButton();
     await detailsPage.clickOnFirstTransactionDetailsButton();
+
+    // Assert details page route and title explicitly
+    await expect.poll(() => window.url()).toContain('/transaction/');
+    const detailsType = await detailsPage.getTransactionDetailsType();
+    expect(detailsType).toBe('Account Create');
+
     await detailsPage.assertTransactionDetails(
       newTransactionId ?? '',
       'Account Create',

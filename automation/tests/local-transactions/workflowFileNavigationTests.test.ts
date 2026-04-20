@@ -1,5 +1,6 @@
 import { expect, Page, test } from '@playwright/test';
 import { LoginPage } from '../../pages/LoginPage.js';
+import { RegistrationPage } from '../../pages/RegistrationPage.js';
 import { TransactionPage } from '../../pages/TransactionPage.js';
 import type { TransactionToolApp } from '../../utils/runtime/appSession.js';
 import { setupEnvironmentForTransactions } from '../../utils/runtime/environment.js';
@@ -15,6 +16,7 @@ import type { ActivatedTestIsolationContext } from '../../utils/setup/sharedTest
 let app: TransactionToolApp;
 let window: Page;
 let loginPage: LoginPage;
+let registrationPage: RegistrationPage;
 let transactionPage: TransactionPage;
 let accountPage: AccountPage;
 let filePage: FilePage;
@@ -31,10 +33,11 @@ test.describe('Workflow file navigation tests @local-transactions', () => {
 
   test.beforeEach(async () => {
     loginPage = new LoginPage(window);
+    const seededUser = await createSeededLocalUserSession(window, loginPage);
+    registrationPage = new RegistrationPage(window, seededUser.recoveryPhraseWordMap);
     transactionPage = new TransactionPage(window);
     accountPage = new AccountPage(window);
     filePage = new FilePage(window);
-    await createSeededLocalUserSession(window, loginPage);
     transactionPage.generatedAccounts = [];
     await setupEnvironmentForTransactions(window);
     await transactionPage.clickOnTransactionsMenuButton();
@@ -175,6 +178,11 @@ test.describe('Workflow file navigation tests @local-transactions', () => {
     await filePage.clickOnFileCheckbox(fileFromPage);
     await filePage.clickOnFileCheckbox(fileId ?? '');
     await filePage.clickOnRemoveMultipleButton();
+
+    // Assert confirmation modal is visible before confirming
+    const isConfirmVisible = await filePage.isConfirmUnlinkFileButtonVisible();
+    expect(isConfirmVisible).toBe(true);
+
     await filePage.clickOnConfirmUnlinkFileButton();
 
     await filePage.addFileToUnliked(fileFromPage);
@@ -205,5 +213,20 @@ test.describe('Workflow file navigation tests @local-transactions', () => {
 
     const isFileCardVisible = await filePage.isFileCardVisible(fileFromList);
     expect(isFileCardVisible).toBe(true);
+  });
+
+  test('Verify duplicate file link shows error toast', async () => {
+    await transactionPage.ensureFileExists('test');
+    await filePage.clickOnFilesMenuButton();
+    const fileFromPage = (await filePage.getFirstFileIdFromPage()) ?? '';
+
+    // Attempt to link the same file that is already linked
+    await filePage.clickOnAddNewButtonForFile();
+    await filePage.clickOnAddExistingFileLink();
+    await filePage.fillInExistingFileId(fileFromPage);
+    await filePage.clickOnLinkFileButton();
+
+    const toastText = await registrationPage.getToastMessageByVariant('error');
+    expect(toastText).toContain('File link failed');
   });
 });

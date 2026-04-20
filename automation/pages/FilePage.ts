@@ -164,6 +164,10 @@ export class FilePage extends BasePage {
     await this.click(this.confirmUnlinkFileButtonSelector);
   }
 
+  async isConfirmUnlinkFileButtonVisible() {
+    return await this.isElementVisible(this.confirmUnlinkFileButtonSelector);
+  }
+
   async getFirstFileIdFromPage() {
     return await this.getText(this.fileIdListPrefixSelector + '0');
   }

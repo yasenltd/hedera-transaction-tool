@@ -52,6 +52,15 @@ test.describe('Settings keys tests @local-basic', () => {
 
     const toastMessage = await registrationPage.getToastMessage();
     expect(toastMessage).toBe('Public Key copied successfully');
+
+    // Assert toast auto-dismisses
+    await loginPage.waitForToastToDisappear();
+    const isToastHidden = await loginPage.isElementHidden(
+      registrationPage.visibleToastMessageSelector,
+      0,
+      loginPage.getShortTimeout(),
+    );
+    expect(isToastHidden).toBe(true);
   });
 
   test('Verify user can copy private key to clipboard', async () => {

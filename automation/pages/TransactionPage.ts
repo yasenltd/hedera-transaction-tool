@@ -124,6 +124,7 @@ export class TransactionPage extends BasePage {
   moreDropdownButtonSelector = 'button-more-dropdown-lg';
   transactionFileActionsDropdownSelector = 'button-more-dropdown-sm';
   signTransactionsFromFileOptionSelector = 'button-more-dropdown-sm-item-signTransactionFile';
+  importSignaturesFromFileOptionSelector = 'button-more-dropdown-sm-item-importSignaturesFromFile';
   signTransactionFileButtonSelector = 'button-sign-transaction-file';
   importButtonSelector = 'button-transaction-page-import';
   confirmImportButtonSelector = 'button-import-files-public';
@@ -337,6 +338,10 @@ export class TransactionPage extends BasePage {
 
   async isSignTransactionFileButtonVisible() {
     return await this.isElementVisible(this.signTransactionFileButtonSelector);
+  }
+
+  async isImportSignaturesFromFileOptionVisible() {
+    return await this.isElementVisible(this.importSignaturesFromFileOptionSelector);
   }
 
   async clickOnConfirmImportButton() {

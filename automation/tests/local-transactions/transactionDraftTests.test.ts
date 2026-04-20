@@ -47,6 +47,15 @@ test.describe('Transaction draft account tests @local-transactions', () => {
     await transactionPage.fillInDescription('test create tx description');
     await transactionPage.saveDraft();
 
+    // Assert drafts table column headers are present
+    const headers = await window.locator('.table-custom th span').allTextContents();
+    const headerTexts = headers.map(h => h.trim());
+    expect(headerTexts).toContain('Date Created');
+    expect(headerTexts).toContain('Transaction Type');
+    expect(headerTexts).toContain('Description');
+    expect(headerTexts).toContain('Is Template');
+    expect(headerTexts).toContain('Actions');
+
     const draftDate = await transactionPage.getFirstDraftDate();
     expect(draftDate).toBeTruthy();
 

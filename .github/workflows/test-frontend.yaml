@@ -73,14 +73,14 @@ jobs:
             grep: '@local-basic'
             soloRequired: false
             backendRequired: false
-            sharedEnvironment: false
-            workers: 1
+            sharedEnvironment: true
+            workers: 2
           - name: Shared E2E
             grep: '@local-transactions|@organization-basic|@organization-advanced'
             soloRequired: true
             backendRequired: true
             sharedEnvironment: true
-            workers: 4
+            workers: 6
     steps:
       - name: Harden Runner
         uses: step-security/harden-runner@6c3c2f2c1c457b00c10c4848d6f5491db3b629df # v2.18.0
