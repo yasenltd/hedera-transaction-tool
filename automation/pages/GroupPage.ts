@@ -84,6 +84,10 @@ export class GroupPage extends BasePage {
     await this.click(this.signAndExecuteButtonSelector);
   }
 
+  async isSignAndExecuteButtonDisabled() {
+    return await this.isDisabled(this.signAndExecuteButtonSelector);
+  }
+
   async clickOnAddTransactionButton() {
     await this.click(this.addTransactionButtonSelector);
   }
@@ -270,12 +274,25 @@ export class GroupPage extends BasePage {
     return this.isElementVisible(this.emptyTransactionTextSelector);
   }
 
+  async getEmptyTransactionText() {
+    return ((await this.getText(this.emptyTransactionTextSelector)) ?? '').trim();
+  }
+
   async clickOnDeleteAllButton() {
     await this.click(this.deleteAllButtonSelector);
   }
 
   async clickOnConfirmDeleteAllButton() {
     await this.click(this.confirmDeleteAllButtonSelector);
+  }
+
+  async clickOnCancelDeleteAllButton() {
+    const confirmButton = this.getElement(this.confirmDeleteAllButtonSelector);
+    await confirmButton.waitFor({ state: 'visible', timeout: this.LONG_TIMEOUT });
+    const modalContent = confirmButton
+      .locator('xpath=ancestor::*[contains(@class,"modal-content")]')
+      .first();
+    await modalContent.getByRole('button', { name: 'Cancel', exact: true }).click();
   }
 
   async clickOnConfirmGroupTransactionButton() {

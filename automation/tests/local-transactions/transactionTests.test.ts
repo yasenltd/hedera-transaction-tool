@@ -78,6 +78,18 @@ test.describe('Transaction account execution tests @local-transactions', () => {
     expect(allElementsAreVisible).toBe(true);
   });
 
+  test('Verify sign button is disabled when no owner key is selected', async () => {
+    await transactionPage.clickOnCreateNewTransactionButton();
+    await transactionPage.clickOnCreateAccountTransaction();
+    expect(await transactionPage.isSignAndSubmitButtonEnabled()).toBe(false);
+  });
+
+  test('Verify sign button is disabled when no account ID is entered', async () => {
+    await transactionPage.clickOnCreateNewTransactionButton();
+    await transactionPage.clickOnUpdateAccountTransaction();
+    expect(await transactionPage.isSignAndSubmitButtonEnabled()).toBe(false);
+  });
+
   test('Verify confirm transaction modal is displayed with valid information for Account Create tx', async () => {
     await transactionPage.clickOnCreateNewTransactionButton();
     await transactionPage.clickOnCreateAccountTransaction();

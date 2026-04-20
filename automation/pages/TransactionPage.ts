@@ -113,13 +113,18 @@ export class TransactionPage extends BasePage {
   addRestButtonSelector = 'button-transfer-to-rest';
   addTransferToButtonSelector = 'button-add-transfer-to';
   draftsTabSelector = 'tab-0';
+  historyTabSelector = 'tab-1';
   draftDeleteButtonIndexSelector = 'button-draft-delete-';
   draftContinueButtonIndexSelector = 'button-draft-continue-';
   confirmDeleteAccountButtonSelector = 'button-confirm-delete-account';
   singleTransactionButtonSelector = 'span-single-transaction';
+  transactionGroupButtonSelector = 'span-group-transaction';
   uploadFileButtonSelector = '#append-transaction-file[type="file"]';
   insertAccountIdButtonSelector = 'button-insert-account-id';
   moreDropdownButtonSelector = 'button-more-dropdown-lg';
+  transactionFileActionsDropdownSelector = 'button-more-dropdown-sm';
+  signTransactionsFromFileOptionSelector = 'button-more-dropdown-sm-item-signTransactionFile';
+  signTransactionFileButtonSelector = 'button-sign-transaction-file';
   importButtonSelector = 'button-transaction-page-import';
   confirmImportButtonSelector = 'button-import-files-public';
   saveGotoSettingsButtonSelector = 'button-save-goto-settings';
@@ -129,6 +134,10 @@ export class TransactionPage extends BasePage {
   confirmTransactionModalSelector = 'modal-confirm-transaction';
   spanCreateNewComplexKeyButtonSelector = 'span-create-new-complex-key';
   updateAccountIdFetchedDivSelector = 'div-account-info-fetched';
+  transactionSelectionAccountMenuSelector = 'menu-link-account';
+  transactionSelectionFileMenuSelector = 'menu-link-file';
+  transactionSelectionNodeMenuSelector = 'menu-link-node';
+  transactionSelectionSystemMenuSelector = 'menu-link-system';
   //Messages
   textTypeTransactionSelector = 'p-type-transaction';
   textTransactionIdSelector = 'p-transaction-id';
@@ -138,6 +147,7 @@ export class TransactionPage extends BasePage {
   transactionTypeHeaderSelector = 'h2-transaction-type';
   transactionDetailsCreatedAtSelector = 'p-transaction-details-created-at';
   transactionDetailsIdSelector = 'p-transaction-details-id';
+  emptyTransactionsTextSelector = 'p-empty-transaction-text';
   approveAllowanceTransactionMemoSelector = 'input-transaction-memo';
   //Indexes
   accountIdPrefixSelector = 'p-account-id-';
@@ -239,6 +249,14 @@ export class TransactionPage extends BasePage {
     await this.click(this.singleTransactionButtonSelector);
   }
 
+  async clickOnTransactionGroupButton() {
+    await this.click(this.transactionGroupButtonSelector);
+  }
+
+  async clickOnCreateNewDropdown() {
+    await this.click(this.createNewTransactionButtonSelector);
+  }
+
   async clickOnAccountsMenuButton() {
     await this.click(this.accountsMenuButtonSelector);
   }
@@ -262,8 +280,63 @@ export class TransactionPage extends BasePage {
     return await this.isElementVisible(this.createNewTransactionButtonSelector, null, timeout);
   }
 
+  async isDraftsTabVisible() {
+    return await this.isElementVisible(this.draftsTabSelector);
+  }
+
+  async isHistoryTabVisible() {
+    return await this.isElementVisible(this.historyTabSelector);
+  }
+
+  async clickOnHistoryTab() {
+    await this.click(this.historyTabSelector);
+  }
+
+  async isTransactionOptionVisible() {
+    return await this.isElementVisible(this.singleTransactionButtonSelector);
+  }
+
+  async isTransactionGroupOptionVisible() {
+    return await this.isElementVisible(this.transactionGroupButtonSelector);
+  }
+
+  async isTransactionSelectionModalVisible() {
+    return await this.isElementVisible(this.transactionSelectionAccountMenuSelector);
+  }
+
+  async areTransactionSelectionGroupsVisible() {
+    const checks = await Promise.all([
+      this.isElementVisible(this.transactionSelectionAccountMenuSelector),
+      this.isElementVisible(this.transactionSelectionFileMenuSelector),
+      this.isElementVisible(this.transactionSelectionNodeMenuSelector),
+      this.isElementVisible(this.transactionSelectionSystemMenuSelector),
+    ]);
+
+    return checks.every(isTrue => isTrue);
+  }
+
+  async isEmptyTransactionsTextVisible() {
+    return await this.isElementVisible(this.emptyTransactionsTextSelector);
+  }
+
+  async getEmptyTransactionsText() {
+    return ((await this.getText(this.emptyTransactionsTextSelector)) ?? '').trim();
+  }
+
   async clickOnImportButton() {
     await this.click(this.importButtonSelector);
+  }
+
+  async clickOnTransactionFileActionsDropdown() {
+    await this.click(this.transactionFileActionsDropdownSelector);
+  }
+
+  async clickOnSignTransactionsFromFileOption() {
+    await this.click(this.signTransactionsFromFileOptionSelector);
+  }
+
+  async isSignTransactionFileButtonVisible() {
+    return await this.isElementVisible(this.signTransactionFileButtonSelector);
   }
 
   async clickOnConfirmImportButton() {

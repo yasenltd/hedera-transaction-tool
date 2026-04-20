@@ -92,6 +92,22 @@ export class FilePage extends BasePage {
     await this.click(this.linkFileButtonSelector);
   }
 
+  async isLinkFileButtonDisabled() {
+    return await this.isDisabled(this.linkFileButtonSelector);
+  }
+
+  async areAddNewFileOptionsVisible() {
+    const checks = await Promise.all([
+      this.isElementVisible(this.createNewLinkSelector),
+      this.isElementVisible(this.updateLinkSelector),
+      this.isElementVisible(this.appendLinkSelector),
+      this.isElementVisible(this.readLinkSelector),
+      this.isElementVisible(this.addExistingLinkSelector),
+    ]);
+
+    return checks.every(isTrue => isTrue);
+  }
+
   async fillInExistingFileId(fileId: string) {
     await this.fill(this.existingFileIdInputSelector, fileId);
   }

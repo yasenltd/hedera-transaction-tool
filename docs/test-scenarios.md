@@ -17,12 +17,12 @@ This document enumerates all user-facing scenarios in the Hedera Transaction Too
 | ----- | ---------------------------------------------------------------- | --------- | -------------------------------------------------------- |
 | 1.1.1 | All registration page elements are displayed correctly           | Yes       | Verify all elements are present on the registration page |
 | 1.1.2 | User can register with valid email and strong password           | Yes       | Verify successful registration through "Create New" flow |
-| 1.1.3 | Password strength tooltip shows real-time feedback (>= 10 chars) | Yes       | 1.1.3 Password strength tooltip shows real-time feedback (>= 10 chars) |
-| 1.1.4 | Registration fails when passwords do not match                   | Yes       | 1.1.4 Registration fails when passwords do not match     |
-| 1.1.5 | Registration fails with invalid email format                     | Yes       | 1.1.5 Registration fails with invalid email format       |
-| 1.1.6 | Registration fails with weak password (< 10 characters)          | Yes       | 1.1.6 Registration fails with weak password (< 10 characters) |
-| 1.1.7 | Register button is disabled until all validations pass           | Yes       | 1.1.7 Register button is disabled until all validations pass |
-| 1.1.8 | "Keep me logged in" checkbox is available during registration    | Yes       | 1.1.8 "Keep me logged in" checkbox is available during registration |
+| 1.1.3 | Password strength tooltip shows real-time feedback (>= 10 chars) | Yes       | Password strength tooltip shows real-time feedback (>= 10 chars) |
+| 1.1.4 | Registration fails when passwords do not match                   | Yes       | Registration fails when passwords do not match     |
+| 1.1.5 | Registration fails with invalid email format                     | Yes       | Registration fails with invalid email format       |
+| 1.1.6 | Registration fails with weak password (< 10 characters)          | Yes       | Registration fails with weak password (< 10 characters) |
+| 1.1.7 | Register button is disabled until all validations pass           | Yes       | Register button is disabled until all validations pass |
+| 1.1.8 | "Keep me logged in" checkbox is available during registration    | Yes       | "Keep me logged in" checkbox is available during registration |
 
 ### 1.2 Account Setup Wizard (Post-Registration)
 
@@ -67,10 +67,10 @@ This document enumerates all user-facing scenarios in the Hedera Transaction Too
 
 | #     | Scenario                                          | Automated | Covered By               |
 | ----- | ------------------------------------------------- | --------- | ------------------------ |
-| 2.2.1 | "Reset account" link is visible on login screen   | Yes       | 2.2.1 "Reset account" link is visible on login screen |
-| 2.2.2 | Reset data modal appears on click                 | Yes       | 2.2.2 Reset data modal appears on click |
-| 2.2.3 | User data is cleared after confirming reset       | Yes       | 2.2.3 User data is cleared after confirming reset |
-| 2.2.4 | User is returned to registration mode after reset | Yes       | 2.2.4 User is returned to registration mode after reset |
+| 2.2.1 | "Reset account" link is visible on login screen   | Yes       | "Reset account" link is visible on login screen |
+| 2.2.2 | Reset data modal appears on click                 | Yes       | Reset data modal appears on click |
+| 2.2.3 | User data is cleared after confirming reset       | Yes       | User data is cleared after confirming reset |
+| 2.2.4 | User is returned to registration mode after reset | Yes       | User is returned to registration mode after reset |
 
 ### 2.3 Organization Login
 
@@ -105,8 +105,8 @@ This document enumerates all user-facing scenarios in the Hedera Transaction Too
 | #       | Scenario                                       | Automated | Covered By                                            |
 | ------- | ---------------------------------------------- | --------- | ----------------------------------------------------- |
 | 3.1.2.1 | Appearance options are displayed (Light, Dark) | Yes       | Verify that all elements in settings page are present |
-| 3.1.2.2 | User can switch to Dark theme                  | No        |                                                       |
-| 3.1.2.3 | User can switch to Light theme                 | No        |                                                       |
+| 3.1.2.2 | User can switch to Dark theme                  | Yes       | Verify user can switch between Dark and Light themes  |
+| 3.1.2.3 | User can switch to Light theme                 | Yes       | Verify user can switch between Dark and Light themes  |
 
 #### 3.1.3 Default Settings
 
@@ -121,21 +121,21 @@ This document enumerates all user-facing scenarios in the Hedera Transaction Too
 
 | #       | Scenario                      | Automated | Covered By |
 | ------- | ----------------------------- | --------- | ---------- |
-| 3.1.4.1 | App version info is displayed | No        |            |
+| 3.1.4.1 | App version info is displayed | Yes       | Verify app version info is displayed |
 
 ### 3.2 Keys Tab
 
 | #      | Scenario                                                                                       | Automated | Covered By                                                             |
 | ------ | ---------------------------------------------------------------------------------------------- | --------- | ---------------------------------------------------------------------- |
 | 3.2.1  | Keys table displays all user keys (Index, Nickname, Account ID, Type, Public Key, Private Key) | Yes       | Verify that all elements in settings page are present                  |
-| 3.2.2  | User can filter keys by: All, Recovery Phrase, Private Key tabs                                | No        |                                                                        |
+| 3.2.2  | User can filter keys by: All, Recovery Phrase, Private Key tabs                                | Yes       | Verify user can filter keys by All, Recovery Phrase, and Private Key  |
 | 3.2.3  | User can decrypt and view private key via eye icon (password required)                         | Yes       | Verify user can decrypt private key                                    |
-| 3.2.4  | User can copy public key to clipboard                                                          | No        |                                                                        |
-| 3.2.5  | User can copy private key to clipboard                                                         | No        |                                                                        |
+| 3.2.4  | User can copy public key to clipboard                                                          | Yes       | Verify user can copy public key to clipboard                           |
+| 3.2.5  | User can copy private key to clipboard                                                         | Yes       | Verify user can copy private key to clipboard                          |
 | 3.2.6  | User can edit key nickname                                                                     | Yes       | Verify user can change key nickname                                    |
 | 3.2.7  | User can delete a single key pair                                                              | Yes       | Verify user can delete key                                             |
 | 3.2.8  | Key row count decreases after deletion                                                         | Yes       | Verify user can delete key                                             |
-| 3.2.9  | User can select multiple keys and bulk delete                                                  | No        |                                                                        |
+| 3.2.9  | User can select multiple keys and bulk delete                                                  | Yes       | Verify user can select multiple keys and bulk delete                   |
 | 3.2.10 | User can generate a new key from recovery phrase (index + nickname flow)                       | Yes       | Verify user can restore key                                            |
 | 3.2.11 | Generated key pair is persisted in the database                                                | Yes       | Verify user restored key pair is saved in the local database           |
 | 3.2.12 | User can import ECDSA private key with nickname                                                | Yes       | Verify user can import ECDSA key                                       |
@@ -145,9 +145,9 @@ This document enumerates all user-facing scenarios in the Hedera Transaction Too
 | 3.2.16 | Missing keys (org only) show restore button                                                    | Yes       | Verify user can restore missing keys when doing account recovery       |
 | 3.2.17 | User can restore missing key from recovery phrase                                              | Yes       | Verify user can restore missing keys when doing account recovery       |
 | 3.2.18 | User can import external private key for missing key                                           | No        |                                                                        |
-| 3.2.19 | Importing a private key that already exists in key store shows `Key pair already exists` error | No        |                                                                        |
+| 3.2.19 | Importing a private key that already exists in key store shows `Key pair already exists` error | Yes       | Verify duplicate private key import shows an error                     |
 | 3.2.20 | Importing a private key that doesn't match the expected public key shows error                 | No        |                                                                        |
-| 3.2.21 | Wrong app password when viewing private key shows `Failed to decrypt private key` error        | No        |                                                                        |
+| 3.2.21 | Wrong app password when viewing private key shows `Failed to decrypt private key` error        | Yes       | Verify wrong app password blocks private key decryption                |
 
 ### 3.3 Public Keys Tab
 
@@ -184,20 +184,20 @@ This document enumerates all user-facing scenarios in the Hedera Transaction Too
 
 | #      | Scenario                                                                         | Automated | Covered By                                      |
 | ------ | -------------------------------------------------------------------------------- | --------- | ----------------------------------------------- |
-| 3.5.1  | Change password form is displayed for email/password users                       | Yes       | Verify user can change password (settingsTests) |
-| 3.5.2  | User can change password with valid current and new passwords                    | Yes       | Verify user can change password (settingsTests) |
-| 3.5.3  | Password change confirmation modal appears                                       | No        |                                                 |
-| 3.5.4  | Success modal appears after password change                                      | No        |                                                 |
-| 3.5.5  | User can log in with new password after change                                   | Yes       | Verify user can change password (settingsTests) |
-| 3.5.6  | New password must be >= 10 characters (validation)                               | No        |                                                 |
+| 3.5.1  | Change password form is displayed for email/password users                       | Yes       | Verify user can change password |
+| 3.5.2  | User can change password with valid current and new passwords                    | Yes       | Verify user can change password |
+| 3.5.3  | Password change confirmation modal appears                                       | Yes       | Verify user can change password                    |
+| 3.5.4  | Success modal appears after password change                                      | Yes       | Verify user can change password                    |
+| 3.5.5  | User can log in with new password after change                                   | Yes       | Verify user can change password |
+| 3.5.6  | New password must be >= 10 characters (validation)                               | Yes       | Verify change password button is disabled for weak new password |
 | 3.5.7  | Organization user can change org password                                        | Yes       | Verify organization user can change password    |
 | 3.5.8  | Keychain user sees reset application form instead of password change             | No        |                                                 |
-| 3.5.9  | User can log out (personal mode)                                                 | Yes       | afterAll (settingsTests / loginTests)           |
+| 3.5.9  | User can log out (personal mode)                                                 | Yes       | Verify logout redirects user to sign-in screen  |
 | 3.5.10 | User can log out (organization mode)                                             | No        |                                                 |
-| 3.5.11 | Logout redirects to login                                                        | No        |                                                 |
-| 3.5.12 | Change Password button is disabled when new password fails strength requirements | No        |                                                 |
-| 3.5.13 | Inline `Invalid password` error appears under new password field on blur         | No        |                                                 |
-| 3.5.14 | `Failed to change password` error toast when current password is wrong           | No        |                                                 |
+| 3.5.11 | Logout redirects to login                                                        | Yes       | Verify logout redirects user to sign-in screen  |
+| 3.5.12 | Change Password button is disabled when new password fails strength requirements | Yes       | Verify change password button is disabled for weak new password |
+| 3.5.13 | Inline `Invalid password` error appears under new password field on blur         | Yes       | Verify invalid password inline message appears on blur in profile tab |
+| 3.5.14 | `Failed to change password` error toast when current password is wrong           | Yes       | Verify wrong current password shows error when changing password |
 
 ### 3.6 Notifications Tab (Organization Only)
 
@@ -226,11 +226,11 @@ This document enumerates all user-facing scenarios in the Hedera Transaction Too
 
 | #     | Scenario                                                              | Automated | Covered By |
 | ----- | --------------------------------------------------------------------- | --------- | ---------- |
-| 4.1.1 | Transactions page shows Drafts and History tabs                       | No        |            |
-| 4.1.2 | "Create New" dropdown shows Transaction and Transaction Group options | No        |            |
-| 4.1.3 | Selecting "Transaction" opens TransactionSelectionModal               | No        |            |
-| 4.1.4 | Selecting "Transaction Group" navigates to create-transaction-group   | No        |            |
-| 4.1.5 | "Sign Transactions from File" opens file picker                       | No        |            |
+| 4.1.1 | Transactions page shows Drafts and History tabs                       | Yes       | Transactions page shows Drafts and History tabs |
+| 4.1.2 | "Create New" dropdown shows Transaction and Transaction Group options | Yes       | "Create New" dropdown shows Transaction and Transaction Group options |
+| 4.1.3 | Selecting "Transaction" opens TransactionSelectionModal               | Yes       | Selecting "Transaction" opens TransactionSelectionModal |
+| 4.1.4 | Selecting "Transaction Group" navigates to create-transaction-group   | Yes       | Selecting "Transaction Group" navigates to create-transaction-group |
+| 4.1.5 | "Sign Transactions from File" opens file picker                       | Yes       | Selecting "Sign Transactions from File" opens sign-from-file modal |
 
 ### 4.2 Organization Mode
 
@@ -254,7 +254,7 @@ This document enumerates all user-facing scenarios in the Hedera Transaction Too
 | 4.3.4 | User can delete a draft                                                              | Yes       | Verify user can delete a draft transaction                                                         |
 | 4.3.5 | User can continue editing a draft                                                    | Yes       | Verify draft transaction contains the saved info for account create tx                             |
 | 4.3.6 | "Is Template" checkbox toggles draft template flag                                   | Yes       | Verify draft transaction is visible after we execute the tx and we have template checkbox selected |
-| 4.3.7 | Empty state shows EmptyTransactions component                                        | No        |                                                                                                    |
+| 4.3.7 | Empty state shows EmptyTransactions component                                        | Yes       | Drafts empty state shows EmptyTransactions component |
 
 ### 4.4 History Tab (Personal)
 
@@ -289,8 +289,8 @@ This document enumerates all user-facing scenarios in the Hedera Transaction Too
 
 | #     | Scenario                                            | Automated | Covered By |
 | ----- | --------------------------------------------------- | --------- | ---------- |
-| 5.1.1 | Modal displays all available transaction types      | No        |            |
-| 5.1.2 | Selecting a type navigates to transaction type page | No        |            |
+| 5.1.1 | Modal displays all available transaction types      | Yes       | Transaction selection modal displays all transaction categories |
+| 5.1.2 | Selecting a type navigates to transaction type page | Yes       | Selecting transaction type from modal navigates to type page |
 
 ### 5.2 Account Create Transaction
 
@@ -309,7 +309,7 @@ This document enumerates all user-facing scenarios in the Hedera Transaction Too
 | 5.2.11 | User can save account create as draft                                      | Yes       | Verify user can save draft and is visible in the draft page                                |
 | 5.2.12 | Draft preserves all fields (memo, receiver sig, initial funds, etc.)       | Yes       | Verify draft transaction contains the saved info for account create tx                     |
 | 5.2.13 | User can load and continue a saved draft                                   | Yes       | Verify draft transaction contains the saved info for account create tx                     |
-| 5.2.14 | Sign button is disabled when no owner key is selected                      | No        |                                                                                            |
+| 5.2.14 | Sign button is disabled when no owner key is selected                      | Yes       | Verify sign button is disabled when no owner key is selected                               |
 | 5.2.15 | Invalid format in Staked Account ID field blocks the sign button           | No        |                                                                                            |
 | 5.2.16 | Initial balance auto-resets to 0 when it exceeds payer's available balance | No        |                                                                                            |
 
@@ -324,7 +324,7 @@ This document enumerates all user-facing scenarios in the Hedera Transaction Too
 | 5.3.5 | Transaction executes and result verified via Mirror Node                     | Yes       | Verify that account is updated after we execute an account update tx                                       |
 | 5.3.6 | User can save account update as draft                                        | Yes       | Verify draft transaction contains the saved info for account update tx                                     |
 | 5.3.7 | Draft preserves all update fields                                            | Yes       | Verify draft transaction contains the saved info for account update tx                                     |
-| 5.3.8 | Sign button is disabled when no account ID is entered                        | No        |                                                                                                            |
+| 5.3.8 | Sign button is disabled when no account ID is entered                        | Yes       | Verify sign button is disabled when no account ID is entered                                                 |
 | 5.3.9 | `Invalid Account ID` error shown when submitting with a malformed account ID | No        |                                                                                                            |
 
 ### 5.4 Account Delete Transaction
@@ -516,11 +516,11 @@ This document enumerates all user-facing scenarios in the Hedera Transaction Too
 | 7.1.5  | User can set group description                                                                       | Yes       | Verify description is mandatory for saving group transaction |
 | 7.1.6  | User can set payer account for the group                                                             | No        |                                                              |
 | 7.1.7  | Valid start time picker works with running clock                                                     | No        |                                                              |
-| 7.1.8  | Empty state shows prompt to add transactions                                                         | No        |                                                              |
-| 7.1.9  | Saving a transaction group with no description shows `Please enter a group description` error        | No        |                                                              |
-| 7.1.10 | Clicking "Sign and Submit" with empty description shows `Group Description Required` error toast     | No        |                                                              |
-| 7.1.11 | Saving a group with zero transactions shows `Please add at least one transaction to the group` error | No        |                                                              |
-| 7.1.12 | Sign and Submit button is disabled when the group contains no transactions                           | No        |                                                              |
+| 7.1.8  | Empty state shows prompt to add transactions                                                         | Yes       | Verify group transaction elements                              |
+| 7.1.9  | Saving a transaction group with no description shows `Please enter a group description` error        | Yes       | Saving transaction group with no description shows validation error |
+| 7.1.10 | Clicking "Sign and Submit" with empty description shows `Group Description Required` error toast     | Yes       | Sign and submit with empty description shows validation toast |
+| 7.1.11 | Saving a group with zero transactions shows `Please add at least one transaction to the group` error | Yes       | Saving group with zero transactions shows validation error |
+| 7.1.12 | Sign and Submit button is disabled when the group contains no transactions                           | Yes       | Sign and Submit button is disabled when group has no transactions |
 
 ### 7.2 Group Editing
 
@@ -532,7 +532,7 @@ This document enumerates all user-facing scenarios in the Hedera Transaction Too
 | 7.2.4 | User can delete all transactions at once                                      | Yes       | Verify user can delete many transactions at once(delete all) |
 | 7.2.5 | Delete group without saving navigates away                                    | Yes       | Verify delete group action does not save the group           |
 | 7.2.6 | Continue editing navigation guard modal works                                 | Yes       | Verify continue editing action saves the group               |
-| 7.2.7 | Cancelling the "Delete All" confirmation modal leaves all transactions intact | No        |                                                              |
+| 7.2.7 | Cancelling the "Delete All" confirmation modal leaves all transactions intact | Yes       | Verify cancelling "Delete All" keeps all transactions in the group |
 
 ### 7.3 Group Saving and Execution (Personal)
 
@@ -629,7 +629,7 @@ This document enumerates all user-facing scenarios in the Hedera Transaction Too
 | 8.4.3 | Nickname input is available                                                                                | Yes       | Verify user can add an existing account |
 | 8.4.4 | "Link Account" navigates to /accounts on success                                                           | Yes       | Verify user can add an existing account |
 | 8.4.5 | Linked account appears in account list                                                                     | Yes       | Verify user can add an existing account |
-| 8.4.6 | Link Account button is disabled until entered account ID resolves as valid                                 | No        |                                         |
+| 8.4.6 | Link Account button is disabled until entered account ID resolves as valid                                 | Yes       | Verify user can add an existing account |
 | 8.4.7 | `Account link failed` error toast when attempting to link an already-linked account                        | No        |                                         |
 | 8.4.8 | "Account already linked" label shown on transaction details when created account is already in local store | No        |                                         |
 
@@ -645,7 +645,7 @@ This document enumerates all user-facing scenarios in the Hedera Transaction Too
 | 9.1.2 | User can sort files by File ID (asc/desc)                           | No        |                                                    |
 | 9.1.3 | User can sort files by Nickname (A-Z / Z-A)                         | No        |                                                    |
 | 9.1.4 | User can sort files by Date Added (asc/desc)                        | No        |                                                    |
-| 9.1.5 | "Add New" dropdown shows Create, Update, Append, Read, Add Existing | No        |                                                    |
+| 9.1.5 | "Add New" dropdown shows Create, Update, Append, Read, Add Existing | Yes       | Verify clicking on "Add new" and "Create new" navigates the user to create new file transaction page |
 | 9.1.6 | Select mode enables multi-select checkboxes                         | No        |                                                    |
 | 9.1.7 | Bulk unlink works in select mode                                    | No        |                                                    |
 
@@ -682,7 +682,7 @@ This document enumerates all user-facing scenarios in the Hedera Transaction Too
 | 9.4.1 | File ID input validates format                                                                       | No        |            |
 | 9.4.2 | Nickname input is available                                                                          | No        |            |
 | 9.4.3 | Linked file appears in file list                                                                     | No        |            |
-| 9.4.4 | Link File button is disabled when entered file ID format is invalid                                  | No        |            |
+| 9.4.4 | Link File button is disabled when entered file ID format is invalid                                  | Yes       | Verify user can add an existing file to files card |
 | 9.4.5 | `File link failed` error toast when attempting to link an already-linked file                        | No        |            |
 | 9.4.6 | "File already linked" label shown on transaction details when created file is already in local store | No        |            |
 
@@ -714,7 +714,7 @@ This document enumerates all user-facing scenarios in the Hedera Transaction Too
 | 10.2.6  | Admin can add multiple users via comma-separated emails                                    | No        |                                                                       |
 | 10.2.7  | Invalid email shows error toast during user creation                                       | No        |                                                                       |
 | 10.2.8  | Admin can remove a user from the organization                                              | Yes       | Verify admin user can remove user from the organization               |
-| 10.2.9  | Delete contact modal appears on remove click                                               | No        |                                                                       |
+| 10.2.9  | Delete contact modal appears on remove click                                               | Yes       | Verify admin user can remove user from the organization               |
 | 10.2.10 | Admin can elevate a user to admin role                                                     | No        |                                                                       |
 | 10.2.11 | Elevate contact modal appears on click                                                     | No        |                                                                       |
 | 10.2.12 | Bulk add fails with `Invalid emails: <list>` error when any email address is malformed     | No        |                                                                       |
@@ -821,7 +821,7 @@ This document enumerates all user-facing scenarios in the Hedera Transaction Too
 | 13.1.1 | Transactions menu item navigates to /transactions            | Yes       | Verify account create tx is displayed in history page         |
 | 13.1.2 | Accounts menu item navigates to /accounts                    | Yes       | Verify account card is visible with valid information         |
 | 13.1.3 | Files menu item navigates to /files                          | Yes       | Verify file card is visible with valid information            |
-| 13.1.4 | Contact List menu item navigates to /contact-list (org only) | No        |                                                               |
+| 13.1.4 | Contact List menu item navigates to /contact-list (org only) | Yes       | Verify contact list menu item navigates to /contact-list      |
 | 13.1.5 | Settings menu item navigates to /settings/general            | Yes       | Verify that all elements in settings page are present         |
 | 13.1.6 | Contact List hidden when not in organization                 | Yes       | Verify user can switch between personal and organization mode |
 
@@ -859,7 +859,7 @@ This document enumerates all user-facing scenarios in the Hedera Transaction Too
 | ------ | ------------------------------------------------------ | --------- | ----------------------------------- |
 | 14.2.1 | Personal password modal appears when decryption needed | Yes       | Verify user can decrypt private key |
 | 14.2.2 | Operation retries after correct password entry         | Yes       | Verify user can decrypt private key |
-| 14.2.3 | Operation aborts if password modal is cancelled        | No        |                                     |
+| 14.2.3 | Operation aborts if password modal is cancelled        | Yes       | Verify decrypt private key flow is aborted when password modal is cancelled |
 
 ### 14.3 Loading States
 
@@ -909,20 +909,20 @@ This document enumerates all user-facing scenarios in the Hedera Transaction Too
 | ------------------------------- | --------------- | --------- | ------- | ---------- |
 | 1. Registration                 | 22              | 20        | 2       | 91%        |
 | 2. Login                        | 17              | 11        | 6       | 65%        |
-| 3. Settings                     | 78              | 38        | 40      | 49%        |
-| 4. Transactions List            | 34              | 15        | 19      | 44%        |
-| 5. Transaction Creation         | 101             | 65        | 36      | 64%        |
+| 3. Settings                     | 78              | 54        | 24      | 69%        |
+| 4. Transactions List            | 34              | 21        | 13      | 62%        |
+| 5. Transaction Creation         | 101             | 69        | 32      | 68%        |
 | 6. Transaction Details          | 26              | 23        | 3       | 88%        |
-| 7. Transaction Groups           | 39              | 28        | 11      | 72%        |
-| 8. Accounts                     | 35              | 23        | 12      | 66%        |
-| 9. Files                        | 29              | 7         | 22      | 24%        |
-| 10. Contact List                | 23              | 11        | 12      | 48%        |
+| 7. Transaction Groups           | 39              | 34        | 5       | 87%        |
+| 8. Accounts                     | 35              | 24        | 11      | 69%        |
+| 9. Files                        | 29              | 9         | 20      | 31%        |
+| 10. Contact List                | 23              | 12        | 11      | 52%        |
 | 11. Org Transaction Workflows   | 24              | 22        | 2       | 92%        |
 | 12. Notifications               | 10              | 5         | 5       | 50%        |
-| 13. Navigation and Layout       | 12              | 7         | 5       | 58%        |
-| 14. Error Handling / Edge Cases | 17              | 4         | 13      | 24%        |
+| 13. Navigation and Layout       | 12              | 8         | 4       | 67%        |
+| 14. Error Handling / Edge Cases | 17              | 5         | 12      | 29%        |
 | 15. Upgrade                     | 3               | 0         | 3       | 0%         |
-| **Total**                       | **471**         | **279**   | **192** | **59%**    |
+| **Total**                       | **470**         | **317**   | **153** | **67%**    |
 
 ### Release Testing Guide
 
@@ -943,12 +943,12 @@ These scenarios affect important workflows that users rely on regularly. Failure
 
 | Area                             | Scenarios                                 | Why Important                                                            |
 | -------------------------------- | ----------------------------------------- | ------------------------------------------------------------------------ |
-| **Key Management**               | 3.2.2, 3.2.4-3.2.5, 3.2.9, 3.2.15, 3.2.18 | Key operations are security-critical                                     |
-| **Transaction Lists (Personal)** | 4.1.1-4.1.5, 4.3.1-4.3.3                  | Users cannot navigate or find transactions                               |
+| **Key Management**               | 3.2.15, 3.2.18, 3.2.20                    | Key operations are security-critical                                     |
+| **Transaction Lists (Personal)** | 4.3.1-4.3.3                               | Users cannot navigate or find transactions                               |
 | **Transaction Lists (Org)**      | 4.2.2-4.2.3, 4.5.8-4.5.9                  | Org workflow visibility and filtering affects collaboration              |
 | **Organization Selector**        | 13.2.1, 13.2.3-13.2.4                     | Users cannot switch between org and personal mode                        |
 | **Notifications**                | 12.1.6                                    | Missed real-time notifications delay signing workflows                   |
-| **Password Change**              | 3.5.3-3.5.4, 3.5.6, 3.5.8, 3.5.10-3.5.11  | Password/logout issues lock users out                                    |
+| **Password Change**              | 3.5.8, 3.5.10                             | Password/logout issues lock users out                                    |
 | **Upgrade Enforcement**          | 15.1.2                                    | Org users silently lose access if version enforcement fails after update |
 
 #### Tier 3 - Medium Priority (Verify When Changed)
@@ -960,7 +960,7 @@ These scenarios cover secondary workflows. Test when the related feature area ha
 | **File Management**     | 9.1.2-9.4.3     | When file list, details, or actions UI is modified          |
 | **Public Keys Tab**     | 3.3.1-3.3.6     | When public key management UI is modified                   |
 | **Appearance/Theme**    | 3.1.2.2-3.1.2.3 | When theme switching or CSS is modified                     |
-| **Contact List Admin**  | 10.2.6-10.2.11  | When contact management flows are modified                  |
+| **Contact List Admin**  | 10.2.6-10.2.8, 10.2.10-10.2.11 | When contact management flows are modified                  |
 | **Group Export**        | 7.5.5           | When signature export formats are modified                  |
 | **Transaction Cancel**  | 6.3.7           | When transaction lifecycle management is modified           |
 | **Application Upgrade** | 15.1.1, 15.1.3  | When update notification or version badge logic is modified |
@@ -980,9 +980,9 @@ These scenarios cover edge cases and error handling. Verify periodically or afte
 ### Priority Areas for Additional Automation
 
 1. **Upgrade (0%)** - Update notifications, version enforcement for org features, version status badges
-2. **Error Handling / Edge Cases (24%)** - Network failures, validation edge cases, form limits
-3. **Files (24%)** - File list sorting, file details panel, file actions, link existing and already-linked file scenarios
-4. **Transactions List (44%)** - Personal mode options, org tab notification badges, history table features, drafts table sort and pagination
-5. **Contact List (48%)** - Bulk user add validation, duplicate email, approver duplicate handling
-6. **Notifications (50%)** - Email preference toggles, real-time badge delivery
+2. **Error Handling / Edge Cases (29%)** - Network failures, validation edge cases, form limits
+3. **Files (31%)** - File list sorting, file details panel, file actions, link existing and already-linked file scenarios
+4. **Notifications (50%)** - Email preference toggles, real-time badge delivery
+5. **Contact List (52%)** - Bulk user add validation, duplicate email, approver duplicate handling
+6. **Transactions List (62%)** - Org tab notification badges, history table features, drafts table sort and pagination
 7. **Login (65%)** - Remaining gaps are mostly organization login validation and error flows

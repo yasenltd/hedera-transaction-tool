@@ -87,6 +87,11 @@ test.describe('Organization Settings (General) tests @organization-basic', () =>
     expect(isContactListVisibleAfterSwitch).toBe(true);
   });
 
+  test('Verify contact list menu item navigates to /contact-list', async () => {
+    await organizationPage.clickOnContactListButton();
+    await expect.poll(() => window.url()).toContain('/contact-list');
+  });
+
   test('Verify default organization can be selected from dropdown', async () => {
     await organizationPage.selectPersonalMode();
     await settingsPage.clickOnSettingsButton();

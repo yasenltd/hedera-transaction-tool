@@ -153,6 +153,7 @@ test.describe('Organization Contact List tests @organization-basic', () => {
     await contactListPage.addNewUser(newUserEmail);
     await contactListPage.clickOnAccountInContactListByEmail(newUserEmail);
     await contactListPage.clickOnRemoveContactButton();
+    expect(await contactListPage.isConfirmRemoveContactButtonVisible()).toBe(true);
     await contactListPage.clickOnConfirmRemoveContactButton();
     const isUsedDeleted = await contactListPage.isUserDeleted(newUserEmail);
     expect(isUsedDeleted).toBe(true);

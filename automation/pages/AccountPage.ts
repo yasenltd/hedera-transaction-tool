@@ -203,6 +203,10 @@ export class AccountPage extends BasePage {
     await this.click(this.linkAccountButtonSelector);
   }
 
+  async isLinkAccountButtonDisabled() {
+    return await this.isDisabled(this.linkAccountButtonSelector);
+  }
+
   async isUnlinkedAccountsListEmpty() {
     return this.unlikedAccounts.length === 0;
   }

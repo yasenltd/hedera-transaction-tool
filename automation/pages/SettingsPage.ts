@@ -21,6 +21,7 @@ export class SettingsPage extends BasePage {
   defaultMaxTransactionFeeInputSelector = 'input-default-max-transaction-fee';
   keyPairNicknameInputSelector = 'input-key-pair-nickname';
   mirrorNodeBaseURLInputSelector = 'input-mirror-node-base-url';
+  encryptPasswordInputSelector = 'input-encrypt-password';
   defaultOrganizationDropdownSelector = 'dropdown-default-organization';
   dateTimeFormatDropdownSelector = 'dropdown-date-time-format';
 
@@ -43,6 +44,7 @@ export class SettingsPage extends BasePage {
   continueIndexButtonSelector = 'button-continue-index';
   continueNicknameButtonSelector = 'button-continue-nickname';
   continuePhraseButtonSelector = 'button-continue-phrase';
+  continueEncryptPasswordButtonSelector = 'button-continue-encrypt-password';
   importButtonSelector = 'button-restore-dropdown';
   ed25519ImportLinkSelector = 'link-import-ed25519-key';
   ecdsaImportLinkSelector = 'link-import-ecdsa-key';
@@ -59,9 +61,14 @@ export class SettingsPage extends BasePage {
   confirmNicknameChangeButtonSelector = 'button-confirm-update-nickname';
   dateTimeFormatUtcOptionSelector = 'select-item-utc-time';
   dateTimeFormatLocalOptionSelector = 'select-item-local-time';
+  allKeysTabSelector = 'tab-All';
+  privateKeyFilterTabSelector = 'tab-Imported from Private Key';
+  recoveryPhraseFilterDropdownSelector = 'dropdown-recovery-phrase-filter';
+  appVersionValueSelector = 'app-version-value';
 
   // Text
   decryptedPrivateKeySelector = 'span-private-key-0';
+  invalidPasswordMessageSelector = 'css=.invalid-feedback:has-text("Invalid password")';
 
   // Input
   selectAllKeysCheckboxSelector = 'checkbox-select-all-keys';
@@ -72,6 +79,9 @@ export class SettingsPage extends BasePage {
   accountIdCellSelectorPrefix = 'cell-account-';
   keyTypeCellSelectorPrefix = 'cell-key-type-';
   publicKeyCellSelectorPrefix = 'span-public-key-';
+  copyPublicKeyButtonSelectorPrefix = 'span-copy-public-key-';
+  copyPrivateKeyButtonSelectorPrefix = 'span-copy-private-key-';
+  keyCheckboxPrefixSelector = 'checkbox-multiple-keys-id-';
 
   async verifySettingsElements(): Promise<boolean> {
     const checks = await Promise.all([
@@ -127,12 +137,40 @@ export class SettingsPage extends BasePage {
     await this.click(this.settingsButtonSelector);
   }
 
+  async clickOnGeneralTab(): Promise<void> {
+    await this.click(this.generalTabButtonSelector);
+  }
+
   async clickOnKeysTab(): Promise<void> {
     await this.click(this.keysTabButtonSelector);
   }
 
   async clickOnProfileTab(): Promise<void> {
     await this.click(this.profileTabButtonSelector);
+  }
+
+  async clickOnDarkThemeTab(): Promise<void> {
+    await this.click(this.darkTabButtonSelector);
+  }
+
+  async clickOnLightThemeTab(): Promise<void> {
+    await this.click(this.lightTabButtonSelector);
+  }
+
+  async isDarkThemeTabActive(): Promise<boolean> {
+    return await this.isElementActive(this.darkTabButtonSelector);
+  }
+
+  async isLightThemeTabActive(): Promise<boolean> {
+    return await this.isElementActive(this.lightTabButtonSelector);
+  }
+
+  async isAppVersionVisible(): Promise<boolean> {
+    return await this.isElementVisible(this.appVersionValueSelector);
+  }
+
+  async getAppVersionText(): Promise<string> {
+    return ((await this.getText(this.appVersionValueSelector)) ?? '').trim();
   }
 
   async clickOnRestoreButton(): Promise<void> {
@@ -157,7 +195,11 @@ export class SettingsPage extends BasePage {
   }
 
   async clickOnDeleteKeyAllButton(): Promise<void> {
-    await this.click(this.deleteKeyAllButton)
+    await this.click(this.deleteKeyAllButton);
+  }
+
+  async isDeleteKeyAllButtonVisible(): Promise<boolean> {
+    return await this.isElementVisible(this.deleteKeyAllButton);
   }
 
   async fillInIndex(index = 1): Promise<void> {
@@ -216,6 +258,10 @@ export class SettingsPage extends BasePage {
     await this.click(this.selectAllKeysCheckboxSelector);
   }
 
+  async clickOnKeyCheckboxByIndex(index: number): Promise<void> {
+    await this.click(this.keyCheckboxPrefixSelector + index);
+  }
+
   async fillInMirrorNodeBaseURL(mirrorNodeBaseURL: string): Promise<void> {
     await this.fill(this.mirrorNodeBaseURLInputSelector, mirrorNodeBaseURL);
   }
@@ -249,17 +295,22 @@ export class SettingsPage extends BasePage {
     await this.fill(this.ed25519PNicknameInputSelector, ecdsaNickname);
   }
 
-  async clickOnECDSAImportButton(): Promise<void> {
+  async clickOnECDSAImportButton(expectModalToClose = true): Promise<void> {
     await this.click(this.ecdsaImportButtonSelector);
-    if (!(await this.isElementHidden(this.ecdsaImportButtonSelector, null, this.LONG_TIMEOUT))) {
+    if (
+      expectModalToClose &&
+      !(await this.isElementHidden(this.ecdsaImportButtonSelector, null, this.LONG_TIMEOUT))
+    ) {
       throw new Error('Import modal did not close within 10 seconds');
     }
-
   }
 
-  async clickOnED25519ImportButton(): Promise<void> {
+  async clickOnED25519ImportButton(expectModalToClose = true): Promise<void> {
     await this.click(this.ed25519ImportButtonSelector);
-    if (!(await this.isElementHidden(this.ed25519ImportButtonSelector, null, this.LONG_TIMEOUT))) {
+    if (
+      expectModalToClose &&
+      !(await this.isElementHidden(this.ed25519ImportButtonSelector, null, this.LONG_TIMEOUT))
+    ) {
       throw new Error('Import modal did not close within 10 seconds');
     }
   }
@@ -270,6 +321,45 @@ export class SettingsPage extends BasePage {
 
   async getPrivateKeyText(): Promise<string|string[]|null> {
     return await this.getText(this.decryptedPrivateKeySelector);
+  }
+
+  async isPrivateKeyVisible(): Promise<boolean> {
+    return await this.isElementVisible(this.decryptedPrivateKeySelector);
+  }
+
+  async isEncryptPasswordInputVisible(): Promise<boolean> {
+    return await this.isElementVisible(this.encryptPasswordInputSelector);
+  }
+
+  async fillInEncryptPassword(password: string): Promise<void> {
+    await this.fill(this.encryptPasswordInputSelector, password);
+  }
+
+  async clickOnContinueEncryptPasswordButton(): Promise<void> {
+    await this.click(this.continueEncryptPasswordButtonSelector);
+  }
+
+  async clearCachedPersonalPasswordForTesting(): Promise<void> {
+    await this.window.evaluate(() => {
+      type VueAppContainer = HTMLElement & {
+        __vue_app__?: {
+          config?: {
+            globalProperties?: {
+              $pinia?: {
+                _s?: Map<string, { personal?: { password?: string } }>;
+              };
+            };
+          };
+        };
+      };
+
+      const appRoot = document.querySelector('#app') as VueAppContainer | null;
+      const userStore = appRoot?.__vue_app__?.config?.globalProperties?.$pinia?._s?.get('user');
+
+      if (userStore?.personal) {
+        userStore.personal.password = '';
+      }
+    });
   }
 
   async clickOnDeleteButtonAtIndex(index: number): Promise<void> {
@@ -292,13 +382,42 @@ export class SettingsPage extends BasePage {
     await this.click(this.changePasswordButtonSelector);
   }
 
+  async isChangePasswordButtonDisabled(): Promise<boolean> {
+    return await this.isDisabled(this.changePasswordButtonSelector);
+  }
+
+  async getInvalidPasswordMessage(): Promise<string> {
+    return ((await this.getText(this.invalidPasswordMessageSelector)) ?? '').trim();
+  }
+
   async clickOnConfirmChangePassword(): Promise<void> {
     await this.click(this.confirmChangePasswordButtonSelector);
+  }
+
+  async isConfirmChangePasswordButtonVisible(): Promise<boolean> {
+    return await this.isElementVisible(this.confirmChangePasswordButtonSelector);
   }
 
   async clickOnCloseButton(): Promise<void> {
     await this.waitForElementToBeVisible(this.closeButtonSelector, this.LONG_TIMEOUT * 2);
     await this.click(this.closeButtonSelector);
+  }
+
+  async clickOnCopyPublicKeyAtIndex(index: number): Promise<void> {
+    await this.click(this.copyPublicKeyButtonSelectorPrefix + index);
+  }
+
+  async clickOnCopyPrivateKeyAtIndex(index: number): Promise<void> {
+    await this.click(this.copyPrivateKeyButtonSelectorPrefix + index);
+  }
+
+  async clickOnCancelEncryptPasswordButton(): Promise<void> {
+    const passwordInput = this.getElement(this.encryptPasswordInputSelector);
+    await passwordInput.waitFor({ state: 'visible', timeout: this.LONG_TIMEOUT });
+    const modalContent = passwordInput
+      .locator('xpath=ancestor::*[contains(@class,"modal-content")]')
+      .first();
+    await modalContent.getByRole('button', { name: 'Cancel', exact: true }).click();
   }
 
   async clickOnOrganisationsTab(): Promise<void> {
@@ -320,6 +439,23 @@ export class SettingsPage extends BasePage {
 
   async getSelectedDefaultOrganizationLabel(): Promise<string> {
     return ((await this.getText(this.defaultOrganizationDropdownSelector)) ?? '').trim();
+  }
+
+  async clickOnAllKeysFilterTab(): Promise<void> {
+    await this.click(this.allKeysTabSelector);
+  }
+
+  async clickOnPrivateKeyFilterTab(): Promise<void> {
+    await this.click(this.privateKeyFilterTabSelector);
+  }
+
+  async clickOnRecoveryPhraseFilterDropdown(): Promise<void> {
+    await this.click(this.recoveryPhraseFilterDropdownSelector);
+  }
+
+  async selectFirstRecoveryPhraseFilterOption(): Promise<void> {
+    await this.clickOnRecoveryPhraseFilterDropdown();
+    await this.click('css=ul.dropdown-menu.show li.dropdown-item', 0);
   }
 
   async clickOnDateTimeFormatDropdown(): Promise<void> {

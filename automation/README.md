@@ -139,7 +139,12 @@ pnpm report:playwright
 
 - `tests/local-basic/registrationTests.test.ts`
 - `tests/local-basic/loginTests.test.ts`
-- `tests/local-basic/settingsTests.test.ts`
+- `tests/local-basic/accountResetTests.test.ts`
+- `tests/local-basic/registrationFirstTimeTests.test.ts`
+- `tests/local-basic/settingsGeneralTests.test.ts`
+- `tests/local-basic/settingsKeysTests.test.ts`
+- `tests/local-basic/settingsProfileTests.test.ts`
+- `tests/local-basic/transactionsNavigationTests.test.ts`
 
 `@local-transactions`
 

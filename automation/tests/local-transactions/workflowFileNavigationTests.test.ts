@@ -121,6 +121,7 @@ test.describe('Workflow file navigation tests @local-transactions', () => {
   test('Verify clicking on "Add new" and "Create new" navigates the user to create new file transaction page', async () => {
     await filePage.clickOnFilesMenuButton();
     await filePage.clickOnAddNewFileButton();
+    expect(await filePage.areAddNewFileOptionsVisible()).toBe(true);
     await filePage.clickOnCreateNewFileLink();
 
     const transactionHeaderText = await transactionPage.getTransactionTypeHeaderText();
@@ -192,8 +193,12 @@ test.describe('Workflow file navigation tests @local-transactions', () => {
     await filePage.clickOnFilesMenuButton();
     await filePage.clickOnAddNewButtonForFile();
     await filePage.clickOnAddExistingFileLink();
+    expect(await filePage.isLinkFileButtonDisabled()).toBe(true);
+    await filePage.fillInExistingFileId('0.0.invalid');
+    expect(await filePage.isLinkFileButtonDisabled()).toBe(true);
     const fileFromList = await filePage.getFirstFileFromList();
     await filePage.fillInExistingFileId(fileFromList);
+    expect(await filePage.isLinkFileButtonDisabled()).toBe(false);
     await filePage.clickOnLinkFileButton();
     await accountPage.clickOnAccountsLink();
     await filePage.clickOnFilesMenuButton();

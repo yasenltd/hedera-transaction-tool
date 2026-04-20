@@ -100,6 +100,10 @@ export class ContactListPage extends BasePage {
     await this.click(this.confirmRemovingContactButtonSelector);
   }
 
+  async isConfirmRemoveContactButtonVisible() {
+    return await this.isElementVisible(this.confirmRemovingContactButtonSelector);
+  }
+
   async upgradeUserToAdmin(email: string) {
     return await upgradeUserToAdmin(email);
   }

@@ -125,7 +125,6 @@ test.describe('Workflow account navigation tests @local-transactions', () => {
     await accountPage.clickOnAccountsLink();
     await accountPage.clickOnAddNewButton();
     await accountPage.clickOnCreateNewLink();
-
     const isSignAndSubmitButtonVisible = await transactionPage.isSignAndSubmitButtonVisible();
     expect(isSignAndSubmitButtonVisible).toBe(true);
   });
@@ -138,10 +137,8 @@ test.describe('Workflow account navigation tests @local-transactions', () => {
     await accountPage.clickOnAccountsLink();
     await accountPage.clickOnEditButton();
     await accountPage.clickOnUpdateInNetworkLink();
-
     const isSignAndSubmitButtonVisible = await transactionPage.isSignAndSubmitButtonVisible();
     expect(isSignAndSubmitButtonVisible).toBe(true);
-
     const isAccountIdPrefilled = await transactionPage.getPrefilledAccountIdInUpdatePage();
     expect(isAccountIdPrefilled).toContain(accountFromList);
   });
@@ -186,11 +183,12 @@ test.describe('Workflow account navigation tests @local-transactions', () => {
     await accountPage.clickOnAccountsLink();
     await accountPage.clickOnAddNewButton();
     await accountPage.clickOnAddExistingLink();
+    expect(await accountPage.isLinkAccountButtonDisabled()).toBe(true);
     await accountPage.fillInExistingAccountId(accountFromList);
+    expect(await accountPage.isLinkAccountButtonDisabled()).toBe(false);
     await accountPage.clickOnLinkAccountButton();
     await transactionPage.clickOnTransactionsMenuButton();
     await accountPage.clickOnAccountsLink();
-
     const isAccountCardVisible = await transactionPage.isAccountCardVisible(accountFromList);
     expect(isAccountCardVisible).toBe(true);
   });

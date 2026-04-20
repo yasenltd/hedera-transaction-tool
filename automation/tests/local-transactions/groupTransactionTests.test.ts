@@ -48,6 +48,8 @@ test.describe('Group transaction tests @local-transactions', () => {
   test('Verify group transaction elements', async () => {
     const isAllElementsPresent = await groupPage.verifyGroupElements();
     expect(isAllElementsPresent).toBe(true);
+    expect(await groupPage.isEmptyTransactionTextVisible()).toBe(true);
+    expect(await groupPage.getEmptyTransactionText()).toContain('There are no Transactions');
   });
 
   test('Verify that empty group and empty transaction is not saved', async () => {
@@ -153,6 +155,17 @@ test.describe('Group transaction tests @local-transactions', () => {
     //verifying that the transaction is deleted
     expect(await groupPage.isEmptyTransactionTextVisible()).toBe(true);
     expect(await groupPage.isTransactionHidden(0)).toBe(true);
+  });
+
+  test('Verify cancelling "Delete All" keeps all transactions in the group', async () => {
+    await groupPage.addSingleTransactionToGroup(2);
+
+    await groupPage.clickOnDeleteAllButton();
+    await groupPage.clickOnCancelDeleteAllButton();
+
+    expect(await groupPage.isEmptyTransactionTextVisible()).toBe(false);
+    expect(await groupPage.getTransactionType(0)).toBe('Account Create Transaction');
+    expect(await groupPage.getTransactionType(1)).toBe('Account Create Transaction');
   });
 
   test('Verify user can save a transaction group', async () => {
