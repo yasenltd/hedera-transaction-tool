@@ -21,6 +21,8 @@ export class SettingsPage extends BasePage {
   defaultMaxTransactionFeeInputSelector = 'input-default-max-transaction-fee';
   keyPairNicknameInputSelector = 'input-key-pair-nickname';
   mirrorNodeBaseURLInputSelector = 'input-mirror-node-base-url';
+  defaultOrganizationDropdownSelector = 'dropdown-default-organization';
+  dateTimeFormatDropdownSelector = 'dropdown-date-time-format';
 
   // Buttons
   settingsButtonSelector = 'button-menu-settings';
@@ -32,7 +34,7 @@ export class SettingsPage extends BasePage {
   testnetTabButtonSelector = 'tab-network-testnet';
   previewnetTabButtonSelector = 'tab-network-previewnet';
   localNodeTabButtonSelector = 'tab-network-local-node';
-  customNodeTabButtonSelector = 'tab-network-custom-node';
+  customNodeTabButtonSelector = 'tab-network-custom';
   darkTabButtonSelector = 'tab-appearance-dark';
   lightTabButtonSelector = 'tab-appearance-light';
   systemTabButtonSelector = 'tab-appearance-system';
@@ -55,6 +57,8 @@ export class SettingsPage extends BasePage {
   closeButtonSelector = 'button-close';
   changeKeyNicknameButtonSelector = 'button-change-key-nickname';
   confirmNicknameChangeButtonSelector = 'button-confirm-update-nickname';
+  dateTimeFormatUtcOptionSelector = 'select-item-utc-time';
+  dateTimeFormatLocalOptionSelector = 'select-item-local-time';
 
   // Text
   decryptedPrivateKeySelector = 'span-private-key-0';
@@ -192,6 +196,10 @@ export class SettingsPage extends BasePage {
     await this.click(this.customNodeTabButtonSelector);
   }
 
+  async isCustomNodeTabActive(): Promise<boolean> {
+    return await this.isElementActive(this.customNodeTabButtonSelector);
+  }
+
   async clickOnImportButton(): Promise<void> {
     await this.click(this.importButtonSelector);
   }
@@ -210,6 +218,19 @@ export class SettingsPage extends BasePage {
 
   async fillInMirrorNodeBaseURL(mirrorNodeBaseURL: string): Promise<void> {
     await this.fill(this.mirrorNodeBaseURLInputSelector, mirrorNodeBaseURL);
+  }
+
+  async applyMirrorNodeBaseURL(): Promise<void> {
+    await this.click(this.mirrorNodeBaseURLInputSelector);
+    await this.pressKey('Tab');
+  }
+
+  async isMirrorNodeBaseURLInputVisible(): Promise<boolean> {
+    return await this.isElementVisible(this.mirrorNodeBaseURLInputSelector);
+  }
+
+  async getMirrorNodeBaseURL(): Promise<string> {
+    return await this.getTextFromInputField(this.mirrorNodeBaseURLInputSelector);
   }
 
   async fillInECDSAPrivateKey(ecdsaPrivateKey: string): Promise<void> {
@@ -288,6 +309,37 @@ export class SettingsPage extends BasePage {
     await this.fill(this.defaultMaxTransactionFeeInputSelector, fee);
   }
 
+  async clickOnDefaultOrganizationDropdown(): Promise<void> {
+    await this.click(this.defaultOrganizationDropdownSelector);
+  }
+
+  async selectDefaultOrganizationByLabel(label: string): Promise<void> {
+    await this.clickOnDefaultOrganizationDropdown();
+    await this.click(this.getVisibleDropdownItemByLabelSelector(label));
+  }
+
+  async getSelectedDefaultOrganizationLabel(): Promise<string> {
+    return ((await this.getText(this.defaultOrganizationDropdownSelector)) ?? '').trim();
+  }
+
+  async clickOnDateTimeFormatDropdown(): Promise<void> {
+    await this.click(this.dateTimeFormatDropdownSelector);
+  }
+
+  async selectDateTimeFormatLocalTime(): Promise<void> {
+    await this.clickOnDateTimeFormatDropdown();
+    await this.click(this.dateTimeFormatLocalOptionSelector);
+  }
+
+  async selectDateTimeFormatUtcTime(): Promise<void> {
+    await this.clickOnDateTimeFormatDropdown();
+    await this.click(this.dateTimeFormatUtcOptionSelector);
+  }
+
+  async getSelectedDateTimeFormatLabel(): Promise<string> {
+    return ((await this.getText(this.dateTimeFormatDropdownSelector)) ?? '').trim();
+  }
+
   async clickOnChangeKeyNicknameButton(index: number|null): Promise<void> {
     await this.click(this.changeKeyNicknameButtonSelector, index);
   }
@@ -304,6 +356,11 @@ export class SettingsPage extends BasePage {
     await this.clickOnChangeKeyNicknameButton(0);
     await this.fillInKeyPairNickname(nickname);
     await this.clickOnConfirmNicknameChangeButton();
+  }
+
+  private getVisibleDropdownItemByLabelSelector(label: string): string {
+    const escapedLabel = label.replace(/"/g, '\\"');
+    return `css=ul.dropdown-menu.show li.dropdown-item:has-text("${escapedLabel}")`;
   }
 
   async navigateToLogout(resetFunction: (() => Promise<void>) | null = null): Promise<void> {

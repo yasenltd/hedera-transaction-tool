@@ -17,12 +17,12 @@ This document enumerates all user-facing scenarios in the Hedera Transaction Too
 | ----- | ---------------------------------------------------------------- | --------- | -------------------------------------------------------- |
 | 1.1.1 | All registration page elements are displayed correctly           | Yes       | Verify all elements are present on the registration page |
 | 1.1.2 | User can register with valid email and strong password           | Yes       | Verify successful registration through "Create New" flow |
-| 1.1.3 | Password strength tooltip shows real-time feedback (>= 10 chars) | No        |                                                          |
-| 1.1.4 | Registration fails when passwords do not match                   | No        |                                                          |
-| 1.1.5 | Registration fails with invalid email format                     | No        |                                                          |
-| 1.1.6 | Registration fails with weak password (< 10 characters)          | No        |                                                          |
-| 1.1.7 | Register button is disabled until all validations pass           | No        |                                                          |
-| 1.1.8 | "Keep me logged in" checkbox is available during registration    | No        |                                                          |
+| 1.1.3 | Password strength tooltip shows real-time feedback (>= 10 chars) | Yes       | 1.1.3 Password strength tooltip shows real-time feedback (>= 10 chars) |
+| 1.1.4 | Registration fails when passwords do not match                   | Yes       | 1.1.4 Registration fails when passwords do not match     |
+| 1.1.5 | Registration fails with invalid email format                     | Yes       | 1.1.5 Registration fails with invalid email format       |
+| 1.1.6 | Registration fails with weak password (< 10 characters)          | Yes       | 1.1.6 Registration fails with weak password (< 10 characters) |
+| 1.1.7 | Register button is disabled until all validations pass           | Yes       | 1.1.7 Register button is disabled until all validations pass |
+| 1.1.8 | "Keep me logged in" checkbox is available during registration    | Yes       | 1.1.8 "Keep me logged in" checkbox is available during registration |
 
 ### 1.2 Account Setup Wizard (Post-Registration)
 
@@ -39,7 +39,7 @@ This document enumerates all user-facing scenarios in the Hedera Transaction Too
 | 1.2.9  | Final step displays key nickname, type, and public key               | Yes       | Verify final step of account setup has all correct elements                  |
 | 1.2.10 | Key pair saved successfully toast appears on completion              | Yes       | Verify successful registration through "Create New" flow                     |
 | 1.2.11 | User and key pair are persisted in the database                      | Yes       | Verify user is stored in the database after registration                     |
-| 1.2.12 | User is redirected to transactions after setup completes             | No        |                                                                              |
+| 1.2.12 | User is redirected to transactions after setup completes             | Yes       | Covered by existing tests: Verify successful registration through "Create New" flow / Verify successful registration through "Import Existing" flow |
 
 ### 1.3 Keychain Registration
 
@@ -60,17 +60,17 @@ This document enumerates all user-facing scenarios in the Hedera Transaction Too
 | 2.1.2 | User can sign in with valid credentials                     | Yes       | Verify successful login                                          |
 | 2.1.3 | Login fails with invalid email format (error message shown) | Yes       | Verify that login with incorrect email shows an error message    |
 | 2.1.4 | Login fails with wrong password (error message shown)       | Yes       | Verify that login with incorrect password shows an error message |
-| 2.1.5 | "Keep me logged in" checkbox persists session               | No        |                                                                  |
-| 2.1.6 | User is redirected to transactions after successful login   | No        |                                                                  |
+| 2.1.5 | "Keep me logged in" checkbox persists session               | Yes       | Verify "Keep me logged in" checkbox persists session             |
+| 2.1.6 | User is redirected to transactions after successful login   | Yes       | Covered by existing test: Verify successful login                |
 
 ### 2.2 Account Reset
 
 | #     | Scenario                                          | Automated | Covered By               |
 | ----- | ------------------------------------------------- | --------- | ------------------------ |
-| 2.2.1 | "Reset account" link is visible on login screen   | No        |                          |
-| 2.2.2 | Reset data modal appears on click                 | No        |                          |
-| 2.2.3 | User data is cleared after confirming reset       | Yes       | Verify resetting account |
-| 2.2.4 | User is returned to registration mode after reset | No        |                          |
+| 2.2.1 | "Reset account" link is visible on login screen   | Yes       | 2.2.1 "Reset account" link is visible on login screen |
+| 2.2.2 | Reset data modal appears on click                 | Yes       | 2.2.2 Reset data modal appears on click |
+| 2.2.3 | User data is cleared after confirming reset       | Yes       | 2.2.3 User data is cleared after confirming reset |
+| 2.2.4 | User is returned to registration mode after reset | Yes       | 2.2.4 User is returned to registration mode after reset |
 
 ### 2.3 Organization Login
 
@@ -98,7 +98,7 @@ This document enumerates all user-facing scenarios in the Hedera Transaction Too
 | 3.1.1.2 | User can switch to Testnet                                                           | Yes       | Verify that all elements in settings page are present |
 | 3.1.1.3 | User can switch to Previewnet                                                        | Yes       | Verify that all elements in settings page are present |
 | 3.1.1.4 | User can switch to Local-Node                                                        | Yes       | Verify that all elements in settings page are present |
-| 3.1.1.5 | User can switch to Custom and enter mirror node base URL                             | No        |                                                       |
+| 3.1.1.5 | User can switch to Custom and enter mirror node base URL                             | Yes       | Verify user can switch to Custom and enter mirror node base URL |
 
 #### 3.1.2 Appearance Settings
 
@@ -114,8 +114,8 @@ This document enumerates all user-facing scenarios in the Hedera Transaction Too
 | ------- | ------------------------------------------------------------- | --------- | ------------------------------------- |
 | 3.1.3.1 | Max transaction fee can be set and persists                   | Yes       | Verify user can set global max tx fee |
 | 3.1.3.2 | Max transaction fee is reflected on transaction creation form | Yes       | Verify user can set global max tx fee |
-| 3.1.3.3 | Default organization can be selected from dropdown            | No        |                                       |
-| 3.1.3.4 | Date/time display format preference can be changed            | No        |                                       |
+| 3.1.3.3 | Default organization can be selected from dropdown            | Yes       | Verify default organization can be selected from dropdown |
+| 3.1.3.4 | Date/time display format preference can be changed            | Yes       | Verify date/time display format preference can be changed |
 
 #### 3.1.4 App Info
 
@@ -907,9 +907,9 @@ This document enumerates all user-facing scenarios in the Hedera Transaction Too
 
 | Area                            | Total Scenarios | Automated | Manual  | Coverage % |
 | ------------------------------- | --------------- | --------- | ------- | ---------- |
-| 1. Registration                 | 22              | 13        | 9       | 59%        |
-| 2. Login                        | 17              | 6         | 11      | 35%        |
-| 3. Settings                     | 78              | 35        | 43      | 45%        |
+| 1. Registration                 | 22              | 20        | 2       | 91%        |
+| 2. Login                        | 17              | 11        | 6       | 65%        |
+| 3. Settings                     | 78              | 38        | 40      | 49%        |
 | 4. Transactions List            | 34              | 15        | 19      | 44%        |
 | 5. Transaction Creation         | 101             | 65        | 36      | 64%        |
 | 6. Transaction Details          | 26              | 23        | 3       | 88%        |
@@ -922,7 +922,7 @@ This document enumerates all user-facing scenarios in the Hedera Transaction Too
 | 13. Navigation and Layout       | 12              | 7         | 5       | 58%        |
 | 14. Error Handling / Edge Cases | 17              | 4         | 13      | 24%        |
 | 15. Upgrade                     | 3               | 0         | 3       | 0%         |
-| **Total**                       | **471**         | **264**   | **207** | **56%**    |
+| **Total**                       | **471**         | **279**   | **192** | **59%**    |
 
 ### Release Testing Guide
 
@@ -934,8 +934,7 @@ These scenarios directly affect user access, data integrity, and core functional
 
 | Area                       | Scenarios                | Why Critical                                                          |
 | -------------------------- | ------------------------ | --------------------------------------------------------------------- |
-| **Login & Auth**           | 2.1.5-2.1.6, 2.3.1-2.3.7 | Users cannot access the application if login/auth is broken           |
-| **Registration**           | 1.1.3-1.1.8, 1.2.12      | New users cannot onboard if registration validation or redirect fails |
+| **Login & Auth**           | 2.3.1-2.3.7              | Users cannot access the application if login/auth is broken           |
 | **Transaction Validation** | 14.5.3-14.5.5            | Data loss or incorrect transactions if validation fails               |
 
 #### Tier 2 - High Priority (Should Pass)
@@ -944,7 +943,6 @@ These scenarios affect important workflows that users rely on regularly. Failure
 
 | Area                             | Scenarios                                 | Why Important                                                            |
 | -------------------------------- | ----------------------------------------- | ------------------------------------------------------------------------ |
-| **Settings Persistence**         | 3.1.1.5, 3.1.3.3-3.1.3.4                  | Settings lost on reload degrade user experience                          |
 | **Key Management**               | 3.2.2, 3.2.4-3.2.5, 3.2.9, 3.2.15, 3.2.18 | Key operations are security-critical                                     |
 | **Transaction Lists (Personal)** | 4.1.1-4.1.5, 4.3.1-4.3.3                  | Users cannot navigate or find transactions                               |
 | **Transaction Lists (Org)**      | 4.2.2-4.2.3, 4.5.8-4.5.9                  | Org workflow visibility and filtering affects collaboration              |
@@ -984,7 +982,7 @@ These scenarios cover edge cases and error handling. Verify periodically or afte
 1. **Upgrade (0%)** - Update notifications, version enforcement for org features, version status badges
 2. **Error Handling / Edge Cases (24%)** - Network failures, validation edge cases, form limits
 3. **Files (24%)** - File list sorting, file details panel, file actions, link existing and already-linked file scenarios
-4. **Login (35%)** - Negative cases, session persistence, org login error flows
-5. **Transactions List (44%)** - Personal mode options, org tab notification badges, history table features, drafts table sort and pagination
-6. **Contact List (48%)** - Bulk user add validation, duplicate email, approver duplicate handling
-7. **Notifications (50%)** - Email preference toggles, real-time badge delivery
+4. **Transactions List (44%)** - Personal mode options, org tab notification badges, history table features, drafts table sort and pagination
+5. **Contact List (48%)** - Bulk user add validation, duplicate email, approver duplicate handling
+6. **Notifications (50%)** - Email preference toggles, real-time badge delivery
+7. **Login (65%)** - Remaining gaps are mostly organization login validation and error flows

@@ -87,6 +87,19 @@ test.describe('Organization Settings (General) tests @organization-basic', () =>
     expect(isContactListVisibleAfterSwitch).toBe(true);
   });
 
+  test('Verify default organization can be selected from dropdown', async () => {
+    await organizationPage.selectPersonalMode();
+    await settingsPage.clickOnSettingsButton();
+
+    await settingsPage.selectDefaultOrganizationByLabel('None');
+    expect(await settingsPage.getSelectedDefaultOrganizationLabel()).toContain('None');
+
+    await settingsPage.selectDefaultOrganizationByLabel(organizationNickname);
+    expect(await settingsPage.getSelectedDefaultOrganizationLabel()).toContain(
+      organizationNickname,
+    );
+  });
+
   test('Verify user can edit organization nickname', async () => {
     await settingsPage.clickOnSettingsButton();
     await settingsPage.clickOnOrganisationsTab();

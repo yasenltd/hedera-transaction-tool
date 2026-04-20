@@ -6,6 +6,7 @@ import {
 import { closeApp, setupApp } from '../../utils/runtime/appSession.js';
 import { RegistrationPage } from '../../pages/RegistrationPage.js';
 import { LoginPage } from '../../pages/LoginPage.js';
+import { TransactionPage } from '../../pages/TransactionPage.js';
 import {
   activateTestIsolation,
   cleanupIsolation,
@@ -19,6 +20,7 @@ let window: Page;
 let globalCredentials = { email: '', password: '' };
 let registrationPage: RegistrationPage;
 let loginPage: LoginPage;
+let transactionPage: TransactionPage;
 let isolationContext: ActivatedTestIsolationContext | null = null;
 
 test.describe('Registration tests @local-basic', () => {
@@ -32,6 +34,7 @@ test.describe('Registration tests @local-basic', () => {
     ({ app, window } = await setupApp());
     registrationPage = new RegistrationPage(window);
     loginPage = new LoginPage(window);
+    transactionPage = new TransactionPage(window);
     await loginPage.assertRegistrationMode('registration test bootstrap');
   });
 
@@ -323,6 +326,7 @@ test.describe('Registration tests @local-basic', () => {
 
     const toastMessage = await registrationPage.getToastMessage();
     expect(toastMessage).toBe('Key Pair saved successfully');
+    expect(await transactionPage.isCreateNewTransactionButtonVisible()).toBe(true);
   });
 
   test('Verify successful registration through "Import Existing" flow', async () => {
@@ -354,6 +358,7 @@ test.describe('Registration tests @local-basic', () => {
 
     const toastMessage = await registrationPage.getToastMessage();
     expect(toastMessage).toBe('Key Pair saved successfully');
+    expect(await transactionPage.isCreateNewTransactionButtonVisible()).toBe(true);
   });
 
   test('Verify user is stored in the database after registration', async () => {

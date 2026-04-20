@@ -258,6 +258,10 @@ export class TransactionPage extends BasePage {
     }
   }
 
+  async isCreateNewTransactionButtonVisible(timeout: number = this.DEFAULT_TIMEOUT) {
+    return await this.isElementVisible(this.createNewTransactionButtonSelector, null, timeout);
+  }
+
   async clickOnImportButton() {
     await this.click(this.importButtonSelector);
   }

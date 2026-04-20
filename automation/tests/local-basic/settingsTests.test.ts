@@ -49,6 +49,20 @@ test.describe('Settings tests @local-basic', () => {
     expect(allElementsVisible).toBe(true);
   });
 
+  test('Verify user can switch to Custom and enter mirror node base URL', async () => {
+    const customMirrorNodeBaseURL = 'https://mainnet-public.mirrornode.hedera.com:443/';
+
+    await settingsPage.clickOnCustomNodeTab();
+    expect(await settingsPage.isCustomNodeTabActive()).toBe(true);
+    expect(await settingsPage.isMirrorNodeBaseURLInputVisible()).toBe(true);
+
+    await settingsPage.fillInMirrorNodeBaseURL(customMirrorNodeBaseURL);
+    await settingsPage.applyMirrorNodeBaseURL();
+
+    const mirrorNodeBaseURL = await settingsPage.getMirrorNodeBaseURL();
+    expect(mirrorNodeBaseURL).toBe('mainnet-public.mirrornode.hedera.com');
+  });
+
   test('Verify user can decrypt private key', async () => {
     await settingsPage.clickOnKeysTab();
 
@@ -210,5 +224,13 @@ test.describe('Settings tests @local-basic', () => {
     const transactionFee = await transactionPage.getMaxTransactionFee();
 
     expect(transactionFee).toBe(maxTransactionFee);
+  });
+
+  test('Verify date/time display format preference can be changed', async () => {
+    await settingsPage.selectDateTimeFormatLocalTime();
+    expect(await settingsPage.getSelectedDateTimeFormatLabel()).toContain('Local Time');
+
+    await settingsPage.selectDateTimeFormatUtcTime();
+    expect(await settingsPage.getSelectedDateTimeFormatLabel()).toContain('UTC Time');
   });
 });

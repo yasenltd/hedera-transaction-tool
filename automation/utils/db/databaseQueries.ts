@@ -107,8 +107,13 @@ export async function verifyUserExists(email: string) {
         SELECT *
         FROM User
         WHERE email = ?`;
-  const user = await queryDatabase(query, [email]);
-  return user !== undefined;
+  try {
+    const user = await queryDatabase(query, [email]);
+    return user !== undefined;
+  } catch (error) {
+    console.error('Error verifying user:', error);
+    return false;
+  }
 }
 
 /**
