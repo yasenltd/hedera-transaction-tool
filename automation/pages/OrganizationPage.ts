@@ -118,6 +118,7 @@ export class OrganizationPage extends BasePage {
   discardGroupModalButtonSelector = 'button-discard-group-modal';
   discardDraftForGroupModalButtonSelector = 'button-discard-draft-for-group-modal';
   deleteGroupModalButtonSelector = 'button-delete-group-modal';
+  forgotPasswordLinkSelector = 'css=.form-login .link-primary.cursor-pointer';
   // Inputs
   organizationNicknameInputSelector = 'input-organization-nickname';
   serverUrlInputSelector = 'input-server-url';
@@ -126,6 +127,10 @@ export class OrganizationPage extends BasePage {
   passwordForOrganizationInputSelector = 'input-login-password-for-organization';
   editOrganizationNicknameInputSelector = 'input-edit-nickname';
   // Texts
+  organizationLoginTitleSelector = 'css=.container-dark-border h4.text-title';
+  organizationLoginNicknameSelector = 'css=.container-dark-border .text-pink';
+  organizationLoginInvalidFeedbackSelector = 'css=.form-login .invalid-feedback';
+  forgotPasswordModalTitleSelector = 'css=.modal-content h3';
   organizationNicknameTextSelector = 'span-organization-nickname';
   transactionDetailsIdSelector = 'p-transaction-details-id';
   transactionValidStartSelector = 'p-transaction-details-valid-start';
@@ -214,6 +219,55 @@ export class OrganizationPage extends BasePage {
     await this.fill(this.emailForOrganizationInputSelector, email);
     await this.fill(this.passwordForOrganizationInputSelector, password);
     await this.click(this.signInOrganizationButtonSelector);
+  }
+
+  async fillOrganizationLoginEmail(email: string) {
+    await this.fill(this.emailForOrganizationInputSelector, email);
+  }
+
+  async fillOrganizationLoginPassword(password: string) {
+    await this.fill(this.passwordForOrganizationInputSelector, password);
+  }
+
+  async isOrganizationLoginFormVisible() {
+    return await this.isElementVisible(this.emailForOrganizationInputSelector);
+  }
+
+  async getOrganizationLoginTitleText() {
+    return await this.getText(this.organizationLoginTitleSelector);
+  }
+
+  async getOrganizationLoginNicknameText() {
+    return await this.getText(this.organizationLoginNicknameSelector);
+  }
+
+  async isOrganizationSignInButtonDisabled() {
+    return await this.isDisabled(this.signInOrganizationButtonSelector);
+  }
+
+  async getOrganizationLoginEmailErrorMessage() {
+    return await this.getText(this.organizationLoginInvalidFeedbackSelector, 0);
+  }
+
+  async getOrganizationLoginPasswordErrorMessage() {
+    return await this.getText(this.organizationLoginInvalidFeedbackSelector, 1);
+  }
+
+  async clickOnForgotPasswordLink() {
+    await this.click(this.forgotPasswordLinkSelector);
+  }
+
+  async isForgotPasswordModalVisible() {
+    return await this.isElementVisible(this.forgotPasswordModalTitleSelector, null, this.LONG_TIMEOUT);
+  }
+
+  async getForgotPasswordModalTitleText() {
+    return await this.getText(this.forgotPasswordModalTitleSelector);
+  }
+
+  async waitForToastMessage(message: string, timeout: number = this.LONG_TIMEOUT) {
+    const toast = this.window.locator(this.toastMessageSelector).filter({ hasText: message }).last();
+    await toast.waitFor({ state: 'visible', timeout });
   }
 
   async setupOrganization(organizationNickname = 'Test Organization') {

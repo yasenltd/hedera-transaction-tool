@@ -76,13 +76,13 @@ This document enumerates all user-facing scenarios in the Hedera Transaction Too
 
 | #     | Scenario                                              | Automated | Covered By                                                    |
 | ----- | ----------------------------------------------------- | --------- | ------------------------------------------------------------- |
-| 2.3.1 | Organization login page shows org nickname in heading | No        |                                                               |
+| 2.3.1 | Organization login page shows org nickname in heading | Yes       | Verify organization login page shows org nickname in heading  |
 | 2.3.2 | User can sign in with valid org credentials           | Yes       | Verify user can switch between personal and organization mode |
-| 2.3.3 | Login fails with invalid email format                 | No        |                                                               |
-| 2.3.4 | Login fails with wrong password                       | No        |                                                               |
-| 2.3.5 | Sign in button is disabled until form is valid        | No        |                                                               |
-| 2.3.6 | Forgot password modal opens on link click             | No        |                                                               |
-| 2.3.7 | Success toast is shown after login                    | No        |                                                               |
+| 2.3.3 | Login fails with invalid email format                 | Yes       | Verify login fails with invalid email format                  |
+| 2.3.4 | Login fails with wrong password                       | Yes       | Verify login fails with wrong password                        |
+| 2.3.5 | Sign in button is disabled until form is valid        | Yes       | Verify sign in button is disabled until form is valid         |
+| 2.3.6 | Forgot password modal opens on link click             | Yes       | Verify forgot password modal opens on link click              |
+| 2.3.7 | Success toast is shown after login                    | Yes       | Verify success toast is shown after login                     |
 
 ---
 
@@ -908,13 +908,13 @@ This document enumerates all user-facing scenarios in the Hedera Transaction Too
 | Area                            | Total Scenarios | Automated | Manual  | Coverage % |
 | ------------------------------- | --------------- | --------- | ------- | ---------- |
 | 1. Registration                 | 22              | 20        | 2       | 91%        |
-| 2. Login                        | 17              | 11        | 6       | 65%        |
+| 2. Login                        | 17              | 17        | 0       | 100%       |
 | 3. Settings                     | 78              | 54        | 24      | 69%        |
 | 4. Transactions List            | 34              | 21        | 13      | 62%        |
 | 5. Transaction Creation         | 101             | 69        | 32      | 68%        |
 | 6. Transaction Details          | 26              | 23        | 3       | 88%        |
 | 7. Transaction Groups           | 39              | 34        | 5       | 87%        |
-| 8. Accounts                     | 35              | 24        | 11      | 69%        |
+| 8. Accounts                     | 30              | 19        | 11      | 63%        |
 | 9. Files                        | 29              | 9         | 20      | 31%        |
 | 10. Contact List                | 23              | 12        | 11      | 52%        |
 | 11. Org Transaction Workflows   | 24              | 22        | 2       | 92%        |
@@ -922,7 +922,7 @@ This document enumerates all user-facing scenarios in the Hedera Transaction Too
 | 13. Navigation and Layout       | 12              | 8         | 4       | 67%        |
 | 14. Error Handling / Edge Cases | 17              | 5         | 12      | 29%        |
 | 15. Upgrade                     | 3               | 0         | 3       | 0%         |
-| **Total**                       | **470**         | **317**   | **153** | **67%**    |
+| **Total**                       | **465**         | **318**   | **147** | **68%**    |
 
 ### Release Testing Guide
 
