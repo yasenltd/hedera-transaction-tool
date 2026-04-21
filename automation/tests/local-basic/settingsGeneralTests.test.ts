@@ -9,6 +9,8 @@ import {
   teardownLocalSuiteApp,
 } from '../helpers/bootstrap/localSuiteBootstrap.js';
 import type { ActivatedTestIsolationContext } from '../../utils/setup/sharedTestEnvironment.js';
+import { PrivateKey } from '@hiero-ledger/sdk';
+import { RegistrationPage } from '../../pages/RegistrationPage.js';
 
 let app: TransactionToolApp;
 let window: Page;
@@ -16,6 +18,7 @@ const globalCredentials = { email: '', password: '' };
 let loginPage: LoginPage;
 let settingsPage: SettingsPage;
 let transactionPage: TransactionPage;
+let registrationPage: RegistrationPage;
 let isolationContext: ActivatedTestIsolationContext | null = null;
 
 test.describe('Settings general tests @local-basic', () => {
@@ -31,6 +34,7 @@ test.describe('Settings general tests @local-basic', () => {
     loginPage = new LoginPage(window);
     settingsPage = new SettingsPage(window);
     transactionPage = new TransactionPage(window);
+    registrationPage = new RegistrationPage(window);
     const seededUser = await createSeededLocalUserSession(window, loginPage);
     globalCredentials.email = seededUser.email;
     globalCredentials.password = seededUser.password;
@@ -88,5 +92,84 @@ test.describe('Settings general tests @local-basic', () => {
 
     await settingsPage.selectDateTimeFormatUtcTime();
     expect(await settingsPage.getSelectedDateTimeFormatLabel()).toContain('UTC Time');
+  });
+
+  test('Verify organizations empty state and invalid server URL validation', async () => {
+    await settingsPage.clickOnOrganisationsTab();
+    await expect(window.getByText('There are no connected organizations.', { exact: true })).toBeVisible();
+
+    await window.getByRole('button', { name: 'Connect now', exact: true }).click();
+    await window.getByTestId('input-server-url').fill('not-a-url');
+    await window.getByTestId('button-add-organization-in-modal').click();
+
+    const toastText = await registrationPage.getToastMessageByVariant('error');
+    expect(toastText).toContain('Invalid Server URL');
+  });
+
+  test('Verify user can manage public key mappings (import, rename, copy, delete)', async () => {
+    await settingsPage.clickOnPublicKeysTab();
+
+    // Table headers
+    const headers = await window.locator('.table-custom thead th').allTextContents();
+    const headerText = headers.map(h => h.trim()).join(' ');
+    expect(headerText).toContain('Nickname');
+    expect(headerText).toContain('Owner');
+    expect(headerText).toContain('Public Key');
+
+    // Import modal and disabled state
+    await window.getByTestId('button-import-public-dropdown').click();
+    await window.getByTestId('import-single-public-key').click();
+    await expect(window.getByTestId('button-public-key-import')).toBeDisabled();
+
+    // Invalid key shows error
+    await window.getByTestId('input-public-key-mapping').fill('invalid-key');
+    await window.getByTestId('input-public-key-nickname').fill('Bad Key');
+    await expect(window.getByTestId('button-public-key-import')).toBeEnabled();
+    await window.getByTestId('button-public-key-import').click();
+    expect(await registrationPage.getToastMessageByVariant('error')).toContain('Invalid public key!');
+
+    // Import 2 valid mappings (for bulk delete)
+    const key1 = PrivateKey.generateED25519().publicKey.toString();
+    const key2 = PrivateKey.generateED25519().publicKey.toString();
+
+    await window.getByTestId('input-public-key-mapping').fill(key1);
+    await window.getByTestId('input-public-key-nickname').fill('Key One');
+    await window.getByTestId('button-public-key-import').click();
+    expect(await registrationPage.getToastMessageByVariant('success')).toContain('imported successfully');
+
+    await window.getByTestId('button-import-public-dropdown').click();
+    await window.getByTestId('import-single-public-key').click();
+    await window.getByTestId('input-public-key-mapping').fill(key2);
+    await window.getByTestId('input-public-key-nickname').fill('Key Two');
+    await window.getByTestId('button-public-key-import').click();
+    expect(await registrationPage.getToastMessageByVariant('success')).toContain('imported successfully');
+
+    // Copy public key shows success toast
+    await window.getByTestId('span-copy-public-key-0').click();
+    expect(await registrationPage.getToastMessageByVariant('success')).toContain(
+      'Public Key copied successfully',
+    );
+
+    // Rename the first mapping
+    await window.getByTestId('button-change-key-nickname').first().click();
+    await window.getByTestId('input-public-key-nickname').fill('Key One Renamed');
+    await window.getByTestId('button-confirm-update-nickname').click();
+    expect(await registrationPage.getToastMessageByVariant('success')).toContain(
+      'Nickname updated successfully',
+    );
+    expect(await window.getByTestId('cell-public-nickname-0').textContent()).toContain(
+      'Key One Renamed',
+    );
+
+    // Delete a single mapping via the row trash button
+    await window.getByTestId('button-delete-key-1').click();
+    await window.getByTestId('button-delete-public-key-mapping').click();
+    expect(await registrationPage.getToastMessageByVariant('success')).toContain('deleted successfully');
+
+    // Bulk delete remaining via select-all
+    await window.getByTestId('checkbox-select-all-public-keys').click();
+    await window.getByTestId('button-delete-public-all').click();
+    await window.getByTestId('button-delete-public-key-mapping').click();
+    expect(await registrationPage.getToastMessageByVariant('success')).toContain('deleted successfully');
   });
 });

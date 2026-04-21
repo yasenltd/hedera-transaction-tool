@@ -89,6 +89,97 @@ test.describe('Transaction account execution tests @local-transactions', () => {
     expect(await transactionPage.isSignAndSubmitButtonEnabled()).toBe(false);
   });
 
+  test('Verify account create staking validation blocks signing and initial balance resets when exceeding payer balance', async () => {
+    await transactionPage.clickOnCreateNewTransactionButton();
+    await transactionPage.clickOnCreateAccountTransaction();
+    await transactionPage.waitForPublicKeyToBeFilled();
+
+    // Ensure payer info is present so the Initial Balance watcher can clamp the value.
+    const payerAccountId = (await transactionPage.getPayerAccountId()) || '0.0.1002';
+    await transactionPage.fillInPayerAccountId(payerAccountId);
+    await window.getByTestId(transactionPage.payerAccountInputSelector).press('Tab');
+
+    await expect.poll(async () => transactionPage.isSignAndSubmitButtonEnabled()).toBe(true);
+
+    // 5.2.16: Initial balance auto-resets to 0 when it exceeds payer's available balance.
+    const initialBalanceInput = window.getByTestId('input-initial-balance-amount');
+    await initialBalanceInput.fill('999999999999');
+    await initialBalanceInput.press('Tab');
+    await expect.poll(async () => initialBalanceInput.inputValue()).toBe('0');
+
+    // 5.2.15: Invalid Staked Account ID format disables the sign button.
+    await window.getByTestId('dropdown-staking-account').selectOption('Account');
+    const stakeAccountInput = window.getByTestId('input-stake-accountid');
+    await stakeAccountInput.fill('0.0.abc');
+    await stakeAccountInput.press('Tab');
+    await expect.poll(async () => transactionPage.isSignAndSubmitButtonEnabled()).toBe(false);
+
+    // Reset staking -> sign button should re-enable.
+    await window.getByTestId('dropdown-staking-account').selectOption('None');
+    await expect.poll(async () => transactionPage.isSignAndSubmitButtonEnabled()).toBe(true);
+  });
+
+  test('Invalid Account ID error shown when submitting with a malformed account ID', async () => {
+    await transactionPage.ensureAccountExists();
+    const accountFromList = await transactionPage.getFirstAccountFromList();
+
+    await transactionPage.clickOnCreateNewTransactionButton();
+    await transactionPage.clickOnUpdateAccountTransaction();
+
+    // Keep the account fetch valid (base id), but fail format validation on submit.
+    await transactionPage.fillInUpdatedAccountId(`${accountFromList}--bad`);
+    await expect.poll(async () => transactionPage.isSignAndSubmitButtonEnabled()).toBe(true);
+
+    await transactionPage.clickOnSignAndSubmitButton(true);
+    const toast = window.locator('.v-toast__text:visible').last();
+    await expect(toast).toHaveText('Invalid Account ID', { timeout: 15000 });
+  });
+
+  test('Account delete validation blocks submit for deleted accounts and malformed transfer account IDs', async () => {
+    const { newAccountId: accountA } = await transactionPage.createNewAccount({
+      description: 'delete-validation-A',
+    });
+    const { newAccountId: accountB } = await transactionPage.createNewAccount({
+      description: 'delete-validation-B',
+    });
+
+    expect(accountA).toBeTruthy();
+    expect(accountB).toBeTruthy();
+
+    await transactionPage.deleteAccount(accountA!);
+
+    await transactionPage.clickOnCreateNewTransactionButton();
+    await transactionPage.clickOnDeleteAccountTransaction();
+
+    const payerAccountId = (await transactionPage.getPayerAccountId()) || '0.0.1002';
+    await window.getByTestId('input-transfer-account-id').fill(payerAccountId);
+    await window.getByTestId('input-transfer-account-id').press('Tab');
+
+    // 5.4.8 + 5.4.10: Deleted account shows inline warning and blocks submit.
+    await window.getByTestId('input-delete-account-id').fill(accountA!);
+    await window.getByTestId('input-delete-account-id').press('Tab');
+    await expect(window.getByText('Account is already deleted!')).toBeVisible({ timeout: 15000 });
+    await expect.poll(async () => transactionPage.isSignAndSubmitButtonEnabled()).toBe(false);
+
+    // Switch to a non-deleted account so we can exercise transfer-id validation.
+    await transactionPage.fillInDeletedAccountId(accountB!);
+    await expect.poll(async () => transactionPage.isSignAndSubmitButtonEnabled()).toBe(true);
+
+    // 5.4.9: Invalid Transfer Account ID error on submit.
+    await window.getByTestId('input-transfer-account-id').fill(`${accountB}--bad`);
+    await window.getByTestId('input-transfer-account-id').press('Tab');
+    await expect.poll(async () => transactionPage.isSignAndSubmitButtonEnabled()).toBe(true);
+    await transactionPage.clickOnSignAndSubmitButton(true);
+    const toast = window.locator('.v-toast__text:visible').last();
+    await expect(toast).toHaveText('Invalid Transfer Account ID', { timeout: 15000 });
+
+    // 5.4.10: Transfer-to deleted account blocks submit.
+    await window.getByTestId('input-transfer-account-id').fill(accountA!);
+    await window.getByTestId('input-transfer-account-id').press('Tab');
+    await expect(window.getByText('Account is already deleted!')).toBeVisible({ timeout: 15000 });
+    await expect.poll(async () => transactionPage.isSignAndSubmitButtonEnabled()).toBe(false);
+  });
+
   test('Verify confirm transaction modal is displayed with valid information for Account Create tx', async () => {
     await transactionPage.clickOnCreateNewTransactionButton();
     await transactionPage.clickOnCreateAccountTransaction();

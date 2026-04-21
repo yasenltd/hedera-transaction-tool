@@ -30,7 +30,9 @@ export class SettingsPage extends BasePage {
   generalTabButtonSelector = 'tab-0';
   organisationsTabButtonSelector = 'tab-1';
   keysTabButtonSelector = 'tab-2';
+  publicKeysTabButtonSelector = 'tab-3';
   profileTabButtonSelector = 'tab-4';
+  notificationsTabButtonSelector = 'tab-5';
   mainnetTabButtonSelector = 'tab-network-mainnet';
   testnetTabButtonSelector = 'tab-network-testnet';
   previewnetTabButtonSelector = 'tab-network-previewnet';
@@ -145,8 +147,20 @@ export class SettingsPage extends BasePage {
     await this.click(this.keysTabButtonSelector);
   }
 
+  async clickOnPublicKeysTab(): Promise<void> {
+    await this.click(this.publicKeysTabButtonSelector);
+  }
+
   async clickOnProfileTab(): Promise<void> {
     await this.click(this.profileTabButtonSelector);
+  }
+
+  async isNotificationsTabVisible(): Promise<boolean> {
+    return await this.isElementVisible(this.notificationsTabButtonSelector);
+  }
+
+  async clickOnNotificationsTab(): Promise<void> {
+    await this.click(this.notificationsTabButtonSelector);
   }
 
   async clickOnDarkThemeTab(): Promise<void> {

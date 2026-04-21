@@ -7,6 +7,7 @@ import { setupEnvironmentForTransactions } from '../../utils/runtime/environment
 import { AccountPage } from '../../pages/AccountPage.js';
 import { FilePage } from '../../pages/FilePage.js';
 import { createSeededLocalUserSession } from '../../utils/seeding/localUserSeeding.js';
+import { Client, FileDeleteTransaction, PrivateKey } from '@hiero-ledger/sdk';
 import {
   setupLocalSuiteApp,
   teardownLocalSuiteApp,
@@ -21,6 +22,30 @@ let transactionPage: TransactionPage;
 let accountPage: AccountPage;
 let filePage: FilePage;
 let isolationContext: ActivatedTestIsolationContext | null = null;
+let payerPrivateKeyDerHex: string | null = null;
+
+const LOCALNET_OPERATOR_ACCOUNT_ID = '0.0.2';
+// Default localnet operator key for account 0.0.2 (ED25519 PKCS8 DER, hex-encoded).
+// This key is used only to pay for the FileDeleteTransaction; the file admin key signature is added separately.
+const LOCALNET_OPERATOR_PRIVATE_KEY_DER_HEX =
+  '302e020100300506032b65700422042091132178e72057a1d7528025956fe39b0b847f200ab59b2fdd367017f3087137';
+
+async function deleteFileFromNetwork(fileId: string, fileAdminPrivateKeyDerHex: string) {
+  const operatorKey = PrivateKey.fromStringDer(LOCALNET_OPERATOR_PRIVATE_KEY_DER_HEX);
+  const fileAdminKey = PrivateKey.fromStringDer(fileAdminPrivateKeyDerHex);
+
+  const client = Client.forLocalNode();
+  client.setOperator(LOCALNET_OPERATOR_ACCOUNT_ID, operatorKey);
+
+  const signedTx = await new FileDeleteTransaction()
+    .setFileId(fileId)
+    .freezeWith(client)
+    .sign(fileAdminKey);
+
+  const response = await signedTx.execute(client);
+
+  await response.getReceipt(client);
+}
 
 test.describe('Workflow file navigation tests @local-transactions', () => {
   test.beforeAll(async () => {
@@ -39,7 +64,7 @@ test.describe('Workflow file navigation tests @local-transactions', () => {
     accountPage = new AccountPage(window);
     filePage = new FilePage(window);
     transactionPage.generatedAccounts = [];
-    await setupEnvironmentForTransactions(window);
+    payerPrivateKeyDerHex = await setupEnvironmentForTransactions(window);
     await transactionPage.clickOnTransactionsMenuButton();
 
     if (process.env.CI) {
@@ -50,12 +75,22 @@ test.describe('Workflow file navigation tests @local-transactions', () => {
   });
 
   test('Verify file card is visible with valid information', async () => {
-    await transactionPage.ensureFileExists('test');
-    await accountPage.clickOnAccountsLink();
-    await filePage.clickOnFilesMenuButton();
+    const { fileId } = await transactionPage.createFile('test');
+    const createdFileId = fileId ?? '';
+    expect(createdFileId).toBeTruthy();
 
-    const fileId = await filePage.getFileIdText();
-    expect(fileId).toBeTruthy();
+    await accountPage.clickOnAccountsLink(); // ensure we leave tx flow before opening Files
+    await filePage.clickOnFilesMenuButton();
+    await expect.poll(() => filePage.isFileCardVisible(createdFileId)).toBe(true);
+    await filePage.clickOnFileCardByFileId(createdFileId);
+
+    const fileIdText = await filePage.getFileIdText();
+    expect(fileIdText).toBeTruthy();
+
+    // Content should either render inline or provide a "View" button for cached content.
+    const hasInlineContent = await filePage.isDisplayedFileContentVisible();
+    const hasViewButton = await filePage.isViewStoredFileButtonVisible();
+    expect(hasInlineContent || hasViewButton).toBe(true);
 
     const fileSize = await filePage.getFileSizeText();
     expect(fileSize).toBeTruthy();
@@ -77,6 +112,25 @@ test.describe('Workflow file navigation tests @local-transactions', () => {
 
     const fileDescription = await filePage.getFileDescriptionText();
     expect(fileDescription).toBeTruthy();
+
+    // Verify nickname and description can be edited in-place.
+    const newNickname = 'My File Nickname';
+    await filePage.clickOnEditSelectedFileNickname();
+    await filePage.fillSelectedFileNickname(newNickname);
+    await filePage.saveSelectedFileNickname();
+    expect(await filePage.getSelectedFileNicknameText()).toBe(newNickname);
+
+    const newDescription = 'My file description';
+    await filePage.clickOnEditSelectedFileDescription();
+    await filePage.fillSelectedFileDescription(newDescription);
+    await filePage.saveSelectedFileDescription();
+    expect(await filePage.getFileDescriptionText()).toBe(newDescription);
+
+    // 9.2.9: "File is deleted" warning shown for deleted files
+    expect(payerPrivateKeyDerHex).toBeTruthy();
+    await deleteFileFromNetwork(createdFileId, payerPrivateKeyDerHex ?? '');
+    await filePage.clickOnFileCardByFileId(createdFileId);
+    await expect(window.getByTestId('p-file-is-deleted')).toBeVisible({ timeout: 90000 });
   });
 
   test('Verify file card update flow leads to update page with prefilled fileid', async () => {
@@ -175,7 +229,10 @@ test.describe('Workflow file navigation tests @local-transactions', () => {
     await accountPage.clickOnAccountsLink();
     await filePage.clickOnFilesMenuButton();
     await filePage.clickOnSelectManyFilesButton();
+    expect(await filePage.isMultiSelectFileCheckboxVisibleByIndex(0)).toBe(true);
+    expect(await filePage.isRemoveMultipleButtonDisabled()).toBe(true);
     await filePage.clickOnFileCheckbox(fileFromPage);
+    expect(await filePage.isRemoveMultipleButtonDisabled()).toBe(false);
     await filePage.clickOnFileCheckbox(fileId ?? '');
     await filePage.clickOnRemoveMultipleButton();
 
@@ -201,11 +258,16 @@ test.describe('Workflow file navigation tests @local-transactions', () => {
     await filePage.clickOnFilesMenuButton();
     await filePage.clickOnAddNewButtonForFile();
     await filePage.clickOnAddExistingFileLink();
+    expect(await filePage.isExistingFileNicknameInputVisible()).toBe(true);
     expect(await filePage.isLinkFileButtonDisabled()).toBe(true);
     await filePage.fillInExistingFileId('0.0.invalid');
     expect(await filePage.isLinkFileButtonDisabled()).toBe(true);
     const fileFromList = await filePage.getFirstFileFromList();
     await filePage.fillInExistingFileId(fileFromList);
+    const nickname = 'Linked File';
+    const description = 'Linked file description';
+    await filePage.fillInExistingFileNickname(nickname);
+    await filePage.fillInExistingFileDescription(description);
     expect(await filePage.isLinkFileButtonDisabled()).toBe(false);
     await filePage.clickOnLinkFileButton();
     await accountPage.clickOnAccountsLink();
@@ -213,6 +275,65 @@ test.describe('Workflow file navigation tests @local-transactions', () => {
 
     const isFileCardVisible = await filePage.isFileCardVisible(fileFromList);
     expect(isFileCardVisible).toBe(true);
+
+    await filePage.clickOnFileCardByFileId(fileFromList);
+    expect(await filePage.getSelectedFileNicknameText()).toBe(nickname);
+    expect(await filePage.getFileDescriptionText()).toBe(description);
+  });
+
+  test('Verify file list can be sorted by File ID and Nickname', async () => {
+    const { fileId: firstFileId } = await transactionPage.createFile('first');
+    // Ensure different "Date Added" timestamps for stable sort expectations.
+    await new Promise(resolve => setTimeout(resolve, 1100));
+    const { fileId: secondFileId } = await transactionPage.createFile('second');
+    await accountPage.clickOnAccountsLink();
+    await filePage.clickOnFilesMenuButton();
+
+    const fileIdA = firstFileId ?? '';
+    const fileIdB = secondFileId ?? '';
+
+    await filePage.sortByDateAddedAsc();
+    const dateAscIndexA = await filePage.findFileByIndex(fileIdA);
+    const dateAscIndexB = await filePage.findFileByIndex(fileIdB);
+    expect(dateAscIndexA).toBeGreaterThanOrEqual(0);
+    expect(dateAscIndexB).toBeGreaterThanOrEqual(0);
+    expect(dateAscIndexA).toBeLessThan(dateAscIndexB);
+
+    await filePage.sortByDateAddedDesc();
+    const dateDescIndexA = await filePage.findFileByIndex(fileIdA);
+    const dateDescIndexB = await filePage.findFileByIndex(fileIdB);
+    expect(dateDescIndexA).toBeGreaterThan(dateDescIndexB);
+
+    await filePage.clickOnFileCardByFileId(fileIdA);
+    await filePage.clickOnEditSelectedFileNickname();
+    await filePage.fillSelectedFileNickname('B');
+    await filePage.saveSelectedFileNickname();
+
+    await filePage.clickOnFileCardByFileId(fileIdB);
+    await filePage.clickOnEditSelectedFileNickname();
+    await filePage.fillSelectedFileNickname('A');
+    await filePage.saveSelectedFileNickname();
+
+    await filePage.sortByNicknameAsc();
+    expect(await filePage.getFileNicknameByIndex(0)).toBe('A');
+    expect(await filePage.getFileNicknameByIndex(1)).toBe('B');
+
+    await filePage.sortByNicknameDesc();
+    expect(await filePage.getFileNicknameByIndex(0)).toBe('B');
+    expect(await filePage.getFileNicknameByIndex(1)).toBe('A');
+
+    const parseFileNum = (value: string | null) =>
+      Number.parseInt((value ?? '').split('.').pop() ?? '', 10);
+
+    await filePage.sortByFileIdAsc();
+    const asc0 = parseFileNum(await filePage.getFileIdByIndex(0));
+    const asc1 = parseFileNum(await filePage.getFileIdByIndex(1));
+    expect(asc0).toBeLessThanOrEqual(asc1);
+
+    await filePage.sortByFileIdDesc();
+    const desc0 = parseFileNum(await filePage.getFileIdByIndex(0));
+    const desc1 = parseFileNum(await filePage.getFileIdByIndex(1));
+    expect(desc0).toBeGreaterThanOrEqual(desc1);
   });
 
   test('Verify duplicate file link shows error toast', async () => {

@@ -318,6 +318,26 @@ export async function deleteUserKeysByEmail(email: string): Promise<number> {
 }
 
 /**
+ * Deletes all organization user keys.
+ *
+ * @return {Promise<number>} The number of deleted rows.
+ */
+export async function deleteAllUserKeys(): Promise<number> {
+  const query = `
+    DELETE FROM public.user_key
+    RETURNING id;
+  `;
+
+  try {
+    const deleted = await queryPostgresDatabase<{ id: number }>(query);
+    return deleted.length;
+  } catch (error) {
+    console.error('Error deleting all user keys:', error);
+    return 0;
+  }
+}
+
+/**
  * Clears mnemonic hashes for active organization user keys by email.
  * This forces recovery flow while keeping existing key rows for assertions.
  *
@@ -467,6 +487,23 @@ export async function upgradeUserToAdmin(email: string) {
     return result.length > 0;
   } catch (error) {
     console.error('Error upgrading user to admin:', error);
+    return false;
+  }
+}
+
+export async function isUserAdmin(email: string): Promise<boolean> {
+  const query = `
+    SELECT admin
+    FROM public."user"
+    WHERE email = $1
+    LIMIT 1;
+  `;
+
+  try {
+    const result = await queryPostgresDatabase<{ admin: boolean }>(query, [email]);
+    return result.length > 0 ? Boolean(result[0].admin) : false;
+  } catch (error) {
+    console.error('Error checking admin flag for user:', error);
     return false;
   }
 }

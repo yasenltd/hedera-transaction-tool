@@ -28,6 +28,15 @@ export class AccountPage extends BasePage {
   confirmUnlinkButtonSelector = 'button-confirm-unlink-account';
   linkAccountButtonSelector = 'button-link-account-id';
   selectManyAccountsButtonSelector = 'button-select-many-accounts';
+  sortAccountsButtonSelector = 'button-sort-accounts';
+  sortAccountIdAscSelector = 'menu-sort-account-id-asc';
+  sortAccountIdDescSelector = 'menu-sort-account-id-desc';
+  sortAccountNicknameAscSelector = 'menu-sort-account-nickname-asc';
+  sortAccountNicknameDescSelector = 'menu-sort-account-nickname-desc';
+  sortAccountDateAddedAscSelector = 'menu-sort-account-date-added-asc';
+  sortAccountDateAddedDescSelector = 'menu-sort-account-date-added-desc';
+  editSelectedAccountNicknameButtonSelector = 'button-edit-selected-account-nickname';
+  selectedAccountNicknameInputSelector = 'input-account-nickname';
   // Texts
   accountIdTextSelector = 'p-account-data-account-id';
   evmAddressTextSelector = 'p-account-data-evm-address';
@@ -48,6 +57,8 @@ export class AccountPage extends BasePage {
   existingAccountIdInputSelector = 'input-existing-account-id';
   multiSelectCheckboxSelector = 'checkbox-multiple-account-id-';
   fillAccountIdScreenshotSelector = 'fill-account-id-';
+  accountIdListPrefixSelector = 'p-account-id-';
+  accountNicknameListPrefixSelector = 'p-account-nickname-';
 
   async clickOnEditButton() {
     await this.click(this.editButtonSelector);
@@ -75,6 +86,60 @@ export class AccountPage extends BasePage {
 
   async clickOnAccountsLink() {
     await this.click(this.accountsLinkSelector);
+  }
+
+  async clickOnSortAccountsButton() {
+    await this.click(this.sortAccountsButtonSelector);
+  }
+
+  async sortByAccountIdAsc() {
+    await this.clickOnSortAccountsButton();
+    await this.click(this.sortAccountIdAscSelector);
+  }
+
+  async sortByAccountIdDesc() {
+    await this.clickOnSortAccountsButton();
+    await this.click(this.sortAccountIdDescSelector);
+  }
+
+  async sortByNicknameAsc() {
+    await this.clickOnSortAccountsButton();
+    await this.click(this.sortAccountNicknameAscSelector);
+  }
+
+  async sortByNicknameDesc() {
+    await this.clickOnSortAccountsButton();
+    await this.click(this.sortAccountNicknameDescSelector);
+  }
+
+  async sortByDateAddedAsc() {
+    await this.clickOnSortAccountsButton();
+    await this.click(this.sortAccountDateAddedAscSelector);
+  }
+
+  async sortByDateAddedDesc() {
+    await this.clickOnSortAccountsButton();
+    await this.click(this.sortAccountDateAddedDescSelector);
+  }
+
+  async clickOnEditSelectedAccountNickname() {
+    await this.click(this.editSelectedAccountNicknameButtonSelector);
+  }
+
+  async fillSelectedAccountNickname(nickname: string) {
+    await this.fill(this.selectedAccountNicknameInputSelector, nickname);
+  }
+
+  async saveSelectedAccountNickname() {
+    await this.pressKey('Tab');
+  }
+
+  async getAccountIdByIndex(index: number) {
+    return await this.getText(this.accountIdListPrefixSelector + index);
+  }
+
+  async getAccountNicknameByIndex(index: number) {
+    return await this.getText(this.accountNicknameListPrefixSelector + index);
   }
 
   async getAccountIdText() {

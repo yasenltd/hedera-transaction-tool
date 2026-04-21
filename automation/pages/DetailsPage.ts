@@ -8,6 +8,10 @@ export class DetailsPage extends BasePage {
   /* Selectors */
   viewContentsButtonSelector = 'button-view-file-contents';
   seeKeyDetailsButtonSelector = 'button-file-details-key';
+  linkFileButtonSelector = 'button-file-details-link-file';
+  fileAlreadyLinkedLabelSelector = 'p-file-details-file-already-linked';
+  linkAccountButtonSelector = 'button-account-details-link-account';
+  accountAlreadyLinkedLabelSelector = 'p-account-details-account-already-linked';
   //Text
   transactionCreatedAtIndexSelector = 'td-transaction-createdAt-';
   transactionStatusIndexSelector = 'td-transaction-status-';
@@ -172,6 +176,30 @@ export class DetailsPage extends BasePage {
 
   async isSeeKeyDetailsButtonVisible() {
     return await this.isElementVisible(this.seeKeyDetailsButtonSelector);
+  }
+
+  async isLinkFileButtonVisible() {
+    return await this.isElementVisible(this.linkFileButtonSelector);
+  }
+
+  async clickOnLinkFileButton() {
+    await this.click(this.linkFileButtonSelector);
+  }
+
+  async isFileAlreadyLinkedLabelVisible() {
+    return await this.isElementVisible(this.fileAlreadyLinkedLabelSelector);
+  }
+
+  async isLinkAccountButtonVisible() {
+    return await this.isElementVisible(this.linkAccountButtonSelector);
+  }
+
+  async clickOnLinkAccountButton() {
+    await this.click(this.linkAccountButtonSelector);
+  }
+
+  async isAccountAlreadyLinkedLabelVisible() {
+    return await this.isElementVisible(this.accountAlreadyLinkedLabelSelector);
   }
 
   async getFileDetailsExpirationTime() {

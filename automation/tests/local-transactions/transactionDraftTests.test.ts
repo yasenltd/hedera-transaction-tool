@@ -44,7 +44,13 @@ test.describe('Transaction draft account tests @local-transactions', () => {
   test('Verify user can save draft and is visible in the draft page', async () => {
     await transactionPage.clickOnCreateNewTransactionButton();
     await transactionPage.clickOnCreateAccountTransaction();
-    await transactionPage.fillInDescription('test create tx description');
+    await transactionPage.fillInDescription('B draft sort');
+    await transactionPage.saveDraft();
+
+    // Create a second draft so we can verify sorting in the Drafts table.
+    await transactionPage.clickOnCreateNewTransactionButton();
+    await transactionPage.clickOnCreateAccountTransaction();
+    await transactionPage.fillInDescription('A draft sort');
     await transactionPage.saveDraft();
 
     // Assert drafts table column headers are present
@@ -56,6 +62,13 @@ test.describe('Transaction draft account tests @local-transactions', () => {
     expect(headerTexts).toContain('Is Template');
     expect(headerTexts).toContain('Actions');
 
+    // Verify sorting by Description (asc/desc)
+    const descriptionSort = window.locator('.table-sort-link').filter({ hasText: 'Description' });
+    await descriptionSort.click();
+    expect(await transactionPage.getFirstDraftDescription()).toBe('A draft sort');
+    await descriptionSort.click();
+    expect(await transactionPage.getFirstDraftDescription()).toBe('B draft sort');
+
     const draftDate = await transactionPage.getFirstDraftDate();
     expect(draftDate).toBeTruthy();
 
@@ -63,7 +76,8 @@ test.describe('Transaction draft account tests @local-transactions', () => {
     expect(draftType).toBe('Account Create');
 
     const description = await transactionPage.getFirstDraftDescription();
-    expect(description).toBe('test create tx description');
+    // After the sort assertions above, ensure the value is still one of our drafts.
+    expect(['A draft sort', 'B draft sort']).toContain(description);
 
     const isTemplateCheckboxVisible =
       await transactionPage.getFirstDraftIsTemplateCheckboxVisible();
@@ -75,6 +89,8 @@ test.describe('Transaction draft account tests @local-transactions', () => {
     const isContinueButtonVisible = await transactionPage.isFirstDraftContinueButtonVisible();
     expect(isContinueButtonVisible).toBe(true);
 
+    // Cleanup both drafts
+    await transactionPage.deleteFirstDraft();
     await transactionPage.deleteFirstDraft();
   });
 

@@ -11,19 +11,25 @@ import { getAssociatedAccounts } from '../utils/network/mirrorNodeAPI.js';
 export class ContactListPage extends BasePage {
   // Buttons
   removeContactButtonSelector = 'button-remove-account-from-contact-list';
+  elevateContactButtonSelector = 'button-elevate-to-admin-from-contact-list';
 
   /* Selectors */
   addNewContactButtonSelector = 'button-add-new-contact';
   changeContactNicknameButtonSelector = 'span-change-nickname';
   registerNewUserButtonSelector = 'button-register-user';
   confirmRemovingContactButtonSelector = 'button-confirm-remove-contact';
+  confirmElevateContactButtonSelector = 'button-confirm-elevate-contact';
   // Inputs
   inputChangeNicknameSelector = 'input-change-nickname';
   newUserEmailInputSelector = 'input-new-user-email';
+  multipleEmailsModeSwitchSelector = 'switch-multiple-emails-mode';
+  multipleEmailsTextareaSelector = 'textarea-multiple-emails';
   // Texts
   contactListEmailSelector = 'p-contact-email';
+  noContactsFoundSelector = 'p-no-contacts-found';
   // Indexes
   contactEmailIndexSelector = 'p-contact-email-';
+  contactNotificationIndicatorIndexSelector = 'span-contact-notification-indicator-';
   contactListPublicKeyIndexSelector = 'p-contact-public-key-';
   contactListExpandAssociatedAccountsButtonSelector = 'span-expand-associated-accounts-';
   contactListAssociatedAccountIdIndexSelector = 'p-associated-account-id-';
@@ -35,6 +41,30 @@ export class ContactListPage extends BasePage {
 
   async clickOnAccountInContactListByEmail(email: string) {
     await this.click(this.contactEmailIndexSelector + email);
+  }
+
+  async isContactVisible(email: string) {
+    return await this.isElementVisible(this.contactEmailIndexSelector + email);
+  }
+
+  async isContactHidden(email: string) {
+    return await this.isElementHidden(this.contactEmailIndexSelector + email);
+  }
+
+  async getContactListContactCount() {
+    return await this.countElements(this.contactEmailIndexSelector);
+  }
+
+  async isNoContactsFoundMessageVisible() {
+    return await this.isElementVisible(this.noContactsFoundSelector);
+  }
+
+  async isNewUserIndicatorVisible(email: string) {
+    return await this.isElementVisible(
+      this.contactNotificationIndicatorIndexSelector + email,
+      null,
+      this.LONG_TIMEOUT * 2,
+    );
   }
 
   async isRemoveContactButtonVisible() {
@@ -104,6 +134,18 @@ export class ContactListPage extends BasePage {
     return await this.isElementVisible(this.confirmRemovingContactButtonSelector);
   }
 
+  async clickOnElevateContactButton() {
+    await this.click(this.elevateContactButtonSelector);
+  }
+
+  async isConfirmElevateContactButtonVisible() {
+    return await this.isElementVisible(this.confirmElevateContactButtonSelector);
+  }
+
+  async clickOnConfirmElevateContactButton() {
+    await this.click(this.confirmElevateContactButtonSelector);
+  }
+
   async upgradeUserToAdmin(email: string) {
     return await upgradeUserToAdmin(email);
   }
@@ -111,6 +153,21 @@ export class ContactListPage extends BasePage {
   async addNewUser(email: string) {
     await this.clickOnAddNewContactButton();
     await this.inputNewUserEmail(email);
+    await this.clickOnRegisterNewUserButton();
+  }
+
+  async enableMultipleEmailsMode() {
+    const isChecked = await this.window.getByTestId(this.multipleEmailsModeSwitchSelector).isChecked();
+    if (!isChecked) {
+      await this.click(this.multipleEmailsModeSwitchSelector);
+    }
+  }
+
+  async fillMultipleEmails(emails: string) {
+    await this.fill(this.multipleEmailsTextareaSelector, emails);
+  }
+
+  async registerUsers() {
     await this.clickOnRegisterNewUserButton();
   }
 

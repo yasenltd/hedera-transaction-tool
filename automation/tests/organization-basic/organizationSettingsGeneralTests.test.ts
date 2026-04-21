@@ -79,12 +79,54 @@ test.describe('Organization Settings (General) tests @organization-basic', () =>
   });
 
   test('Verify user can switch between personal and organization mode', async () => {
-    await organizationPage.selectPersonalMode();
+    // Organization selector should list all connected orgs (plus personal mode).
+    await organizationPage.clickOnSelectModeDropdown();
+    const modeItemCount = await organizationPage.countModeSelectionItems();
+    const modeItemTexts: string[] = [];
+    for (let i = 0; i < modeItemCount; i++) {
+      modeItemTexts.push((await organizationPage.getModeSelectionItemText(i)) ?? '');
+    }
+    const modeMenuText = modeItemTexts.join(' ');
+    expect(modeMenuText).toContain('Personal');
+    expect(modeMenuText).toContain(organizationNickname);
+
+    // Switch to personal mode.
+    await organizationPage.selectModeByIndex(0);
     const isContactListHidden = await organizationPage.isContactListButtonHidden();
     expect(isContactListHidden).toBe(true);
+
+    // Notifications tab should not be available in personal mode.
+    await settingsPage.clickOnSettingsButton();
+    expect(await settingsPage.isNotificationsTabVisible()).toBe(false);
+
+    // Delay the first organization-server request so we can reliably observe the global loader.
+    const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const organizationOrigin = new URL(process.env.ORGANIZATION_URL ?? 'http://localhost').origin;
+    const orgUrlRegex = new RegExp(`^${escapeRegExp(organizationOrigin)}/`);
+    let delayed = false;
+
+    await window.route(orgUrlRegex, async route => {
+      if (!delayed) {
+        delayed = true;
+        await new Promise(resolve => setTimeout(resolve, 800));
+      }
+      await route.continue();
+    });
+
     await organizationPage.selectOrganizationMode();
+
+    const loaderModal = window.getByTestId('modal-global-loader');
+    await expect(loaderModal).toBeVisible({ timeout: 2000 });
+    await expect(loaderModal.getByTestId('div-loader')).toBeVisible({ timeout: 2000 });
+    await expect(loaderModal).toBeHidden({ timeout: 15000 });
+
+    await window.unroute(orgUrlRegex);
     const isContactListVisibleAfterSwitch = await organizationPage.isContactListButtonVisible();
     expect(isContactListVisibleAfterSwitch).toBe(true);
+
+    // Notifications tab should be available in organization mode.
+    await settingsPage.clickOnSettingsButton();
+    expect(await settingsPage.isNotificationsTabVisible()).toBe(true);
   });
 
   test('Verify contact list menu item navigates to /contact-list', async () => {
@@ -108,10 +150,35 @@ test.describe('Organization Settings (General) tests @organization-basic', () =>
   test('Verify user can edit organization nickname', async () => {
     await settingsPage.clickOnSettingsButton();
     await settingsPage.clickOnOrganisationsTab();
+
+    // 3.4.11: Saving a blank org nickname shows validation toast.
+    await window.getByTestId('button-edit-nickname').first().click();
+    const visibleNicknameInput = window.locator('[data-testid="input-edit-nickname"]:visible');
+    await visibleNicknameInput.fill('');
+    await visibleNicknameInput.press('Tab'); // blur -> triggers inline save handler
+    expect(await registrationPage.getToastMessage()).toBe('Nickname cannot be empty');
+    await loginPage.waitForToastToDisappear();
+    expect((await organizationPage.getOrganizationNicknameText())?.trim()).toBe(
+      organizationNickname,
+    );
+
+    // 3.4.7: Nickname is editable inline.
     await organizationPage.editOrganizationNickname(updatedOrganizationNickname);
     const orgName = await organizationPage.getOrganizationNicknameText();
     expect(orgName).toBe(updatedOrganizationNickname);
     await organizationPage.editOrganizationNickname(organizationNickname);
+
+    // 3.4.12: Editing org nickname to an already-used name shows validation toast.
+    const secondOrganizationNickname = `${organizationNickname} (2)`;
+    await organizationPage.setupOrganization(secondOrganizationNickname);
+
+    await window.getByTestId('button-edit-nickname').nth(1).click();
+    const secondVisibleNicknameInput = window.locator(
+      '[data-testid="input-edit-nickname"]:visible',
+    );
+    await secondVisibleNicknameInput.fill(organizationNickname);
+    await secondVisibleNicknameInput.press('Tab');
+    expect(await registrationPage.getToastMessage()).toBe('Nickname already exists');
   });
 
   test('Verify error message when user adds non-existing organization', async () => {

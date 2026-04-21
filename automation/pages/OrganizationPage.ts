@@ -499,6 +499,14 @@ export class OrganizationPage extends BasePage {
     await this.click(this.modeSelectionIndexSelector + index);
   }
 
+  async countModeSelectionItems() {
+    return await this.countElements(this.modeSelectionIndexSelector);
+  }
+
+  async getModeSelectionItemText(index: number) {
+    return await this.getText(this.modeSelectionIndexSelector + index);
+  }
+
   async selectPersonalMode() {
     await this.clickOnSelectModeDropdown();
     await this.selectModeByIndex(0);

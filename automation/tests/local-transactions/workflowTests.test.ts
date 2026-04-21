@@ -214,4 +214,60 @@ test.describe('Workflow account navigation tests @local-transactions', () => {
     expect(toastText).toContain('Account ID or Nickname already exists!');
   });
 
+  test('Verify account list can be sorted by Account ID, Nickname, and Date Added', async () => {
+    const { newAccountId: firstAccountId } = await transactionPage.createNewAccount();
+    // Ensure different "Date Added" timestamps for stable sort expectations.
+    await new Promise(resolve => setTimeout(resolve, 1100));
+    const { newAccountId: secondAccountId } = await transactionPage.createNewAccount();
+
+    const accountIdA = firstAccountId ?? '';
+    const accountIdB = secondAccountId ?? '';
+
+    await transactionPage.clickOnTransactionsMenuButton();
+    await accountPage.clickOnAccountsLink();
+
+    // Set nicknames so nickname sorting is deterministic.
+    const indexA = await transactionPage.findAccountIndexById(accountIdA);
+    expect(indexA).toBeGreaterThanOrEqual(0);
+    await window.getByTestId(`p-account-id-${indexA}`).click();
+    await accountPage.clickOnEditSelectedAccountNickname();
+    await accountPage.fillSelectedAccountNickname('B');
+    await accountPage.saveSelectedAccountNickname();
+
+    const indexB = await transactionPage.findAccountIndexById(accountIdB);
+    expect(indexB).toBeGreaterThanOrEqual(0);
+    await window.getByTestId(`p-account-id-${indexB}`).click();
+    await accountPage.clickOnEditSelectedAccountNickname();
+    await accountPage.fillSelectedAccountNickname('A');
+    await accountPage.saveSelectedAccountNickname();
+
+    await accountPage.sortByNicknameAsc();
+    expect(await accountPage.getAccountNicknameByIndex(0)).toBe('A');
+    expect(await accountPage.getAccountNicknameByIndex(1)).toBe('B');
+
+    await accountPage.sortByNicknameDesc();
+    expect(await accountPage.getAccountNicknameByIndex(0)).toBe('B');
+    expect(await accountPage.getAccountNicknameByIndex(1)).toBe('A');
+
+    await accountPage.sortByAccountIdAsc();
+    const ascIndexA = await transactionPage.findAccountIndexById(accountIdA);
+    const ascIndexB = await transactionPage.findAccountIndexById(accountIdB);
+    expect(ascIndexA).toBeLessThan(ascIndexB);
+
+    await accountPage.sortByAccountIdDesc();
+    const descIndexA = await transactionPage.findAccountIndexById(accountIdA);
+    const descIndexB = await transactionPage.findAccountIndexById(accountIdB);
+    expect(descIndexA).toBeGreaterThan(descIndexB);
+
+    await accountPage.sortByDateAddedAsc();
+    const dateAscIndexA = await transactionPage.findAccountIndexById(accountIdA);
+    const dateAscIndexB = await transactionPage.findAccountIndexById(accountIdB);
+    expect(dateAscIndexA).toBeLessThan(dateAscIndexB);
+
+    await accountPage.sortByDateAddedDesc();
+    const dateDescIndexA = await transactionPage.findAccountIndexById(accountIdA);
+    const dateDescIndexB = await transactionPage.findAccountIndexById(accountIdB);
+    expect(dateDescIndexA).toBeGreaterThan(dateDescIndexB);
+  });
+
 });
