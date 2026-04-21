@@ -206,15 +206,12 @@ test.describe('Workflow account navigation tests @local-transactions', () => {
     await transactionPage.mirrorGetAccountResponse(accountFromList);
     await transactionPage.clickOnTransactionsMenuButton();
     await accountPage.clickOnAccountsLink();
-
-    // Attempt to link the same account that is already linked
     await accountPage.clickOnAddNewButton();
     await accountPage.clickOnAddExistingLink();
     await accountPage.fillInExistingAccountId(accountFromList);
     await accountPage.clickOnLinkAccountButton();
-
     const toastText = await registrationPage.getToastMessageByVariant('error');
-    expect(toastText).toContain('Account link failed');
+    expect(toastText).toContain('Account ID or Nickname already exists!');
   });
 
 });

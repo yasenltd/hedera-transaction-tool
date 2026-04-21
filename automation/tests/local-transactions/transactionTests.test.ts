@@ -72,16 +72,15 @@ test.describe('Transaction account execution tests @local-transactions', () => {
   test('Verify that all elements on account create page are correct', async () => {
     await transactionPage.clickOnCreateNewTransactionButton();
     await transactionPage.clickOnCreateAccountTransaction();
-
     const allElementsAreVisible = await transactionPage.verifyAccountCreateTransactionElements();
-
     expect(allElementsAreVisible).toBe(true);
   });
 
   test('Verify sign button is disabled when no owner key is selected', async () => {
     await transactionPage.clickOnCreateNewTransactionButton();
     await transactionPage.clickOnCreateAccountTransaction();
-    expect(await transactionPage.isSignAndSubmitButtonEnabled()).toBe(false);
+    await transactionPage.fillInPublicKeyForAccount('');
+    await expect.poll(async () => transactionPage.isSignAndSubmitButtonEnabled()).toBe(false);
   });
 
   test('Verify sign button is disabled when no account ID is entered', async () => {
@@ -98,13 +97,11 @@ test.describe('Transaction account execution tests @local-transactions', () => {
     const confirmTransactionIsDisplayedAndCorrect =
       await transactionPage.verifyConfirmTransactionInformation('Account Create Transaction');
     await transactionPage.clickOnCancelTransaction();
-
     expect(confirmTransactionIsDisplayedAndCorrect).toBe(true);
   });
 
   test('Verify user can execute create account transaction with single key', async () => {
     const { newAccountId } = await transactionPage.createNewAccount();
-
     const accountDetails = await transactionPage.mirrorGetAccountResponse(newAccountId ?? '');
     const createdTimestamp = accountDetails.accounts[0]?.created_timestamp;
     expect(createdTimestamp).toBeTruthy();
@@ -112,9 +109,7 @@ test.describe('Transaction account execution tests @local-transactions', () => {
 
   test('Verify user can create account with memo', async () => {
     const memoText = 'test memo';
-
     const { newAccountId } = await transactionPage.createNewAccount({ memo: memoText });
-
     const accountDetails = await transactionPage.mirrorGetAccountResponse(newAccountId ?? '');
     const memoFromAPI = accountDetails.accounts[0]?.memo;
     expect(memoFromAPI).toBe(memoText);
@@ -144,9 +139,7 @@ test.describe('Transaction account execution tests @local-transactions', () => {
 
   test('Verify user can create account with max account associations', async () => {
     const maxAutoAssociations = 10;
-
     const { newAccountId } = await transactionPage.createNewAccount({ maxAutoAssociations });
-
     const accountDetails = await transactionPage.mirrorGetAccountResponse(newAccountId ?? '');
     const maxAutoAssociationsFromAPI = accountDetails.accounts[0]?.max_automatic_token_associations;
     expect(maxAutoAssociationsFromAPI).toBe(maxAutoAssociations);
@@ -166,19 +159,15 @@ test.describe('Transaction account execution tests @local-transactions', () => {
   test('Verify account is stored in the local database for account create tx', async () => {
     const { newAccountId } = await transactionPage.createNewAccount();
     await transactionPage.clickOnAccountsMenuButton();
-
     const isTxExistingInDb = await transactionPage.verifyAccountExists(newAccountId ?? '');
-
     expect(isTxExistingInDb).toBe(true);
   });
 
   test('Verify account is displayed in the account card section', async () => {
     await transactionPage.ensureAccountExists();
     const accountFromList = await transactionPage.getFirstAccountFromList();
-
     await transactionPage.clickOnAccountsMenuButton();
     const isAccountVisible = await transactionPage.isAccountCardVisible(accountFromList);
-
     expect(isAccountVisible).toBe(true);
   });
 
@@ -186,7 +175,6 @@ test.describe('Transaction account execution tests @local-transactions', () => {
     await transactionPage.ensureAccountExists();
     const accountFromList = await transactionPage.getFirstAccountFromList();
     await transactionPage.deleteAccount(accountFromList);
-
     const isTxExistingInDb = await transactionPage.verifyAccountExists(accountFromList);
     expect(isTxExistingInDb).toBe(false);
   });
@@ -196,7 +184,6 @@ test.describe('Transaction account execution tests @local-transactions', () => {
     const accountFromList = await transactionPage.getFirstAccountFromList();
     await transactionPage.deleteAccount(accountFromList);
     await transactionPage.clickOnAccountsMenuButton();
-
     const isAccountHidden = await transactionPage.isAccountCardHidden(accountFromList);
     expect(isAccountHidden).toBe(true);
   });
@@ -251,5 +238,4 @@ test.describe('Transaction account execution tests @local-transactions', () => {
     // const accountDetails = await transactionPage.mirrorGetAccountResponse('0.0.100');
     // const key = accountDetails.accounts[0]?.key?.key;
   });
-
 });

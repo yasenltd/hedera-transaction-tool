@@ -219,14 +219,11 @@ test.describe('Workflow file navigation tests @local-transactions', () => {
     await transactionPage.ensureFileExists('test');
     await filePage.clickOnFilesMenuButton();
     const fileFromPage = (await filePage.getFirstFileIdFromPage()) ?? '';
-
-    // Attempt to link the same file that is already linked
     await filePage.clickOnAddNewButtonForFile();
     await filePage.clickOnAddExistingFileLink();
     await filePage.fillInExistingFileId(fileFromPage);
     await filePage.clickOnLinkFileButton();
-
     const toastText = await registrationPage.getToastMessageByVariant('error');
-    expect(toastText).toContain('File link failed');
+    expect(toastText).toContain('File ID or Nickname already exists!');
   });
 });

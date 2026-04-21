@@ -211,6 +211,7 @@ test.describe('Settings keys tests @local-basic', () => {
     await settingsPage.fillInED25519PrivateKey(secondPrivateKey);
     await settingsPage.fillInED25519Nickname('Bulk-Delete-ED25519-2');
     await settingsPage.clickOnED25519ImportButton();
+    await loginPage.waitForToastToDisappear();
 
     const rowCountAfterImport = await settingsPage.getKeyRowCount();
     expect(rowCountAfterImport).toBe(initialRowCount + 2);

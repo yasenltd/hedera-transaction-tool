@@ -4,11 +4,13 @@ import { LoginPage } from '../../pages/LoginPage.js';
 import { TransactionPage } from '../../pages/TransactionPage.js';
 import { GroupPage } from '../../pages/GroupPage.js';
 import { createSeededLocalUserSession } from '../../utils/seeding/localUserSeeding.js';
+import { clearDialogMockState } from '../../utils/runtime/dialogMocks.js';
 import {
   setupLocalSuiteApp,
   teardownLocalSuiteApp,
 } from '../helpers/bootstrap/localSuiteBootstrap.js';
 import type { ActivatedTestIsolationContext } from '../../utils/setup/sharedTestEnvironment.js';
+import { selectEmptyTransactionFileForSigning } from '../helpers/support/transactionFileDialogSupport.js';
 
 let app: TransactionToolApp;
 let window: Page;
@@ -31,6 +33,7 @@ test.describe('Transactions navigation tests @local-basic', () => {
     transactionPage = new TransactionPage(window);
     groupPage = new GroupPage(window);
     await createSeededLocalUserSession(window, loginPage);
+    await clearDialogMockState(window);
   });
 
   async function navigateToCreateGroupPage() {
@@ -65,23 +68,21 @@ test.describe('Transactions navigation tests @local-basic', () => {
     await transactionPage.clickOnTransactionsMenuButton();
     await transactionPage.clickOnCreateNewDropdown();
     await transactionPage.clickOnTransactionGroupButton();
-
     await expect.poll(async () => window.url()).toContain('create-transaction-group');
   });
 
   test('Selecting "Sign Transactions from File" opens sign-from-file modal', async () => {
+    await selectEmptyTransactionFileForSigning(window);
     await transactionPage.clickOnTransactionsMenuButton();
     await transactionPage.clickOnTransactionFileActionsDropdown();
     await transactionPage.clickOnSignTransactionsFromFileOption();
-
-    expect(await transactionPage.isSignTransactionFileButtonVisible()).toBe(true);
+    expect(await transactionPage.isSignTransactionFileEmptyModalVisible()).toBe(true);
   });
 
   test('Transaction selection modal displays all transaction categories', async () => {
     await transactionPage.clickOnTransactionsMenuButton();
     await transactionPage.clickOnCreateNewDropdown();
     await transactionPage.clickOnSingleTransactionButton();
-
     expect(await transactionPage.areTransactionSelectionGroupsVisible()).toBe(true);
   });
 
@@ -91,7 +92,9 @@ test.describe('Transactions navigation tests @local-basic', () => {
     await transactionPage.clickOnSingleTransactionButton();
     await transactionPage.clickOnCreateAccountTransaction();
 
-    expect(await transactionPage.getTransactionTypeHeaderText()).toContain('Create Account');
+    expect(await transactionPage.getTransactionTypeHeaderText()).toContain(
+      'Account Create Transaction',
+    );
     expect(await transactionPage.verifyAccountCreateTransactionElements()).toBe(true);
   });
 
@@ -117,10 +120,11 @@ test.describe('Transactions navigation tests @local-basic', () => {
     await navigateToCreateGroupPage();
     await groupPage.clickOnAddTransactionButton();
     await transactionPage.clickOnCreateAccountTransaction();
+    await transactionPage.fillInPayerAccountId('0.0.2');
+    await expect.poll(async () => groupPage.isAddToGroupButtonEnabled()).toBe(true);
     await groupPage.clickAddToGroupButton();
     await groupPage.fillDescription('');
     await groupPage.clickOnSignAndExecuteButton();
-
     const toastMessage = await groupPage.getToastMessage(true);
     expect(toastMessage).toContain('Group Description Required');
   });

@@ -133,7 +133,49 @@ export class GroupPage extends BasePage {
   }
 
   async clickAddToGroupButton() {
-    await this.click(this.addToGroupButtonSelector, 0);
+    const buttonCount = await this.getElement(this.addToGroupButtonSelector).count();
+
+    for (let index = 0; index < buttonCount; index++) {
+      const isVisible = await this.isElementVisible(
+        this.addToGroupButtonSelector,
+        index,
+        this.SHORT_TIMEOUT,
+      );
+      const isDisabled = isVisible
+        ? await this.isDisabled(this.addToGroupButtonSelector, index, this.SHORT_TIMEOUT)
+        : true;
+
+      if (isVisible && !isDisabled) {
+        await this.click(this.addToGroupButtonSelector, index, this.SHORT_TIMEOUT);
+        return;
+      }
+    }
+
+    throw new Error(
+      `No visible and enabled "${this.addToGroupButtonSelector}" button was found among ${buttonCount} element(s).`,
+    );
+  }
+
+  async isAddToGroupButtonEnabled() {
+    const buttonCount = await this.getElement(this.addToGroupButtonSelector).count();
+
+    for (let index = 0; index < buttonCount; index++) {
+      const isVisible = await this.isElementVisible(
+        this.addToGroupButtonSelector,
+        index,
+        this.SHORT_TIMEOUT,
+      );
+      if (!isVisible) continue;
+
+      const isDisabled = await this.isDisabled(
+        this.addToGroupButtonSelector,
+        index,
+        this.SHORT_TIMEOUT,
+      );
+      return !isDisabled;
+    }
+
+    return false;
   }
 
   async getTransactionType(index: number) {

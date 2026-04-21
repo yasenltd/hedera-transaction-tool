@@ -126,6 +126,7 @@ export class TransactionPage extends BasePage {
   signTransactionsFromFileOptionSelector = 'button-more-dropdown-sm-item-signTransactionFile';
   importSignaturesFromFileOptionSelector = 'button-more-dropdown-sm-item-importSignaturesFromFile';
   signTransactionFileButtonSelector = 'button-sign-transaction-file';
+  signTransactionFileEmptyTitleSelector = 'h3-sign-transaction-file-empty-title';
   importButtonSelector = 'button-transaction-page-import';
   confirmImportButtonSelector = 'button-import-files-public';
   saveGotoSettingsButtonSelector = 'button-save-goto-settings';
@@ -338,6 +339,10 @@ export class TransactionPage extends BasePage {
 
   async isSignTransactionFileButtonVisible() {
     return await this.isElementVisible(this.signTransactionFileButtonSelector);
+  }
+
+  async isSignTransactionFileEmptyModalVisible() {
+    return await this.isElementVisible(this.signTransactionFileEmptyTitleSelector);
   }
 
   async isImportSignaturesFromFileOptionVisible() {

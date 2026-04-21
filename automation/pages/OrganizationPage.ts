@@ -130,7 +130,9 @@ export class OrganizationPage extends BasePage {
   organizationLoginTitleSelector = 'css=.container-dark-border h4.text-title';
   organizationLoginNicknameSelector = 'css=.container-dark-border .text-pink';
   organizationLoginInvalidFeedbackSelector = 'css=.form-login .invalid-feedback';
-  forgotPasswordModalTitleSelector = 'css=.modal-content h3';
+  forgotPasswordModalSelector =
+    'css=[data-testid="modal-confirm-transaction"][style*="display: block"]:has(h3:has-text("Forgot password"))';
+  forgotPasswordModalTitleSelector = `${this.forgotPasswordModalSelector} h3`;
   organizationNicknameTextSelector = 'span-organization-nickname';
   transactionDetailsIdSelector = 'p-transaction-details-id';
   transactionValidStartSelector = 'p-transaction-details-valid-start';
@@ -258,7 +260,7 @@ export class OrganizationPage extends BasePage {
   }
 
   async isForgotPasswordModalVisible() {
-    return await this.isElementVisible(this.forgotPasswordModalTitleSelector, null, this.LONG_TIMEOUT);
+    return await this.isElementVisible(this.forgotPasswordModalSelector, null, this.LONG_TIMEOUT);
   }
 
   async getForgotPasswordModalTitleText() {
