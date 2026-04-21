@@ -24,6 +24,12 @@ export class SettingsPage extends BasePage {
   encryptPasswordInputSelector = 'input-encrypt-password';
   defaultOrganizationDropdownSelector = 'dropdown-default-organization';
   dateTimeFormatDropdownSelector = 'dropdown-date-time-format';
+  addOrganizationServerUrlInputSelector = 'input-server-url';
+  importPublicKeyMappingInputSelector = 'input-public-key-mapping';
+  importPublicKeyNicknameInputSelector =
+    'css=[data-testid="input-public-key-nickname"][name="nickname"]';
+  renamePublicKeyNicknameInputSelector =
+    'css=[data-testid="input-public-key-nickname"][name="key-pair-nickname"]';
 
   // Buttons
   settingsButtonSelector = 'button-menu-settings';
@@ -47,6 +53,7 @@ export class SettingsPage extends BasePage {
   continueNicknameButtonSelector = 'button-continue-nickname';
   continuePhraseButtonSelector = 'button-continue-phrase';
   continueEncryptPasswordButtonSelector = 'button-continue-encrypt-password';
+  cancelEncryptPasswordButtonSelector = 'button-cancel-encrypt-password';
   importButtonSelector = 'button-restore-dropdown';
   ed25519ImportLinkSelector = 'link-import-ed25519-key';
   ecdsaImportLinkSelector = 'link-import-ecdsa-key';
@@ -67,10 +74,20 @@ export class SettingsPage extends BasePage {
   privateKeyFilterTabSelector = 'tab-Imported from Private Key';
   recoveryPhraseFilterDropdownSelector = 'dropdown-recovery-phrase-filter';
   appVersionValueSelector = 'app-version-value';
+  connectOrganizationButtonSelector = 'css=button:has-text("Connect now")';
+  addOrganizationInModalButtonSelector = 'button-add-organization-in-modal';
+  importPublicKeyDropdownButtonSelector = 'button-import-public-dropdown';
+  importSinglePublicKeyButtonSelector = 'import-single-public-key';
+  importPublicKeyButtonSelector = 'button-public-key-import';
+  deletePublicKeyMappingButtonSelector = 'button-delete-public-key-mapping';
+  selectAllPublicKeysCheckboxSelector = 'checkbox-select-all-public-keys';
+  deleteAllPublicKeysButtonSelector = 'button-delete-public-all';
 
   // Text
   decryptedPrivateKeySelector = 'span-private-key-0';
   invalidPasswordMessageSelector = 'css=.invalid-feedback:has-text("Invalid password")';
+  organizationsEmptyStateSelector = 'text=There are no connected organizations.';
+  publicKeysTableHeaderSelector = 'css=.table-custom thead th';
 
   // Input
   selectAllKeysCheckboxSelector = 'checkbox-select-all-keys';
@@ -84,6 +101,7 @@ export class SettingsPage extends BasePage {
   copyPublicKeyButtonSelectorPrefix = 'span-copy-public-key-';
   copyPrivateKeyButtonSelectorPrefix = 'span-copy-private-key-';
   keyCheckboxPrefixSelector = 'checkbox-multiple-keys-id-';
+  publicKeyNicknameCellSelectorPrefix = 'cell-public-nickname-';
 
   async verifySettingsElements(): Promise<boolean> {
     const checks = await Promise.all([
@@ -149,6 +167,95 @@ export class SettingsPage extends BasePage {
 
   async clickOnPublicKeysTab(): Promise<void> {
     await this.click(this.publicKeysTabButtonSelector);
+  }
+
+  async isOrganizationsEmptyStateVisible(): Promise<boolean> {
+    return await this.isElementVisible(this.organizationsEmptyStateSelector);
+  }
+
+  async clickOnConnectOrganizationButton(): Promise<void> {
+    await this.click(this.connectOrganizationButtonSelector);
+  }
+
+  async fillInAddOrganizationServerUrl(serverUrl: string): Promise<void> {
+    await this.fill(this.addOrganizationServerUrlInputSelector, serverUrl);
+  }
+
+  async clickOnAddOrganizationInModalButton(): Promise<void> {
+    await this.click(this.addOrganizationInModalButtonSelector);
+  }
+
+  async getPublicKeysTableHeaderText(): Promise<string> {
+    const headers = await this.getElement(this.publicKeysTableHeaderSelector).allTextContents();
+    return headers.map(h => h.trim()).join(' ');
+  }
+
+  async clickOnImportPublicKeyDropdown(): Promise<void> {
+    await this.click(this.importPublicKeyDropdownButtonSelector);
+  }
+
+  async clickOnImportSinglePublicKeyButton(): Promise<void> {
+    await this.click(this.importSinglePublicKeyButtonSelector);
+  }
+
+  async openImportSinglePublicKeyModal(): Promise<void> {
+    await this.clickOnImportPublicKeyDropdown();
+    await this.clickOnImportSinglePublicKeyButton();
+  }
+
+  async isImportPublicKeyButtonDisabled(): Promise<boolean> {
+    return await this.isDisabled(this.importPublicKeyButtonSelector);
+  }
+
+  async isImportPublicKeyButtonEnabled(): Promise<boolean> {
+    return await this.isButtonEnabled(this.importPublicKeyButtonSelector);
+  }
+
+  async fillInPublicKeyMapping(publicKey: string): Promise<void> {
+    await this.fill(this.importPublicKeyMappingInputSelector, publicKey);
+  }
+
+  async fillInImportPublicKeyNickname(nickname: string): Promise<void> {
+    await this.fill(this.importPublicKeyNicknameInputSelector, nickname);
+  }
+
+  async fillInImportPublicKeyForm(publicKey: string, nickname: string): Promise<void> {
+    await this.fillInPublicKeyMapping(publicKey);
+    await this.fillInImportPublicKeyNickname(nickname);
+  }
+
+  async clickOnImportPublicKeyButton(): Promise<void> {
+    await this.click(this.importPublicKeyButtonSelector);
+  }
+
+  async clickOnCopyPublicKeyMappingAtIndex(index: number): Promise<void> {
+    await this.click(this.copyPublicKeyButtonSelectorPrefix + index);
+  }
+
+  async renamePublicKeyMappingAtIndex(index: number, nickname: string): Promise<void> {
+    await this.clickOnChangeKeyNicknameButton(index);
+    await this.fill(this.renamePublicKeyNicknameInputSelector, nickname);
+    await this.clickOnConfirmNicknameChangeButton();
+  }
+
+  async getPublicKeyMappingNicknameAtIndex(index: number): Promise<string> {
+    return ((await this.getText(this.publicKeyNicknameCellSelectorPrefix + index)) ?? '').trim();
+  }
+
+  async clickOnDeletePublicKeyMappingAtIndex(index: number): Promise<void> {
+    await this.click(this.deleteKeyButtonPrefix + index);
+  }
+
+  async confirmDeletePublicKeyMapping(): Promise<void> {
+    await this.click(this.deletePublicKeyMappingButtonSelector);
+  }
+
+  async clickOnSelectAllPublicKeys(): Promise<void> {
+    await this.click(this.selectAllPublicKeysCheckboxSelector);
+  }
+
+  async clickOnDeleteAllPublicKeys(): Promise<void> {
+    await this.click(this.deleteAllPublicKeysButtonSelector);
   }
 
   async clickOnProfileTab(): Promise<void> {
@@ -426,12 +533,7 @@ export class SettingsPage extends BasePage {
   }
 
   async clickOnCancelEncryptPasswordButton(): Promise<void> {
-    const passwordInput = this.getElement(this.encryptPasswordInputSelector);
-    await passwordInput.waitFor({ state: 'visible', timeout: this.LONG_TIMEOUT });
-    const modalContent = passwordInput
-      .locator('xpath=ancestor::*[contains(@class,"modal-content")]')
-      .first();
-    await modalContent.getByRole('button', { name: 'Cancel', exact: true }).click();
+    await this.click(this.cancelEncryptPasswordButtonSelector);
   }
 
   async clickOnOrganisationsTab(): Promise<void> {

@@ -147,18 +147,17 @@ test.describe('Transaction account execution tests @local-transactions', () => {
     expect(accountB).toBeTruthy();
 
     await transactionPage.deleteAccount(accountA!);
+    await transactionPage.waitForMirrorAccountDeleted(accountA!);
 
     await transactionPage.clickOnCreateNewTransactionButton();
     await transactionPage.clickOnDeleteAccountTransaction();
 
     const payerAccountId = (await transactionPage.getPayerAccountId()) || '0.0.1002';
-    await window.getByTestId('input-transfer-account-id').fill(payerAccountId);
-    await window.getByTestId('input-transfer-account-id').press('Tab');
+    await transactionPage.fillInTransferAccountIdAndBlur(payerAccountId);
 
     // 5.4.8 + 5.4.10: Deleted account shows inline warning and blocks submit.
-    await window.getByTestId('input-delete-account-id').fill(accountA!);
-    await window.getByTestId('input-delete-account-id').press('Tab');
-    await expect(window.getByText('Account is already deleted!')).toBeVisible({ timeout: 15000 });
+    await transactionPage.fillInDeletedAccountIdAndBlur(accountA!);
+    expect(await transactionPage.isAccountAlreadyDeletedWarningVisible()).toBe(true);
     await expect.poll(async () => transactionPage.isSignAndSubmitButtonEnabled()).toBe(false);
 
     // Switch to a non-deleted account so we can exercise transfer-id validation.
@@ -166,17 +165,14 @@ test.describe('Transaction account execution tests @local-transactions', () => {
     await expect.poll(async () => transactionPage.isSignAndSubmitButtonEnabled()).toBe(true);
 
     // 5.4.9: Invalid Transfer Account ID error on submit.
-    await window.getByTestId('input-transfer-account-id').fill(`${accountB}--bad`);
-    await window.getByTestId('input-transfer-account-id').press('Tab');
+    await transactionPage.fillInTransferAccountIdAndBlur(`${accountB}--bad`);
     await expect.poll(async () => transactionPage.isSignAndSubmitButtonEnabled()).toBe(true);
     await transactionPage.clickOnSignAndSubmitButton(true);
-    const toast = window.locator('.v-toast__text:visible').last();
-    await expect(toast).toHaveText('Invalid Transfer Account ID', { timeout: 15000 });
+    await transactionPage.waitForToastMessage('Invalid Transfer Account ID');
 
     // 5.4.10: Transfer-to deleted account blocks submit.
-    await window.getByTestId('input-transfer-account-id').fill(accountA!);
-    await window.getByTestId('input-transfer-account-id').press('Tab');
-    await expect(window.getByText('Account is already deleted!')).toBeVisible({ timeout: 15000 });
+    await transactionPage.fillInTransferAccountIdAndBlur(accountA!);
+    expect(await transactionPage.isAccountAlreadyDeletedWarningVisible()).toBe(true);
     await expect.poll(async () => transactionPage.isSignAndSubmitButtonEnabled()).toBe(false);
   });
 

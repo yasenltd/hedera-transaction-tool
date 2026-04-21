@@ -3,18 +3,9 @@ import { Page, expect } from '@playwright/test';
 import { RegistrationPage } from './RegistrationPage.js';
 import { SettingsPage } from './SettingsPage.js';
 import { TransactionPage } from './TransactionPage.js';
-import {
-  compareJsonFiles,
-  parsePropertiesContent,
-} from '../utils/data/jsonUtils.js';
-import {
-  generateRandomEmail,
-  generateRandomPassword,
-} from '../utils/data/random.js';
-import {
-  getPrivateKeyEnv,
-  setupEnvironmentForTransactions,
-} from '../utils/runtime/environment.js';
+import { compareJsonFiles, parsePropertiesContent } from '../utils/data/jsonUtils.js';
+import { generateRandomEmail, generateRandomPassword } from '../utils/data/random.js';
+import { getPrivateKeyEnv, setupEnvironmentForTransactions } from '../utils/runtime/environment.js';
 import { waitForValidStart } from '../utils/runtime/timing.js';
 import { createTestUsersBatch } from '../utils/db/databaseUtil.js';
 import {
@@ -32,7 +23,10 @@ import {
 import * as fs from 'node:fs';
 import { argonHash } from '../utils/crypto/crypto.js';
 import { generateMnemonic } from '../utils/crypto/keyUtil.js';
-import { indexRecoveryPhraseWords, seedOrganizationUserKey } from '../utils/seeding/organizationSeeding.js';
+import {
+  indexRecoveryPhraseWords,
+  seedOrganizationUserKey,
+} from '../utils/seeding/organizationSeeding.js';
 import {
   encodeExchangeRates,
   encodeFeeSchedule,
@@ -85,7 +79,8 @@ export class OrganizationPage extends BasePage {
   deleteNextButtonSelector = 'button-delete-next';
   addObserverButtonSelector = 'button-add-observer';
   addUserButtonSelector = 'button-add-user';
-  openDatePickerButtonSelector = '[data-testid="date-picker-valid-start"] [data-test-id="dp-input"]';
+  openDatePickerButtonSelector =
+    '[data-testid="date-picker-valid-start"] [data-test-id="dp-input"]';
   datePickerCalendarSelector = 'css=.dp__instance_calendar';
   datePickerInputSelector = 'css=.dp__time_input';
   timePickerIconSelector = 'css=.dp--tp-wrap button[aria-label="Open time picker"]';
@@ -126,6 +121,7 @@ export class OrganizationPage extends BasePage {
   emailForOrganizationInputSelector = 'input-login-email-for-organization';
   passwordForOrganizationInputSelector = 'input-login-password-for-organization';
   editOrganizationNicknameInputSelector = 'input-edit-nickname';
+  visibleOrganizationNicknameInputSelector = 'css=[data-testid="input-edit-nickname"]:visible';
   // Texts
   organizationLoginTitleSelector = 'css=.container-dark-border h4.text-title';
   organizationLoginNicknameSelector = 'css=.container-dark-border .text-pink';
@@ -141,6 +137,9 @@ export class OrganizationPage extends BasePage {
   transactionIdInGroupSelector = 'td-group-transaction-id';
   validStartTimeInGroupSelector = 'td-group-valid-start-time';
   toastMessageSelector = 'css=.v-toast__text';
+  globalLoaderModalSelector = 'modal-global-loader';
+  globalLoaderSpinnerSelector =
+    'css=[data-testid="modal-global-loader"] [data-testid="div-loader"]';
   // Indexes
   modeSelectionIndexSelector = 'dropdown-item-';
   firstMissingKeyIndexSelector = 'cell-index-missing-0';
@@ -168,6 +167,7 @@ export class OrganizationPage extends BasePage {
   complexFileId: string[];
   organizationRecoveryWords: Array<Array<string>>;
   transactions: TransactionDetails[];
+  private delayedOrganizationRouteRegex: RegExp | null = null;
 
   private readonly registrationPage: RegistrationPage;
   private readonly settingsPage: SettingsPage;
@@ -268,7 +268,10 @@ export class OrganizationPage extends BasePage {
   }
 
   async waitForToastMessage(message: string, timeout: number = this.LONG_TIMEOUT) {
-    const toast = this.window.locator(this.toastMessageSelector).filter({ hasText: message }).last();
+    const toast = this.window
+      .locator(this.toastMessageSelector)
+      .filter({ hasText: message })
+      .last();
     await toast.waitFor({ state: 'visible', timeout });
   }
 
@@ -517,6 +520,42 @@ export class OrganizationPage extends BasePage {
     await this.selectModeByIndex(1);
   }
 
+  async delayFirstOrganizationServerRequest(serverUrl: string) {
+    const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const organizationOrigin = new URL(serverUrl || 'http://localhost').origin;
+    const orgUrlRegex = new RegExp(`^${escapeRegExp(organizationOrigin)}/`);
+    let delayed = false;
+
+    await this.window.route(orgUrlRegex, async route => {
+      if (!delayed) {
+        delayed = true;
+        await new Promise(resolve => setTimeout(resolve, 800));
+      }
+      await route.continue();
+    });
+
+    this.delayedOrganizationRouteRegex = orgUrlRegex;
+  }
+
+  async stopDelayingOrganizationServerRequest() {
+    if (this.delayedOrganizationRouteRegex) {
+      await this.window.unroute(this.delayedOrganizationRouteRegex);
+      this.delayedOrganizationRouteRegex = null;
+    }
+  }
+
+  async isGlobalLoaderModalVisible(timeout = this.DEFAULT_TIMEOUT) {
+    return await this.isElementVisible(this.globalLoaderModalSelector, null, timeout);
+  }
+
+  async isGlobalLoaderSpinnerVisible(timeout = this.DEFAULT_TIMEOUT) {
+    return await this.isElementVisible(this.globalLoaderSpinnerSelector, null, timeout);
+  }
+
+  async isGlobalLoaderModalHidden(timeout = this.VERY_LONG_TIMEOUT) {
+    return await this.isElementHidden(this.globalLoaderModalSelector, null, timeout);
+  }
+
   async logoutFromOrganization() {
     // Close any group-related modals that may appear when navigating away
     // "Save Group?" modal - has "Discard" button
@@ -593,8 +632,26 @@ export class OrganizationPage extends BasePage {
     await this.click(this.editNicknameOrganizationButtonSelector);
   }
 
+  async clickOnEditNicknameOrganizationButtonAtIndex(index: number) {
+    await this.click(this.editNicknameOrganizationButtonSelector, index);
+  }
+
   async fillInNewOrganizationNickname(nickname: string) {
     await this.fill(this.editOrganizationNicknameInputSelector, nickname);
+  }
+
+  async fillVisibleOrganizationNicknameInput(nickname: string) {
+    await this.fill(this.visibleOrganizationNicknameInputSelector, nickname);
+  }
+
+  async saveVisibleOrganizationNicknameInput() {
+    await this.pressKey('Tab');
+  }
+
+  async updateOrganizationNicknameAtIndex(index: number, nickname: string) {
+    await this.clickOnEditNicknameOrganizationButtonAtIndex(index);
+    await this.fillVisibleOrganizationNicknameInput(nickname);
+    await this.saveVisibleOrganizationNicknameInput();
   }
 
   async getOrganizationNicknameText() {
@@ -1003,8 +1060,7 @@ export class OrganizationPage extends BasePage {
     ).map(email => email.trim());
 
     const trackedObserver = this.users.find(
-      user =>
-        !selectedObservers.includes(user.email) && listedObserverEmails.includes(user.email),
+      user => !selectedObservers.includes(user.email) && listedObserverEmails.includes(user.email),
     );
 
     if (!trackedObserver) {
@@ -1027,7 +1083,9 @@ export class OrganizationPage extends BasePage {
 
   async clickOnSignTransactionButton() {
     // Preferred: explicit data-testid if present.
-    if (await this.isElementVisible(this.signTransactionButtonSelector, null, this.DEFAULT_TIMEOUT)) {
+    if (
+      await this.isElementVisible(this.signTransactionButtonSelector, null, this.DEFAULT_TIMEOUT)
+    ) {
       await this.click(this.signTransactionButtonSelector, 0, this.VERY_LONG_TIMEOUT);
       return;
     }
@@ -1060,7 +1118,11 @@ export class OrganizationPage extends BasePage {
       return true;
     }
 
-    return await this.isElementVisible(this.transactionHeaderSubmitButtonSelector, null, this.SHORT_TIMEOUT);
+    return await this.isElementVisible(
+      this.transactionHeaderSubmitButtonSelector,
+      null,
+      this.SHORT_TIMEOUT,
+    );
   }
 
   async clickOnCancelTransactionButton() {
@@ -2068,11 +2130,7 @@ export class OrganizationPage extends BasePage {
     }
 
     try {
-      return !(await this.isDisabled(
-        this.nextTransactionButtonSelector,
-        null,
-        this.SHORT_TIMEOUT,
-      ));
+      return !(await this.isDisabled(this.nextTransactionButtonSelector, null, this.SHORT_TIMEOUT));
     } catch {
       return false;
     }

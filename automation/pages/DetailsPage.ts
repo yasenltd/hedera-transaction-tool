@@ -45,6 +45,8 @@ export class DetailsPage extends BasePage {
   fileDetailsFileIdSelector = 'p-file-details-file-id';
   transactionDescriptionSelector = 'p-description-field';
   breadCrumbItemSelector = 'breadcrumb-item-';
+  historyTableHeaderSelector = 'css=.table-custom thead th span';
+  historyDescriptionSortButtonSelector = 'button-sort-history-description';
 
   constructor(window: Page) {
     super(window);
@@ -68,6 +70,32 @@ export class DetailsPage extends BasePage {
 
   async getFirstTransactionDescription() {
     return await this.getText(this.transactionDescriptionIndexSelector + '0');
+  }
+
+  async getHistoryTableHeaderTexts() {
+    const headers = await this.getText(this.historyTableHeaderSelector);
+    return (headers ?? '').split(',').map(header => header.trim());
+  }
+
+  async sortHistoryByDescription() {
+    await this.click(this.historyDescriptionSortButtonSelector);
+  }
+
+  async getTransactionStatusBadgeClass(index = 0) {
+    return await this.getAttributeValue(
+      `[data-testid="${this.transactionStatusIndexSelector + index}"] span.badge`,
+      'class',
+    );
+  }
+
+  async isTransactionStatusBadgeSuccess(index = 0) {
+    const className = await this.getTransactionStatusBadgeClass(index);
+    return className?.includes('bg-success') === true && !className.includes('bg-danger');
+  }
+
+  async isTransactionStatusBadgeDanger(index = 0) {
+    const className = await this.getTransactionStatusBadgeClass(index);
+    return className?.includes('bg-danger') === true;
   }
 
   async getFirstTransactionId() {

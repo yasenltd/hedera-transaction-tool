@@ -9,7 +9,10 @@ import {
 } from '../utils/db/databaseQueries.js';
 
 export class RegistrationPage extends BasePage {
-  constructor(window: Page, private recoveryPhraseWords: Record<string, string> = {}) {
+  constructor(
+    window: Page,
+    private recoveryPhraseWords: Record<string, string> = {},
+  ) {
     super(window);
   }
 
@@ -462,10 +465,7 @@ export class RegistrationPage extends BasePage {
     await this.hover(this.passwordInputSelector);
 
     const tooltipSelector = await this.getVisibleSelector(
-      [
-        this.passwordRequirementsTooltipSelector,
-        this.passwordRequirementsTooltipFallbackSelector,
-      ],
+      [this.passwordRequirementsTooltipSelector, this.passwordRequirementsTooltipFallbackSelector],
       this.SHORT_TIMEOUT,
     ).catch(() => null);
 
@@ -530,9 +530,12 @@ export class RegistrationPage extends BasePage {
       )) ?? '';
 
     const iconClass =
-      (await this.getAttributeValue(`${requirementSelector} i`, 'class', 0, this.SHORT_TIMEOUT).catch(
-        () => null,
-      )) ?? '';
+      (await this.getAttributeValue(
+        `${requirementSelector} i`,
+        'class',
+        0,
+        this.SHORT_TIMEOUT,
+      ).catch(() => null)) ?? '';
 
     const stateToken = `${lineClass} ${iconClass}`.toLowerCase();
 
@@ -584,6 +587,16 @@ export class RegistrationPage extends BasePage {
     await toasts.first().waitFor({ state: 'visible', timeout: this.VERY_LONG_TIMEOUT });
     const message = await toasts.last().textContent();
     return message?.trim() ?? '';
+  }
+
+  async waitForToastMessageByVariant(
+    variant: 'success' | 'error' | 'warning' | 'info',
+    message: string,
+  ) {
+    const selector = `${this.toastMessageByVariantPrefix}${variant}${this.toastMessageByVariantSuffix}`;
+    const toast = this.window.locator(selector).filter({ hasText: message }).last();
+    await toast.waitFor({ state: 'visible', timeout: this.VERY_LONG_TIMEOUT });
+    return ((await toast.textContent()) ?? '').trim();
   }
 
   async clickOnGenerateAgainButton() {

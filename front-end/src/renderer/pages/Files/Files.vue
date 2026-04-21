@@ -586,9 +586,11 @@ watch(files, newFiles => {
                     v-if="!isNicknameInputShown"
                     class="text-title text-semi-bold py-3"
                     @dblclick="handleStartNicknameEdit"
-                    data-testid="p-file-selected-nickname"
                   >
-                    {{ selectedFile?.nickname || 'None' }}
+                    <span
+                      data-testid="p-file-selected-nickname"
+                      v-text="selectedFile?.nickname || 'None'"
+                    ></span>
 
                     <!-- <span
                       v-if="!specialFilesIds.includes(selectedFile.file_id)"
@@ -658,7 +660,10 @@ watch(files, newFiles => {
                 </div>
               </div>
 
-              <p class="text-secondary text-small text-semi-bold mt-3" data-testid="p-file-last-viewed">
+              <p
+                class="text-secondary text-small text-semi-bold mt-3"
+                data-testid="p-file-last-viewed"
+              >
                 <template v-if="selectedFile.lastRefreshed">
                   Last Viewed:
                   <span>{{ selectedFile.lastRefreshed.toDateString() }}</span>

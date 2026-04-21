@@ -131,6 +131,12 @@ export class TransactionPage extends BasePage {
   confirmImportButtonSelector = 'button-import-files-public';
   saveGotoSettingsButtonSelector = 'button-save-goto-settings';
   gotoSettingsButtonSelector = 'button-goto-settings';
+  addApproverButtonSelector = 'button-add-approver';
+  addApproverStructureElementButtonSelector = 'button-approver-structure-edit-add-element-0';
+  addApproverStructurePublicKeyButtonSelector =
+    'button-approver-structure-edit-add-element-public-key-0';
+  firstApproverEmailSelector = 'span-email-0';
+  addApproverUserButtonSelector = 'button-add-user';
 
   //Other
   confirmTransactionModalSelector = 'modal-confirm-transaction';
@@ -153,6 +159,7 @@ export class TransactionPage extends BasePage {
   approveAllowanceTransactionMemoSelector = 'input-transaction-memo';
   //Indexes
   accountIdPrefixSelector = 'p-account-id-';
+  accountDeletedWarningSelector = 'p-account-is-deleted';
   draftDetailsDateIndexSelector = 'span-draft-tx-date-';
   draftDetailsTypeIndexSelector = 'span-draft-tx-type-';
   draftDetailsDescriptionIndexSelector = 'span-draft-tx-description-';
@@ -217,13 +224,23 @@ export class TransactionPage extends BasePage {
     timeout: number = this.VERY_LONG_TIMEOUT,
     interval: number = this.DEFAULT_TIMEOUT,
   ) {
-    const accountDetails = await getAccountDetails(
-      accountId,
-      timeout,
-      interval,
-    );
+    const accountDetails = await getAccountDetails(accountId, timeout, interval);
     console.log('Account Details:', accountDetails);
     return accountDetails;
+  }
+
+  async waitForMirrorAccountDeleted(accountId: string) {
+    const startedAt = Date.now();
+
+    while (Date.now() - startedAt < this.VERY_LONG_TIMEOUT) {
+      const accountDetails = await this.mirrorGetAccountResponse(accountId, this.LONG_TIMEOUT);
+      if (accountDetails?.accounts?.[0]?.deleted === true) {
+        return;
+      }
+      await this.wait(this.DEFAULT_TIMEOUT);
+    }
+
+    throw new Error(`Account ${accountId} was not marked deleted by mirror node`);
   }
 
   async mirrorGetTransactionResponse(transactionId: string): Promise<Transaction> {
@@ -276,6 +293,21 @@ export class TransactionPage extends BasePage {
         await this.window.waitForTimeout(this.SHORT_TIMEOUT);
       }
     }
+  }
+
+  async clickOnAddApproverButton() {
+    await this.click(this.addApproverButtonSelector);
+  }
+
+  async clickOnComplexApproverTab() {
+    await this.click('role=tab[name="Complex"]');
+  }
+
+  async addFirstUserToComplexApproverStructure() {
+    await this.click(this.addApproverStructureElementButtonSelector);
+    await this.click(this.addApproverStructurePublicKeyButtonSelector);
+    await this.click(this.firstApproverEmailSelector);
+    await this.click(this.addApproverUserButtonSelector);
   }
 
   async isCreateNewTransactionButtonVisible(timeout: number = this.DEFAULT_TIMEOUT) {
@@ -548,6 +580,18 @@ export class TransactionPage extends BasePage {
     }
   }
 
+  async clickOnAccountByIndex(index: number) {
+    await this.click(this.accountIdPrefixSelector + index);
+  }
+
+  async isAccountDeletedWarningVisible() {
+    return await this.isElementVisible(
+      this.accountDeletedWarningSelector,
+      null,
+      this.VERY_LONG_TIMEOUT,
+    );
+  }
+
   async ensureAccountExists() {
     if (await this.isAccountsListEmpty()) {
       await this.createNewAccount();
@@ -655,8 +699,8 @@ export class TransactionPage extends BasePage {
     await this.clickOnTransactionsMenuButton();
     await this.clickOnCreateNewTransactionButton();
     await this.clickOnDeleteAccountTransaction();
-    const payerID = await this.getPayerAccountId();
-    await this.fillInTransferAccountIdNormally(payerID);
+    const transferAccountId = await this.getTransferAccountIdForDelete(accountId);
+    await this.fillInTransferAccountIdNormally(transferAccountId);
     await this.fillInDeletedAccountId(accountId);
     await this.clickOnSignAndSubmitButton(true);
     await this.clickOnConfirmDeleteAccountButton();
@@ -666,6 +710,25 @@ export class TransactionPage extends BasePage {
     await this.clickOnTransactionsMenuButton();
     await this.removeAccountFromList(accountId);
     return transactionId;
+  }
+
+  private async getTransferAccountIdForDelete(accountId: string) {
+    let transferAccountId = this.generatedAccounts.find(id => id !== accountId);
+
+    if (!transferAccountId) {
+      const { newAccountId } = await this.createNewAccount({
+        description: 'delete transfer account',
+      });
+      transferAccountId = newAccountId ?? undefined;
+      await this.clickOnCreateNewTransactionButton();
+      await this.clickOnDeleteAccountTransaction();
+    }
+
+    if (!transferAccountId) {
+      throw new Error('Unable to resolve a transfer account for account delete');
+    }
+
+    return transferAccountId;
   }
 
   async updateAccountKey(
@@ -821,31 +884,25 @@ export class TransactionPage extends BasePage {
   async transferAmountBetweenAccounts(
     toAccountId: string,
     amount: string,
-    options: { isSupposedToFail?: boolean } = {},
+    options: { isSupposedToFail?: boolean; fromAccountId?: string } = {},
   ) {
-    const { isSupposedToFail = false } = options;
+    const { isSupposedToFail = false, fromAccountId } = options;
 
     await this.clickOnTransactionsMenuButton();
     await this.clickOnCreateNewTransactionButton();
     await this.clickOnTransferTokensTransaction();
-    await this.fillInTransferFromAccountId();
+    await this.fillInTransferFromAccountId(fromAccountId);
     await this.fillInTransferAmountFromAccount(amount);
     await this.fillInTransferToAccountId(toAccountId);
     await this.clickOnAddTransferFromButton();
-    await this.fillInTransferAmountToAccount(amount);
-    await this.clickOnAddTransferToButton();
+    await this.clickOnAddRestButton();
 
     await this.clickOnSignAndSubmitButton(true);
     await this.clickSignTransactionButton();
-
-    if (isSupposedToFail) {
-      return null;
-    } else {
-      await this.waitForCreatedAtToBeVisible();
-      const transactionId = await this.getTransactionDetailsId();
-      await this.clickOnTransactionsMenuButton();
-      return transactionId;
-    }
+    await this.waitForCreatedAtToBeVisible();
+    const transactionId = await this.getTransactionDetailsId();
+    await this.clickOnTransactionsMenuButton();
+    return isSupposedToFail ? null : transactionId;
   }
 
   async importV1Signatures() {
@@ -1079,6 +1136,31 @@ export class TransactionPage extends BasePage {
     await this.fill(this.transferAccountInputSelector, accountId);
   }
 
+  async fillInTransferAccountIdAndBlur(accountId: string) {
+    await this.fillInTransferAccountIdNormally(accountId);
+    await this.pressKey('Tab');
+  }
+
+  async fillInDeletedAccountIdNormally(accountId: string) {
+    await this.fill(this.deletedAccountInputSelector, accountId);
+  }
+
+  async fillInDeletedAccountIdAndBlur(accountId: string) {
+    await this.fillInDeletedAccountIdNormally(accountId);
+    await this.pressKey('Tab');
+  }
+
+  async isAccountAlreadyDeletedWarningVisible() {
+    return await this.isElementVisible('text=Account is already deleted!', null, this.LONG_TIMEOUT);
+  }
+
+  async waitForToastMessage(message: string) {
+    const toast = this.window.locator(`${this.toastMessageSelector}:visible`).filter({
+      hasText: message,
+    });
+    await toast.last().waitFor({ state: 'visible', timeout: this.LONG_TIMEOUT });
+  }
+
   async getPayerAccountId() {
     const payerID = await this.getTextFromInputField(this.payerAccountInputSelector);
     return getCleanAccountId(payerID);
@@ -1179,10 +1261,10 @@ export class TransactionPage extends BasePage {
     await this.fill(this.nicknameInputSelector, nickname);
   }
 
-  async fillInTransferFromAccountId() {
-    const payerID = await this.getPayerAccountId();
-    await this.fill(this.transferFromAccountIdInputSelector, payerID);
-    return payerID;
+  async fillInTransferFromAccountId(accountId?: string) {
+    const transferFromAccountId = accountId ?? (await this.getPayerAccountId());
+    await this.fill(this.transferFromAccountIdInputSelector, transferFromAccountId);
+    return transferFromAccountId;
   }
 
   async fillInTransferAmountFromAccount(amount: string) {

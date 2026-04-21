@@ -130,7 +130,7 @@ test.describe('Workflow file navigation tests @local-transactions', () => {
     expect(payerPrivateKeyDerHex).toBeTruthy();
     await deleteFileFromNetwork(createdFileId, payerPrivateKeyDerHex ?? '');
     await filePage.clickOnFileCardByFileId(createdFileId);
-    await expect(window.getByTestId('p-file-is-deleted')).toBeVisible({ timeout: 90000 });
+    expect(await filePage.isFileDeletedWarningVisible()).toBe(true);
   });
 
   test('Verify file card update flow leads to update page with prefilled fileid', async () => {

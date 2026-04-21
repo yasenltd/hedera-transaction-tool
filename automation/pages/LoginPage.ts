@@ -21,6 +21,7 @@ export class LoginPage extends BasePage {
   emailInputSelector = 'input-email';
   passwordInputSelector = 'input-password';
   confirmPasswordInputSelector = 'input-password-confirm';
+  encryptPasswordInputSelector = 'input-encrypt-password';
 
   // Buttons
   signInButtonSelector = 'button-login';
@@ -34,6 +35,7 @@ export class LoginPage extends BasePage {
   logoutButtonSelector = 'button-logout';
   settingsButtonSelector = 'button-menu-settings';
   profileTabButtonSelector = 'tab-4';
+  cancelEncryptPasswordButtonSelector = 'button-cancel-encrypt-password';
 
   // Labels
   emailLabelSelector = 'label-email';
@@ -253,11 +255,25 @@ export class LoginPage extends BasePage {
   }
 
   private async dismissKnownBlockingModals() {
+    await this.closeUserPasswordModal();
     await this.closeImportantNoteModal();
     await this.closeMigrationModal();
 
     if (process.platform === 'darwin') {
       await this.closeKeyChainModal();
+    }
+  }
+
+  async closeUserPasswordModal() {
+    const isPasswordModalVisible = await this.isElementVisible(
+      this.encryptPasswordInputSelector,
+      null,
+      this.SHORT_TIMEOUT,
+    );
+
+    if (isPasswordModalVisible) {
+      await this.click(this.cancelEncryptPasswordButtonSelector);
+      await this.waitForElementToDisappear(this.encryptPasswordInputSelector);
     }
   }
 

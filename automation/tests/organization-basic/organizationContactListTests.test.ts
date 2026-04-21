@@ -104,9 +104,7 @@ test.describe('Organization Contact List tests @organization-basic', () => {
     await organizationPage.clickOnContactListButton();
     await contactListPage.addNewUser(newUserEmail);
 
-    await expect
-      .poll(() => contactListPage.isContactVisible(newUserEmail))
-      .toBe(true);
+    await expect.poll(() => contactListPage.isContactVisible(newUserEmail)).toBe(true);
     expect(await contactListPage.isContactVisible(adminUser.email)).toBe(true);
     expect(await contactListPage.isContactVisible(regularUser.email)).toBe(true);
 
@@ -126,9 +124,7 @@ test.describe('Organization Contact List tests @organization-basic', () => {
     await organizationPage.clickOnContactListButton();
     await contactListPage.addNewUser(newUserEmail);
 
-    await expect
-      .poll(() => contactListPage.isNewUserIndicatorVisible(newUserEmail))
-      .toBe(true);
+    await expect.poll(() => contactListPage.isNewUserIndicatorVisible(newUserEmail)).toBe(true);
   });
 
   test('Verify "Remove" contact list button is visible for an admin role', async () => {
@@ -242,16 +238,15 @@ test.describe('Organization Contact List tests @organization-basic', () => {
     const invalidEmail = 'not-a-valid-email';
     await contactListPage.fillMultipleEmails(`${generateRandomEmail()}, ${invalidEmail}`);
     await contactListPage.registerUsers();
-    expect(await registrationPage.getToastMessageByVariant('error')).toContain(
-      `Invalid emails: ${invalidEmail}`,
-    );
+    await registrationPage.waitForToastMessageByVariant('error', `Invalid emails: ${invalidEmail}`);
 
     // 10.2.13: partial bulk add (existing + new) shows `Failed to sign up users with emails: ...`
     // 10.2.14: single add with existing email shows `Failed to sign up user`
     const partialNewUser = generateRandomEmail();
     await contactListPage.fillMultipleEmails(`${regularUser.email}, ${partialNewUser}`);
     await contactListPage.registerUsers();
-    expect(await registrationPage.getToastMessageByVariant('error')).toContain(
+    await registrationPage.waitForToastMessageByVariant(
+      'error',
       `Failed to sign up users with emails: ${regularUser.email}`,
     );
     expect(await contactListPage.verifyUserExistsInOrganization(partialNewUser)).toBe(true);
@@ -259,7 +254,9 @@ test.describe('Organization Contact List tests @organization-basic', () => {
     // Single mode "already exists" error
     await organizationPage.clickOnContactListButton();
     await contactListPage.addNewUser(regularUser.email);
-    expect(await registrationPage.getToastMessageByVariant('error')).toContain('Failed to sign up user');
+    expect(await registrationPage.getToastMessageByVariant('error')).toContain(
+      'Failed to sign up user',
+    );
   });
 
   test('Verify admin can elevate a user to admin role', async () => {
@@ -276,7 +273,7 @@ test.describe('Organization Contact List tests @organization-basic', () => {
     // 10.2.11: elevate modal appears
     expect(await contactListPage.isConfirmElevateContactButtonVisible()).toBe(true);
     await contactListPage.clickOnConfirmElevateContactButton();
-    expect(await registrationPage.getToastMessageByVariant('success')).toContain('elevate to admin successfully');
+    await registrationPage.waitForToastMessageByVariant('success', 'elevate to admin successfully');
 
     // 10.2.10: elevated role reflected in backend
     await expect.poll(() => isUserAdmin(newUserEmail)).toBe(true);
@@ -295,19 +292,12 @@ test.describe('Organization Contact List tests @organization-basic', () => {
     await transactionPage.clickOnCreateAccountTransaction();
 
     // Open Approvers and create a complex approver structure.
-    await window.getByTestId('button-add-approver').click();
-    await window.getByRole('tab', { name: 'Complex', exact: true }).click();
+    await transactionPage.clickOnAddApproverButton();
+    await transactionPage.clickOnComplexApproverTab();
 
     // Add a user to the structure, then attempt to add the same user again.
-    await window.getByTestId('button-approver-structure-edit-add-element-0').click();
-    await window.getByTestId('button-approver-structure-edit-add-element-public-key-0').click();
-    await window.getByTestId('span-email-0').click();
-    await window.getByTestId('button-add-user').click();
-
-    await window.getByTestId('button-approver-structure-edit-add-element-0').click();
-    await window.getByTestId('button-approver-structure-edit-add-element-public-key-0').click();
-    await window.getByTestId('span-email-0').click();
-    await window.getByTestId('button-add-user').click();
+    await transactionPage.addFirstUserToComplexApproverStructure();
+    await transactionPage.addFirstUserToComplexApproverStructure();
 
     const errorToast = await registrationPage.getToastMessageByVariant('error');
     expect(errorToast).toContain('User already exists in the list');

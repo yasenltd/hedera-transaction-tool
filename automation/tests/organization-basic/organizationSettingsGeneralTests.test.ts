@@ -31,14 +31,8 @@ const resolveOrganizationNickname = createSequentialOrganizationNicknameResolver
 test.describe('Organization Settings (General) tests @organization-basic', () => {
   test.slow();
   test.beforeAll(async () => {
-    ({
-      app,
-      window,
-      loginPage,
-      transactionPage,
-      organizationPage,
-      isolationContext,
-    } = await setupOrganizationSuiteApp(test.info()));
+    ({ app, window, loginPage, transactionPage, organizationPage, isolationContext } =
+      await setupOrganizationSuiteApp(test.info()));
     settingsPage = new SettingsPage(window);
     registrationPage = new RegistrationPage(window);
   });
@@ -54,15 +48,10 @@ test.describe('Organization Settings (General) tests @organization-basic', () =>
       'Invalid Organization',
     );
 
-    await createSeededOrganizationSession(
-      window,
-      loginPage,
-      organizationPage,
-      {
-        userCount: 1,
-        organizationNickname,
-      },
-    );
+    await createSeededOrganizationSession(window, loginPage, organizationPage, {
+      userCount: 1,
+      organizationNickname,
+    });
   });
 
   test.afterEach(async () => {
@@ -100,27 +89,15 @@ test.describe('Organization Settings (General) tests @organization-basic', () =>
     expect(await settingsPage.isNotificationsTabVisible()).toBe(false);
 
     // Delay the first organization-server request so we can reliably observe the global loader.
-    const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const organizationOrigin = new URL(process.env.ORGANIZATION_URL ?? 'http://localhost').origin;
-    const orgUrlRegex = new RegExp(`^${escapeRegExp(organizationOrigin)}/`);
-    let delayed = false;
-
-    await window.route(orgUrlRegex, async route => {
-      if (!delayed) {
-        delayed = true;
-        await new Promise(resolve => setTimeout(resolve, 800));
-      }
-      await route.continue();
-    });
+    await organizationPage.delayFirstOrganizationServerRequest(process.env.ORGANIZATION_URL ?? '');
 
     await organizationPage.selectOrganizationMode();
 
-    const loaderModal = window.getByTestId('modal-global-loader');
-    await expect(loaderModal).toBeVisible({ timeout: 2000 });
-    await expect(loaderModal.getByTestId('div-loader')).toBeVisible({ timeout: 2000 });
-    await expect(loaderModal).toBeHidden({ timeout: 15000 });
+    expect(await organizationPage.isGlobalLoaderModalVisible(2000)).toBe(true);
+    expect(await organizationPage.isGlobalLoaderSpinnerVisible(2000)).toBe(true);
+    expect(await organizationPage.isGlobalLoaderModalHidden(15000)).toBe(true);
 
-    await window.unroute(orgUrlRegex);
+    await organizationPage.stopDelayingOrganizationServerRequest();
     const isContactListVisibleAfterSwitch = await organizationPage.isContactListButtonVisible();
     expect(isContactListVisibleAfterSwitch).toBe(true);
 
@@ -152,11 +129,8 @@ test.describe('Organization Settings (General) tests @organization-basic', () =>
     await settingsPage.clickOnOrganisationsTab();
 
     // 3.4.11: Saving a blank org nickname shows validation toast.
-    await window.getByTestId('button-edit-nickname').first().click();
-    const visibleNicknameInput = window.locator('[data-testid="input-edit-nickname"]:visible');
-    await visibleNicknameInput.fill('');
-    await visibleNicknameInput.press('Tab'); // blur -> triggers inline save handler
-    expect(await registrationPage.getToastMessage()).toBe('Nickname cannot be empty');
+    await organizationPage.updateOrganizationNicknameAtIndex(0, '');
+    await registrationPage.waitForToastMessageByVariant('error', 'Nickname cannot be empty');
     await loginPage.waitForToastToDisappear();
     expect((await organizationPage.getOrganizationNicknameText())?.trim()).toBe(
       organizationNickname,
@@ -172,13 +146,8 @@ test.describe('Organization Settings (General) tests @organization-basic', () =>
     const secondOrganizationNickname = `${organizationNickname} (2)`;
     await organizationPage.setupOrganization(secondOrganizationNickname);
 
-    await window.getByTestId('button-edit-nickname').nth(1).click();
-    const secondVisibleNicknameInput = window.locator(
-      '[data-testid="input-edit-nickname"]:visible',
-    );
-    await secondVisibleNicknameInput.fill(organizationNickname);
-    await secondVisibleNicknameInput.press('Tab');
-    expect(await registrationPage.getToastMessage()).toBe('Nickname already exists');
+    await organizationPage.updateOrganizationNicknameAtIndex(1, organizationNickname);
+    await registrationPage.waitForToastMessageByVariant('error', 'Nickname already exists');
   });
 
   test('Verify error message when user adds non-existing organization', async () => {
@@ -213,9 +182,7 @@ test.describe('Organization Settings (General) tests @organization-basic', () =>
       .poll(
         async () => {
           const toastTexts = await visibleToasts.allTextContents();
-          return toastTexts
-            .map(toast => toast.trim())
-            .includes('Connection deleted successfully');
+          return toastTexts.map(toast => toast.trim()).includes('Connection deleted successfully');
         },
         {
           timeout: registrationPage.getLongTimeout(),

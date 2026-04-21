@@ -50,6 +50,7 @@ export class FilePage extends BasePage {
   fileLedgerTextSelector = 'p-file-ledger-id';
   fileExpirationTextSelector = 'p-file-expires-at';
   fileDescriptionTextSelector = 'p-file-description';
+  fileDeletedWarningSelector = 'p-file-is-deleted';
   fileIdListPrefixSelector = 'p-file-id-';
   fileNicknameListPrefixSelector = 'p-file-nickname-';
   toastMessageSelector = 'css=.v-toast__text';
@@ -256,6 +257,14 @@ export class FilePage extends BasePage {
 
   async getFileDescriptionText() {
     return await this.getText(this.fileDescriptionTextSelector);
+  }
+
+  async isFileDeletedWarningVisible() {
+    return await this.isElementVisible(
+      this.fileDeletedWarningSelector,
+      null,
+      this.VERY_LONG_TIMEOUT,
+    );
   }
 
   async getFirstFileFromList() {

@@ -96,11 +96,11 @@ test.describe('Settings general tests @local-basic', () => {
 
   test('Verify organizations empty state and invalid server URL validation', async () => {
     await settingsPage.clickOnOrganisationsTab();
-    await expect(window.getByText('There are no connected organizations.', { exact: true })).toBeVisible();
+    expect(await settingsPage.isOrganizationsEmptyStateVisible()).toBe(true);
 
-    await window.getByRole('button', { name: 'Connect now', exact: true }).click();
-    await window.getByTestId('input-server-url').fill('not-a-url');
-    await window.getByTestId('button-add-organization-in-modal').click();
+    await settingsPage.clickOnConnectOrganizationButton();
+    await settingsPage.fillInAddOrganizationServerUrl('not-a-url');
+    await settingsPage.clickOnAddOrganizationInModalButton();
 
     const toastText = await registrationPage.getToastMessageByVariant('error');
     expect(toastText).toContain('Invalid Server URL');
@@ -110,66 +110,56 @@ test.describe('Settings general tests @local-basic', () => {
     await settingsPage.clickOnPublicKeysTab();
 
     // Table headers
-    const headers = await window.locator('.table-custom thead th').allTextContents();
-    const headerText = headers.map(h => h.trim()).join(' ');
+    const headerText = await settingsPage.getPublicKeysTableHeaderText();
     expect(headerText).toContain('Nickname');
     expect(headerText).toContain('Owner');
     expect(headerText).toContain('Public Key');
 
     // Import modal and disabled state
-    await window.getByTestId('button-import-public-dropdown').click();
-    await window.getByTestId('import-single-public-key').click();
-    await expect(window.getByTestId('button-public-key-import')).toBeDisabled();
+    await settingsPage.openImportSinglePublicKeyModal();
+    expect(await settingsPage.isImportPublicKeyButtonDisabled()).toBe(true);
 
     // Invalid key shows error
-    await window.getByTestId('input-public-key-mapping').fill('invalid-key');
-    await window.getByTestId('input-public-key-nickname').fill('Bad Key');
-    await expect(window.getByTestId('button-public-key-import')).toBeEnabled();
-    await window.getByTestId('button-public-key-import').click();
+    await settingsPage.fillInImportPublicKeyForm('invalid-key', 'Bad Key');
+    expect(await settingsPage.isImportPublicKeyButtonEnabled()).toBe(true);
+    await settingsPage.clickOnImportPublicKeyButton();
     expect(await registrationPage.getToastMessageByVariant('error')).toContain('Invalid public key!');
 
     // Import 2 valid mappings (for bulk delete)
     const key1 = PrivateKey.generateED25519().publicKey.toString();
     const key2 = PrivateKey.generateED25519().publicKey.toString();
 
-    await window.getByTestId('input-public-key-mapping').fill(key1);
-    await window.getByTestId('input-public-key-nickname').fill('Key One');
-    await window.getByTestId('button-public-key-import').click();
+    await settingsPage.fillInImportPublicKeyForm(key1, 'Key One');
+    await settingsPage.clickOnImportPublicKeyButton();
     expect(await registrationPage.getToastMessageByVariant('success')).toContain('imported successfully');
 
-    await window.getByTestId('button-import-public-dropdown').click();
-    await window.getByTestId('import-single-public-key').click();
-    await window.getByTestId('input-public-key-mapping').fill(key2);
-    await window.getByTestId('input-public-key-nickname').fill('Key Two');
-    await window.getByTestId('button-public-key-import').click();
+    await settingsPage.openImportSinglePublicKeyModal();
+    await settingsPage.fillInImportPublicKeyForm(key2, 'Key Two');
+    await settingsPage.clickOnImportPublicKeyButton();
     expect(await registrationPage.getToastMessageByVariant('success')).toContain('imported successfully');
 
     // Copy public key shows success toast
-    await window.getByTestId('span-copy-public-key-0').click();
+    await settingsPage.clickOnCopyPublicKeyMappingAtIndex(0);
     expect(await registrationPage.getToastMessageByVariant('success')).toContain(
       'Public Key copied successfully',
     );
 
     // Rename the first mapping
-    await window.getByTestId('button-change-key-nickname').first().click();
-    await window.getByTestId('input-public-key-nickname').fill('Key One Renamed');
-    await window.getByTestId('button-confirm-update-nickname').click();
+    await settingsPage.renamePublicKeyMappingAtIndex(0, 'Key One Renamed');
     expect(await registrationPage.getToastMessageByVariant('success')).toContain(
       'Nickname updated successfully',
     );
-    expect(await window.getByTestId('cell-public-nickname-0').textContent()).toContain(
-      'Key One Renamed',
-    );
+    expect(await settingsPage.getPublicKeyMappingNicknameAtIndex(0)).toContain('Key One Renamed');
 
     // Delete a single mapping via the row trash button
-    await window.getByTestId('button-delete-key-1').click();
-    await window.getByTestId('button-delete-public-key-mapping').click();
+    await settingsPage.clickOnDeletePublicKeyMappingAtIndex(1);
+    await settingsPage.confirmDeletePublicKeyMapping();
     expect(await registrationPage.getToastMessageByVariant('success')).toContain('deleted successfully');
 
     // Bulk delete remaining via select-all
-    await window.getByTestId('checkbox-select-all-public-keys').click();
-    await window.getByTestId('button-delete-public-all').click();
-    await window.getByTestId('button-delete-public-key-mapping').click();
+    await settingsPage.clickOnSelectAllPublicKeys();
+    await settingsPage.clickOnDeleteAllPublicKeys();
+    await settingsPage.confirmDeletePublicKeyMapping();
     expect(await registrationPage.getToastMessageByVariant('success')).toContain('deleted successfully');
   });
 });

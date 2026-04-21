@@ -94,7 +94,7 @@ export class ContactListPage extends BasePage {
     );
   }
 
-  async clickOnExpandAssociatedAccountsButton(index:number) {
+  async clickOnExpandAssociatedAccountsButton(index: number) {
     await this.click(this.contactListExpandAssociatedAccountsButtonSelector + index.toString());
   }
 
@@ -157,7 +157,7 @@ export class ContactListPage extends BasePage {
   }
 
   async enableMultipleEmailsMode() {
-    const isChecked = await this.window.getByTestId(this.multipleEmailsModeSwitchSelector).isChecked();
+    const isChecked = await this.isChecked(this.multipleEmailsModeSwitchSelector);
     if (!isChecked) {
       await this.click(this.multipleEmailsModeSwitchSelector);
     }
@@ -270,7 +270,7 @@ export class ContactListPage extends BasePage {
         }
 
         const account = await this.getText(associatedAccountSelector);
-        if(account !== null) {
+        if (account !== null) {
           associatedAccounts.push(account.trim());
         }
         index++;
