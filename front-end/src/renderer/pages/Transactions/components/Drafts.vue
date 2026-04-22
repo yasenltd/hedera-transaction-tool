@@ -115,6 +115,46 @@ const handleSort = async (field: string, direction: string) => {
       list.value?.sort(cmp);
       break;
     }
+    case 'description': {
+      const cmp = (
+        a: TransactionDraft | TransactionGroup,
+        b: TransactionDraft | TransactionGroup,
+      ) => {
+        const descriptionA = getDraftDescription(a);
+        const descriptionB = getDraftDescription(b);
+        let returnValue = 0;
+
+        if (descriptionA < descriptionB) {
+          returnValue = -1;
+        }
+        if (descriptionA > descriptionB) {
+          returnValue = 1;
+        }
+        if (direction == 'asc') {
+          returnValue *= -1;
+        }
+        return returnValue;
+      };
+      list.value?.sort(cmp);
+      break;
+    }
+    case 'isTemplate': {
+      const cmp = (
+        a: TransactionDraft | TransactionGroup,
+        b: TransactionDraft | TransactionGroup,
+      ) => {
+        const isTemplateA = (a as TransactionDraft).isTemplate ? 1 : 0;
+        const isTemplateB = (b as TransactionDraft).isTemplate ? 1 : 0;
+        let returnValue = isTemplateA - isTemplateB;
+
+        if (direction == 'asc') {
+          returnValue *= -1;
+        }
+        return returnValue;
+      };
+      list.value?.sort(cmp);
+      break;
+    }
   }
 };
 

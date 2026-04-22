@@ -41,7 +41,7 @@ test.describe('Transaction draft account tests @local-transactions', () => {
     await transactionPage.closeDraftModal();
   });
 
-  test.only('Verify user can save draft and is visible in the draft page', async () => {
+  test('Verify user can save draft and is visible in the draft page', async () => {
     await transactionPage.clickOnCreateNewTransactionButton();
     await transactionPage.clickOnCreateAccountTransaction();
     await transactionPage.fillInDescription('B draft sort');

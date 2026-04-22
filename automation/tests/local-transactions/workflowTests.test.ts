@@ -214,7 +214,7 @@ test.describe('Workflow account navigation tests @local-transactions', () => {
     expect(toastText).toContain('Account ID or Nickname already exists!');
   });
 
-  test.only('Verify account list can be sorted by Account ID, Nickname, and Date Added', async () => {
+  test('Verify account list can be sorted by Account ID, Nickname, and Date Added', async () => {
     const { newAccountId: firstAccountId } = await transactionPage.createNewAccount();
     // Ensure different "Date Added" timestamps for stable sort expectations.
     await new Promise(resolve => setTimeout(resolve, 1100));

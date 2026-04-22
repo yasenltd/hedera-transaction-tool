@@ -74,7 +74,7 @@ test.describe('Workflow file navigation tests @local-transactions', () => {
     await transactionPage.closeDraftModal();
   });
 
-  test.only('Verify file card is visible with valid information', async () => {
+  test('Verify file card is visible with valid information', async () => {
     const { fileId } = await transactionPage.createFile('test');
     const createdFileId = fileId ?? '';
     expect(createdFileId).toBeTruthy();
@@ -253,7 +253,7 @@ test.describe('Workflow file navigation tests @local-transactions', () => {
     expect(isSecondFileCardHidden).toBe(true);
   });
 
-  test.only('Verify user can add an existing file to files card', async () => {
+  test('Verify user can add an existing file to files card', async () => {
     await filePage.ensureFileExistsAndUnlinked();
     await filePage.clickOnFilesMenuButton();
     await filePage.clickOnAddNewButtonForFile();
@@ -281,7 +281,7 @@ test.describe('Workflow file navigation tests @local-transactions', () => {
     expect((await filePage.getFileDescriptionText())?.trim()).toBe(description);
   });
 
-  test.only('Verify file list can be sorted by File ID and Nickname', async () => {
+  test('Verify file list can be sorted by File ID and Nickname', async () => {
     const { fileId: firstFileId } = await transactionPage.createFile('first');
     // Ensure different "Date Added" timestamps for stable sort expectations.
     await new Promise(resolve => setTimeout(resolve, 1100));
