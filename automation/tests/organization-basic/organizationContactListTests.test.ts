@@ -6,7 +6,6 @@ import { generateRandomEmail } from '../../utils/data/random.js';
 import { RegistrationPage } from '../../pages/RegistrationPage.js';
 import { TransactionPage } from '../../pages/TransactionPage.js';
 import { closeApp, setupApp } from '../../utils/runtime/appSession.js';
-import { deleteAllUserKeys } from '../../utils/db/databaseQueries.js';
 import { createSeededOrganizationSession } from '../../utils/seeding/organizationSeeding.js';
 import { signInOrganizationUser } from '../helpers/support/organizationAuthSupport.js';
 import {
@@ -86,82 +85,6 @@ test.describe('Organization Contact List tests @organization-basic', () => {
     await resetLocalStateForTeardown();
     await resetBackendStateForTeardown();
     await cleanupIsolation(isolationContext);
-  });
-
-  test('Verify empty state shows "No contacts found" message', async () => {
-    await deleteAllUserKeys();
-    await signInOrganizationUser(organizationPage, regularUser, globalCredentials.password);
-    await organizationPage.clickOnContactListButton();
-
-    expect(await contactListPage.isNoContactsFoundMessageVisible()).toBe(true);
-    expect(await contactListPage.getContactListContactCount()).toBe(0);
-  });
-
-  test('Verify admin sees all contacts and non-admin sees only contacts with keys', async () => {
-    await signInOrganizationUser(organizationPage, adminUser, globalCredentials.password);
-    const newUserEmail = generateRandomEmail();
-
-    await organizationPage.clickOnContactListButton();
-    await contactListPage.addNewUser(newUserEmail);
-
-    await expect.poll(() => contactListPage.isContactVisible(newUserEmail)).toBe(true);
-    expect(await contactListPage.isContactVisible(adminUser.email)).toBe(true);
-    expect(await contactListPage.isContactVisible(regularUser.email)).toBe(true);
-
-    await organizationPage.logoutFromOrganization();
-    await signInOrganizationUser(organizationPage, regularUser, globalCredentials.password);
-    await organizationPage.clickOnContactListButton();
-
-    expect(await contactListPage.isContactVisible(adminUser.email)).toBe(true);
-    expect(await contactListPage.isContactVisible(regularUser.email)).toBe(true);
-    expect(await contactListPage.isContactHidden(newUserEmail)).toBe(true);
-  });
-
-  test('Verify new user indicator dot is shown on contact list item', async () => {
-    await signInOrganizationUser(organizationPage, adminUser, globalCredentials.password);
-    const newUserEmail = generateRandomEmail();
-
-    await organizationPage.clickOnContactListButton();
-    await contactListPage.addNewUser(newUserEmail);
-
-    await expect.poll(() => contactListPage.isNewUserIndicatorVisible(newUserEmail)).toBe(true);
-  });
-
-  test('Verify "Remove" contact list button is visible for an admin role', async () => {
-    await signInOrganizationUser(organizationPage, adminUser, globalCredentials.password);
-    await organizationPage.clickOnContactListButton();
-    await contactListPage.clickOnAccountInContactListByEmail(regularUser.email);
-    expect(await contactListPage.isRemoveContactButtonVisible()).toBe(true);
-  });
-
-  test('Verify "Add new" button is enabled for an admin role', async () => {
-    await signInOrganizationUser(organizationPage, adminUser, globalCredentials.password);
-    await organizationPage.clickOnContactListButton();
-    expect(await contactListPage.isAddNewContactButtonEnabled()).toBe(true);
-  });
-
-  test('Verify "Remove" contact list button is not visible for a regular role', async () => {
-    await signInOrganizationUser(organizationPage, regularUser, globalCredentials.password);
-    await organizationPage.clickOnContactListButton();
-    await contactListPage.clickOnAccountInContactListByEmail(adminUser.email);
-    expect(await contactListPage.isRemoveContactButtonHidden()).toBe(true);
-  });
-
-  test('Verify "Add new" button is invisible for a regular role', async () => {
-    await signInOrganizationUser(organizationPage, regularUser, globalCredentials.password);
-    await organizationPage.clickOnContactListButton();
-    expect(await contactListPage.isAddNewContactButtonHidden()).toBe(true);
-  });
-
-  test('Verify contact email and public keys are displayed', async () => {
-    await signInOrganizationUser(organizationPage, regularUser, globalCredentials.password);
-    await organizationPage.clickOnContactListButton();
-    await contactListPage.clickOnAccountInContactListByEmail(regularUser.email);
-    const contactEmail = await contactListPage.getContactListEmailText();
-    expect(contactEmail).toBe(regularUser.email);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    const isPublicKeyCorrect = await contactListPage.comparePublicKeys(regularUser.email);
-    expect(isPublicKeyCorrect).toBe(true);
   });
 
   test('Verify associated accounts are displayed', async () => {

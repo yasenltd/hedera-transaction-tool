@@ -53,20 +53,6 @@ test.describe('Transaction draft account tests @local-transactions', () => {
     await transactionPage.fillInDescription('A draft sort');
     await transactionPage.saveDraft();
 
-    // Assert drafts table column headers are present
-    const headerTexts = await transactionPage.getDraftTableHeaderTexts();
-    expect(headerTexts).toContain('Date Created');
-    expect(headerTexts).toContain('Transaction Type');
-    expect(headerTexts).toContain('Description');
-    expect(headerTexts).toContain('Is Template');
-    expect(headerTexts).toContain('Actions');
-
-    // Verify sorting by Description (asc/desc)
-    await transactionPage.sortDraftsByDescription();
-    await expect.poll(() => transactionPage.getFirstDraftDescription()).toBe('B draft sort');
-    await transactionPage.sortDraftsByDescription();
-    await expect.poll(() => transactionPage.getFirstDraftDescription()).toBe('A draft sort');
-
     const draftDate = await transactionPage.getFirstDraftDate();
     expect(draftDate).toBeTruthy();
 
@@ -74,18 +60,7 @@ test.describe('Transaction draft account tests @local-transactions', () => {
     expect(draftType).toBe('Account Create');
 
     const description = await transactionPage.getFirstDraftDescription();
-    // After the sort assertions above, ensure the value is still one of our drafts.
     expect(['A draft sort', 'B draft sort']).toContain(description);
-
-    const isTemplateCheckboxVisible =
-      await transactionPage.getFirstDraftIsTemplateCheckboxVisible();
-    expect(isTemplateCheckboxVisible).toBe(true);
-
-    const isDeleteButtonVisible = await transactionPage.isFirstDraftDeleteButtonVisible();
-    expect(isDeleteButtonVisible).toBe(true);
-
-    const isContinueButtonVisible = await transactionPage.isFirstDraftContinueButtonVisible();
-    expect(isContinueButtonVisible).toBe(true);
 
     // Cleanup both drafts
     await transactionPage.deleteFirstDraft();

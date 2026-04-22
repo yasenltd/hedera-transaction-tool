@@ -63,22 +63,6 @@ test.describe('Organization Login tests @organization-basic', () => {
     await teardownOrganizationSuiteApp(app, isolationContext);
   });
 
-  test('Verify organization login page shows org nickname in heading', async () => {
-    const title = (await organizationPage.getOrganizationLoginTitleText())?.trim();
-    const nickname = (await organizationPage.getOrganizationLoginNicknameText())?.trim();
-
-    expect(title).toBe('Sign In');
-    expect(nickname).toBe(organizationNickname);
-  });
-
-  test('Verify login fails with invalid email format', async () => {
-    await organizationPage.fillOrganizationLoginEmail('invalid-email-format');
-    await organizationPage.fillOrganizationLoginPassword(organizationUser.password);
-
-    expect(await organizationPage.isOrganizationSignInButtonDisabled()).toBe(true);
-    expect(await organizationPage.isOrganizationLoginFormVisible()).toBe(true);
-  });
-
   test('Verify login fails with wrong password', async () => {
     await loginPage.waitForToastToDisappear();
     await organizationPage.fillInLoginDetailsAndClickSignIn(
@@ -90,24 +74,6 @@ test.describe('Organization Login tests @organization-basic', () => {
       await organizationPage.getOrganizationLoginPasswordErrorMessage()
     )?.trim();
     expect(passwordErrorMessage).toBe('Invalid password');
-  });
-
-  test('Verify sign in button is disabled until form is valid', async () => {
-    expect(await organizationPage.isOrganizationSignInButtonDisabled()).toBe(true);
-
-    await organizationPage.fillOrganizationLoginEmail(organizationUser.email);
-    expect(await organizationPage.isOrganizationSignInButtonDisabled()).toBe(true);
-
-    await organizationPage.fillOrganizationLoginPassword(organizationUser.password);
-    expect(await organizationPage.isOrganizationSignInButtonDisabled()).toBe(false);
-  });
-
-  test('Verify forgot password modal opens on link click', async () => {
-    await organizationPage.clickOnForgotPasswordLink();
-
-    expect(await organizationPage.isForgotPasswordModalVisible()).toBe(true);
-    const modalTitle = (await organizationPage.getForgotPasswordModalTitleText())?.trim();
-    expect(modalTitle).toBe('Forgot password');
   });
 
   test('Verify success toast is shown after login', async () => {

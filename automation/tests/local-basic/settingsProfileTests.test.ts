@@ -64,20 +64,6 @@ test.describe('Settings profile tests @local-basic', () => {
     expect(await loginPage.isSignInMode()).toBe(true);
   });
 
-  test('Verify change password button is disabled for weak new password', async () => {
-    await settingsPage.clickOnProfileTab();
-    await settingsPage.fillInCurrentPassword(globalCredentials.password);
-    await settingsPage.fillInNewPassword('123456789');
-    expect(await settingsPage.isChangePasswordButtonDisabled()).toBe(true);
-  });
-
-  test('Verify invalid password inline message appears on blur in profile tab', async () => {
-    await settingsPage.clickOnProfileTab();
-    await settingsPage.fillInNewPassword('123456789');
-    await settingsPage.pressKey('Tab');
-    expect(await settingsPage.getInvalidPasswordMessage()).toBe('Invalid password');
-  });
-
   test('Verify wrong current password shows error when changing password', async () => {
     await settingsPage.clickOnProfileTab();
     await settingsPage.fillInCurrentPassword(`${globalCredentials.password}x`);

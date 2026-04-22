@@ -1,5 +1,6 @@
 import { Page, expect, test } from '@playwright/test';
 import type { TransactionToolApp } from '../../utils/runtime/appSession.js';
+import { PrivateKey } from '@hiero-ledger/sdk';
 import { LoginPage } from '../../pages/LoginPage.js';
 import { SettingsPage } from '../../pages/SettingsPage.js';
 import { TransactionPage } from '../../pages/TransactionPage.js';
@@ -9,7 +10,6 @@ import {
   teardownLocalSuiteApp,
 } from '../helpers/bootstrap/localSuiteBootstrap.js';
 import type { ActivatedTestIsolationContext } from '../../utils/setup/sharedTestEnvironment.js';
-import { PrivateKey } from '@hiero-ledger/sdk';
 import { RegistrationPage } from '../../pages/RegistrationPage.js';
 
 let app: TransactionToolApp;
@@ -54,12 +54,6 @@ test.describe('Settings general tests @local-basic', () => {
     expect(await settingsPage.isLightThemeTabActive()).toBe(true);
   });
 
-  test('Verify app version info is displayed', async () => {
-    await settingsPage.clickOnGeneralTab();
-    expect(await settingsPage.isAppVersionVisible()).toBe(true);
-    expect(await settingsPage.getAppVersionText()).toBeTruthy();
-  });
-
   test('Verify user can switch to Custom and enter mirror node base URL', async () => {
     const customMirrorNodeBaseURL = 'https://mainnet-public.mirrornode.hedera.com:443/';
 
@@ -84,14 +78,6 @@ test.describe('Settings general tests @local-basic', () => {
 
     const transactionFee = await transactionPage.getMaxTransactionFee();
     expect(transactionFee).toBe(maxTransactionFee);
-  });
-
-  test('Verify date/time display format preference can be changed', async () => {
-    await settingsPage.selectDateTimeFormatLocalTime();
-    expect(await settingsPage.getSelectedDateTimeFormatLabel()).toContain('Local Time');
-
-    await settingsPage.selectDateTimeFormatUtcTime();
-    expect(await settingsPage.getSelectedDateTimeFormatLabel()).toContain('UTC Time');
   });
 
   test('Verify organizations empty state and invalid server URL validation', async () => {

@@ -175,52 +175,6 @@ test.describe('Workflow file navigation tests @local-transactions', () => {
     expect(transactionHeaderText).toBe('Read File Query');
   });
 
-  test('Verify clicking on "Add new" and "Create new" navigates the user to create new file transaction page', async () => {
-    await filePage.clickOnFilesMenuButton();
-    await filePage.clickOnAddNewFileButton();
-    expect(await filePage.areAddNewFileOptionsVisible()).toBe(true);
-    await filePage.clickOnCreateNewFileLink();
-
-    const transactionHeaderText = await transactionPage.getTransactionTypeHeaderText();
-    expect(transactionHeaderText).toBe('File Create Transaction');
-  });
-
-  test('Verify clicking on "Add new" and "Update" navigates the user to update file transaction page w/o prefilled id', async () => {
-    await filePage.clickOnFilesMenuButton();
-    await filePage.clickOnAddNewFileButton();
-    await filePage.clickOnUpdateFileLink();
-
-    const transactionHeaderText = await transactionPage.getTransactionTypeHeaderText();
-    expect(transactionHeaderText).toBe('File Update Transaction');
-
-    const fileIdFromUpdatePage = await transactionPage.getFileIdFromUpdatePage();
-    expect(fileIdFromUpdatePage).toBe('');
-  });
-
-  test('Verify clicking on "Add new" and "Append" navigates the user to update file transaction page w/o prefilled id', async () => {
-    await filePage.clickOnFilesMenuButton();
-    await filePage.clickOnAddNewFileButton();
-    await filePage.clickOnAppendFileLink();
-
-    const transactionHeaderText = await transactionPage.getTransactionTypeHeaderText();
-    expect(transactionHeaderText).toBe('File Append Transaction');
-
-    const fileIdFromUpdatePage = await transactionPage.getFileIdFromAppendPage();
-    expect(fileIdFromUpdatePage).toBe('');
-  });
-
-  test('Verify clicking on "Add new" and "Read" navigates the user to update file transaction page w/o prefilled id', async () => {
-    await filePage.clickOnFilesMenuButton();
-    await filePage.clickOnAddNewFileButton();
-    await filePage.clickOnReadFileLink();
-
-    const transactionHeaderText = await transactionPage.getTransactionTypeHeaderText();
-    expect(transactionHeaderText).toBe('Read File Query');
-
-    const fileIdFromUpdatePage = await transactionPage.getFileIdFromReadPage();
-    expect(fileIdFromUpdatePage).toBe('');
-  });
-
   test('Verify user can unlink multiple files', async () => {
     await transactionPage.ensureFileExists('test');
     await filePage.clickOnFilesMenuButton();
@@ -229,17 +183,9 @@ test.describe('Workflow file navigation tests @local-transactions', () => {
     await accountPage.clickOnAccountsLink();
     await filePage.clickOnFilesMenuButton();
     await filePage.clickOnSelectManyFilesButton();
-    expect(await filePage.isMultiSelectFileCheckboxVisibleByIndex(0)).toBe(true);
-    expect(await filePage.isRemoveMultipleButtonDisabled()).toBe(true);
     await filePage.clickOnFileCheckbox(fileFromPage);
-    expect(await filePage.isRemoveMultipleButtonDisabled()).toBe(false);
     await filePage.clickOnFileCheckbox(fileId ?? '');
     await filePage.clickOnRemoveMultipleButton();
-
-    // Assert confirmation modal is visible before confirming
-    const isConfirmVisible = await filePage.isConfirmUnlinkFileButtonVisible();
-    expect(isConfirmVisible).toBe(true);
-
     await filePage.clickOnConfirmUnlinkFileButton();
 
     await filePage.addFileToUnliked(fileFromPage);
@@ -258,10 +204,6 @@ test.describe('Workflow file navigation tests @local-transactions', () => {
     await filePage.clickOnFilesMenuButton();
     await filePage.clickOnAddNewButtonForFile();
     await filePage.clickOnAddExistingFileLink();
-    expect(await filePage.isExistingFileNicknameInputVisible()).toBe(true);
-    expect(await filePage.isLinkFileButtonDisabled()).toBe(true);
-    await filePage.fillInExistingFileId('0.0.invalid');
-    expect(await filePage.isLinkFileButtonDisabled()).toBe(true);
     const fileFromList = await filePage.getFirstFileFromList();
     await filePage.fillInExistingFileId(fileFromList);
     const nickname = 'Linked File';
@@ -279,85 +221,6 @@ test.describe('Workflow file navigation tests @local-transactions', () => {
     await filePage.clickOnFileCardByFileId(fileFromList);
     expect(await filePage.getSelectedFileNicknameText()).toBe(nickname);
     expect((await filePage.getFileDescriptionText())?.trim()).toBe(description);
-  });
-
-  test('Verify file list can be sorted by File ID and Nickname', async () => {
-    const { fileId: firstFileId } = await transactionPage.createFile('first');
-    // Ensure different "Date Added" timestamps for stable sort expectations.
-    await new Promise(resolve => setTimeout(resolve, 1100));
-    const { fileId: secondFileId } = await transactionPage.createFile('second');
-    await accountPage.clickOnAccountsLink();
-    await filePage.clickOnFilesMenuButton();
-
-    const fileIdA = firstFileId ?? '';
-    const fileIdB = secondFileId ?? '';
-
-    await filePage.sortByDateAddedAsc();
-    const dateAscIndexA = await filePage.findFileByIndex(fileIdA);
-    const dateAscIndexB = await filePage.findFileByIndex(fileIdB);
-    expect(dateAscIndexA).toBeGreaterThanOrEqual(0);
-    expect(dateAscIndexB).toBeGreaterThanOrEqual(0);
-    expect(dateAscIndexA).toBeLessThan(dateAscIndexB);
-
-    await filePage.sortByDateAddedDesc();
-    const dateDescIndexA = await filePage.findFileByIndex(fileIdA);
-    const dateDescIndexB = await filePage.findFileByIndex(fileIdB);
-    expect(dateDescIndexA).toBeGreaterThan(dateDescIndexB);
-
-    const nicknameSuffix = Date.now().toString(36);
-    const nicknameA = `A-${nicknameSuffix}`;
-    const nicknameB = `B-${nicknameSuffix}`;
-
-    await filePage.clickOnFileCardByFileId(fileIdA);
-    await filePage.clickOnEditSelectedFileNickname();
-    await filePage.fillSelectedFileNickname(nicknameB);
-    await filePage.saveSelectedFileNickname();
-    await expect.poll(() => filePage.getSelectedFileNicknameText()).toBe(nicknameB);
-
-    await filePage.clickOnFileCardByFileId(fileIdB);
-    await filePage.clickOnEditSelectedFileNickname();
-    await filePage.fillSelectedFileNickname(nicknameA);
-    await filePage.saveSelectedFileNickname();
-    await expect.poll(() => filePage.getSelectedFileNicknameText()).toBe(nicknameA);
-
-    await filePage.sortByNicknameAsc();
-    await expect
-      .poll(async () => {
-        const indexA = await filePage.findFileByIndex(fileIdA);
-        const indexB = await filePage.findFileByIndex(fileIdB);
-        return indexA >= 0 && indexB >= 0 && indexB < indexA;
-      })
-      .toBe(true);
-    const nicknameAscIndexA = await filePage.findFileByIndex(fileIdA);
-    const nicknameAscIndexB = await filePage.findFileByIndex(fileIdB);
-    expect(await filePage.getFileNicknameByIndex(nicknameAscIndexB)).toBe(nicknameA);
-    expect(await filePage.getFileNicknameByIndex(nicknameAscIndexA)).toBe(nicknameB);
-
-    await filePage.sortByNicknameDesc();
-    await expect
-      .poll(async () => {
-        const indexA = await filePage.findFileByIndex(fileIdA);
-        const indexB = await filePage.findFileByIndex(fileIdB);
-        return indexA >= 0 && indexB >= 0 && indexA < indexB;
-      })
-      .toBe(true);
-    const nicknameDescIndexA = await filePage.findFileByIndex(fileIdA);
-    const nicknameDescIndexB = await filePage.findFileByIndex(fileIdB);
-    expect(await filePage.getFileNicknameByIndex(nicknameDescIndexA)).toBe(nicknameB);
-    expect(await filePage.getFileNicknameByIndex(nicknameDescIndexB)).toBe(nicknameA);
-
-    const parseFileNum = (value: string | null) =>
-      Number.parseInt((value ?? '').split('.').pop() ?? '', 10);
-
-    await filePage.sortByFileIdAsc();
-    const asc0 = parseFileNum(await filePage.getFileIdByIndex(0));
-    const asc1 = parseFileNum(await filePage.getFileIdByIndex(1));
-    expect(asc0).toBeLessThanOrEqual(asc1);
-
-    await filePage.sortByFileIdDesc();
-    const desc0 = parseFileNum(await filePage.getFileIdByIndex(0));
-    const desc1 = parseFileNum(await filePage.getFileIdByIndex(1));
-    expect(desc0).toBeGreaterThanOrEqual(desc1);
   });
 
   test('Verify duplicate file link shows error toast', async () => {
