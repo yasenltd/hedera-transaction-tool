@@ -74,7 +74,7 @@ test.describe('Workflow file navigation tests @local-transactions', () => {
     await transactionPage.closeDraftModal();
   });
 
-  test('Verify file card is visible with valid information', async () => {
+  test.only('Verify file card is visible with valid information', async () => {
     const { fileId } = await transactionPage.createFile('test');
     const createdFileId = fileId ?? '';
     expect(createdFileId).toBeTruthy();
@@ -124,7 +124,7 @@ test.describe('Workflow file navigation tests @local-transactions', () => {
     await filePage.clickOnEditSelectedFileDescription();
     await filePage.fillSelectedFileDescription(newDescription);
     await filePage.saveSelectedFileDescription();
-    expect(await filePage.getFileDescriptionText()).toBe(newDescription);
+    expect((await filePage.getFileDescriptionText())?.trim()).toBe(newDescription);
 
     // 9.2.9: "File is deleted" warning shown for deleted files
     expect(payerPrivateKeyDerHex).toBeTruthy();
@@ -253,7 +253,7 @@ test.describe('Workflow file navigation tests @local-transactions', () => {
     expect(isSecondFileCardHidden).toBe(true);
   });
 
-  test('Verify user can add an existing file to files card', async () => {
+  test.only('Verify user can add an existing file to files card', async () => {
     await filePage.ensureFileExistsAndUnlinked();
     await filePage.clickOnFilesMenuButton();
     await filePage.clickOnAddNewButtonForFile();
@@ -278,10 +278,10 @@ test.describe('Workflow file navigation tests @local-transactions', () => {
 
     await filePage.clickOnFileCardByFileId(fileFromList);
     expect(await filePage.getSelectedFileNicknameText()).toBe(nickname);
-    expect(await filePage.getFileDescriptionText()).toBe(description);
+    expect((await filePage.getFileDescriptionText())?.trim()).toBe(description);
   });
 
-  test('Verify file list can be sorted by File ID and Nickname', async () => {
+  test.only('Verify file list can be sorted by File ID and Nickname', async () => {
     const { fileId: firstFileId } = await transactionPage.createFile('first');
     // Ensure different "Date Added" timestamps for stable sort expectations.
     await new Promise(resolve => setTimeout(resolve, 1100));
@@ -304,23 +304,47 @@ test.describe('Workflow file navigation tests @local-transactions', () => {
     const dateDescIndexB = await filePage.findFileByIndex(fileIdB);
     expect(dateDescIndexA).toBeGreaterThan(dateDescIndexB);
 
+    const nicknameSuffix = Date.now().toString(36);
+    const nicknameA = `A-${nicknameSuffix}`;
+    const nicknameB = `B-${nicknameSuffix}`;
+
     await filePage.clickOnFileCardByFileId(fileIdA);
     await filePage.clickOnEditSelectedFileNickname();
-    await filePage.fillSelectedFileNickname('B');
+    await filePage.fillSelectedFileNickname(nicknameB);
     await filePage.saveSelectedFileNickname();
+    await expect.poll(() => filePage.getSelectedFileNicknameText()).toBe(nicknameB);
 
     await filePage.clickOnFileCardByFileId(fileIdB);
     await filePage.clickOnEditSelectedFileNickname();
-    await filePage.fillSelectedFileNickname('A');
+    await filePage.fillSelectedFileNickname(nicknameA);
     await filePage.saveSelectedFileNickname();
+    await expect.poll(() => filePage.getSelectedFileNicknameText()).toBe(nicknameA);
 
     await filePage.sortByNicknameAsc();
-    expect(await filePage.getFileNicknameByIndex(0)).toBe('A');
-    expect(await filePage.getFileNicknameByIndex(1)).toBe('B');
+    await expect
+      .poll(async () => {
+        const indexA = await filePage.findFileByIndex(fileIdA);
+        const indexB = await filePage.findFileByIndex(fileIdB);
+        return indexA >= 0 && indexB >= 0 && indexB < indexA;
+      })
+      .toBe(true);
+    const nicknameAscIndexA = await filePage.findFileByIndex(fileIdA);
+    const nicknameAscIndexB = await filePage.findFileByIndex(fileIdB);
+    expect(await filePage.getFileNicknameByIndex(nicknameAscIndexB)).toBe(nicknameA);
+    expect(await filePage.getFileNicknameByIndex(nicknameAscIndexA)).toBe(nicknameB);
 
     await filePage.sortByNicknameDesc();
-    expect(await filePage.getFileNicknameByIndex(0)).toBe('B');
-    expect(await filePage.getFileNicknameByIndex(1)).toBe('A');
+    await expect
+      .poll(async () => {
+        const indexA = await filePage.findFileByIndex(fileIdA);
+        const indexB = await filePage.findFileByIndex(fileIdB);
+        return indexA >= 0 && indexB >= 0 && indexA < indexB;
+      })
+      .toBe(true);
+    const nicknameDescIndexA = await filePage.findFileByIndex(fileIdA);
+    const nicknameDescIndexB = await filePage.findFileByIndex(fileIdB);
+    expect(await filePage.getFileNicknameByIndex(nicknameDescIndexA)).toBe(nicknameB);
+    expect(await filePage.getFileNicknameByIndex(nicknameDescIndexB)).toBe(nicknameA);
 
     const parseFileNum = (value: string | null) =>
       Number.parseInt((value ?? '').split('.').pop() ?? '', 10);

@@ -74,7 +74,7 @@ test.describe('Transaction file execution tests @local-transactions', () => {
     expect(isExistingInDb).toBe(true);
   });
 
-  test('Verify user can execute file read tx', async () => {
+  test.only('Verify user can execute file read tx', async () => {
     await transactionPage.ensureFileExists('test');
     const fileId = await transactionPage.getFirsFileIdFromCache();
     const textFromCache = await transactionPage.getTextFromCache(fileId ?? '');

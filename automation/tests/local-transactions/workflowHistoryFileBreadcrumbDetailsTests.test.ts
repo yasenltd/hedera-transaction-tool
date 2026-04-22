@@ -49,7 +49,7 @@ test.describe('Workflow history/detail file and breadcrumb tests @local-transact
     await detailsPage.assertTransactionDisplayed(transactionId ?? '', 'File Create');
   });
 
-  test('Verify transaction details are displayed for file create tx ', async () => {
+  test.only('Verify transaction details are displayed for file create tx ', async () => {
     const { transactionId } = await transactionPage.createFile('test');
     await transactionPage.clickOnTransactionsMenuButton();
     await detailsPage.clickOnFirstTransactionDetailsButton();

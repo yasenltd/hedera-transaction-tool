@@ -349,6 +349,7 @@ onMounted(async () => {
 /* Watchers */
 watch(files, newFiles => {
   selectedFile.value = newFiles.find(f => f.file_id === selectedFile.value?.file_id) || newFiles[0];
+  syncSelectedFileDisplayContent();
 });
 </script>
 

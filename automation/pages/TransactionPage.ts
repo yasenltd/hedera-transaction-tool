@@ -64,6 +64,8 @@ export class TransactionPage extends BasePage {
   fileIdInputForReadSelector = 'input-file-id-for-read';
   fileContentReadTextFieldSelector = 'text-area-read-file-content';
   publicKeyInputSelector = 'input-public-key';
+  stakingAccountDropdownSelector = 'dropdown-staking-account';
+  stakedAccountInputSelector = 'input-stake-accountid';
   fileIdUpdateInputSelector = 'input-file-id-for-update';
   fileContentUpdateTextFieldSelector = 'textarea-file-content';
   fileIdInputForAppendSelector = 'input-file-id-for-append';
@@ -164,6 +166,8 @@ export class TransactionPage extends BasePage {
   draftDetailsTypeIndexSelector = 'span-draft-tx-type-';
   draftDetailsDescriptionIndexSelector = 'span-draft-tx-description-';
   draftDetailsIsTemplateCheckboxSelector = 'checkbox-is-template-';
+  draftTableHeaderTextSelector = 'css=.table-custom th span';
+  draftDescriptionSortSelector = 'css=.table-sort-link:has-text("Description")';
 
   // Combined method to verify all elements on Create transaction page
   async verifyAccountCreateTransactionElements() {
@@ -594,7 +598,25 @@ export class TransactionPage extends BasePage {
 
   async ensureAccountExists() {
     if (await this.isAccountsListEmpty()) {
-      await this.createNewAccount();
+      const maxAttempts = 2;
+      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        try {
+          await this.createNewAccount();
+          return;
+        } catch (error) {
+          if (attempt === maxAttempts) {
+            throw error;
+          }
+
+          console.log(
+            `Failed to create setup account on attempt ${attempt}; retrying: ${
+              error instanceof Error ? error.message : error
+            }`,
+          );
+          await this.clickOnTransactionsMenuButton();
+          await this.closeDraftModal();
+        }
+      }
     }
   }
 
@@ -697,9 +719,10 @@ export class TransactionPage extends BasePage {
 
   async deleteAccount(accountId: string) {
     await this.clickOnTransactionsMenuButton();
+    const transferAccountId = await this.getTransferAccountIdForDelete(accountId);
+    await this.clickOnTransactionsMenuButton();
     await this.clickOnCreateNewTransactionButton();
     await this.clickOnDeleteAccountTransaction();
-    const transferAccountId = await this.getTransferAccountIdForDelete(accountId);
     await this.fillInTransferAccountIdNormally(transferAccountId);
     await this.fillInDeletedAccountId(accountId);
     await this.clickOnSignAndSubmitButton(true);
@@ -720,8 +743,6 @@ export class TransactionPage extends BasePage {
         description: 'delete transfer account',
       });
       transferAccountId = newAccountId ?? undefined;
-      await this.clickOnCreateNewTransactionButton();
-      await this.clickOnDeleteAccountTransaction();
     }
 
     if (!transferAccountId) {
@@ -959,6 +980,38 @@ export class TransactionPage extends BasePage {
     return this.getTextFromInputField(this.initialBalanceInputSelector);
   }
 
+  async fillInInitialFundsAndBlur(amount: string) {
+    await this.fill(this.initialBalanceInputSelector, amount);
+    await this.getElement(this.initialBalanceInputSelector).press('Tab');
+  }
+
+  async blurPayerAccountId() {
+    await this.getElement(this.payerAccountInputSelector).press('Tab');
+  }
+
+  async selectStaking(stakeType: 'None' | 'Account' | 'Node') {
+    await this.selectOptionByValue(this.stakingAccountDropdownSelector, stakeType);
+  }
+
+  private async fillIncompleteAccountIdAndBlur(inputSelector: string, value = '0.0.') {
+    const input = this.getElement(inputSelector);
+    await input.fill(value);
+    await input.press('Escape');
+    await input.press('Tab');
+  }
+
+  async fillMalformedStakedAccountIdAndBlur(value = '0.0.') {
+    await this.fillIncompleteAccountIdAndBlur(this.stakedAccountInputSelector, value);
+  }
+
+  async fillMalformedUpdateAccountIdAndBlur(value = '0.0.') {
+    await this.fillIncompleteAccountIdAndBlur(this.updateAccountInputSelector, value);
+  }
+
+  async fillMalformedTransferAccountIdAndBlur(value = '0.0.') {
+    await this.fillIncompleteAccountIdAndBlur(this.transferAccountInputSelector, value);
+  }
+
   async fillInMaxAccountAssociations(amount: string) {
     await this.fill(this.maxAutoAssociationsInputSelector, amount);
   }
@@ -1155,10 +1208,7 @@ export class TransactionPage extends BasePage {
   }
 
   async waitForToastMessage(message: string) {
-    const toast = this.window.locator(`${this.toastMessageSelector}:visible`).filter({
-      hasText: message,
-    });
-    await toast.last().waitFor({ state: 'visible', timeout: this.LONG_TIMEOUT });
+    await this.waitForElementToBeVisible(this.getVisibleToastMessageSelector(message));
   }
 
   async getPayerAccountId() {
@@ -1439,6 +1489,20 @@ export class TransactionPage extends BasePage {
 
   async getFirstDraftDescription() {
     return await this.getText(this.draftDetailsDescriptionIndexSelector + '0');
+  }
+
+  async getDraftTableHeaderTexts() {
+    const headerText = await this.getText(this.draftTableHeaderTextSelector, null, this.LONG_TIMEOUT);
+    return headerText?.split(',').map(header => header.trim()) ?? [];
+  }
+
+  async sortDraftsByDescription() {
+    await this.click(this.draftDescriptionSortSelector, null, this.LONG_TIMEOUT);
+  }
+
+  private getVisibleToastMessageSelector(message: string) {
+    const escapedMessage = message.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+    return `${this.toastMessageSelector}:visible:has-text("${escapedMessage}")`;
   }
 
   async getFirstDraftIsTemplateCheckboxVisible() {

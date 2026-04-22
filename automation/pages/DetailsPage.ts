@@ -46,14 +46,21 @@ export class DetailsPage extends BasePage {
   transactionDescriptionSelector = 'p-description-field';
   breadCrumbItemSelector = 'breadcrumb-item-';
   historyTableHeaderSelector = 'css=.table-custom thead th span';
-  historyDescriptionSortButtonSelector = 'button-sort-history-description';
+  historyDescriptionSortButtonSelector = 'css=.table-custom thead th:nth-child(3) .table-sort-link';
+  historyDescriptionSortIconSelector =
+    'css=.table-custom thead th:nth-child(3) .table-sort-link i';
+  firstHistoryDetailsButtonSelector = 'button-transaction-details-0';
+  transactionStatusBadgeIndexSelector =
+    'css=[data-testid="td-transaction-status-{index}"] span.badge';
+  accountAlreadyLinkedTextSelector = 'text=Account already linked';
+  historyRowsSelector = 'css=.table-custom tbody tr';
 
   constructor(window: Page) {
     super(window);
   }
 
   async clickOnFirstTransactionDetailsButton() {
-    await this.click(this.transactionDetailsButtonIndexSelector + '0');
+    await this.click(this.firstHistoryDetailsButtonSelector, null, this.LONG_TIMEOUT);
   }
 
   async getFirstTransactionCreated() {
@@ -78,13 +85,29 @@ export class DetailsPage extends BasePage {
   }
 
   async sortHistoryByDescription() {
-    await this.click(this.historyDescriptionSortButtonSelector);
+    await this.click(this.historyDescriptionSortButtonSelector, null, this.LONG_TIMEOUT);
+  }
+
+  async waitForHistoryDescriptionSortDirection(direction: 'asc' | 'desc') {
+    const expectedClass = direction === 'asc' ? 'bi-arrow-up-short' : 'bi-arrow-down-short';
+    await expect
+      .poll(() =>
+        this.getAttributeValue(
+          this.historyDescriptionSortIconSelector,
+          'class',
+          null,
+          this.SHORT_TIMEOUT,
+        ),
+      )
+      .toContain(expectedClass);
   }
 
   async getTransactionStatusBadgeClass(index = 0) {
     return await this.getAttributeValue(
-      `[data-testid="${this.transactionStatusIndexSelector + index}"] span.badge`,
+      this.getTransactionStatusBadgeSelector(index),
       'class',
+      null,
+      this.LONG_TIMEOUT,
     );
   }
 
@@ -96,6 +119,24 @@ export class DetailsPage extends BasePage {
   async isTransactionStatusBadgeDanger(index = 0) {
     const className = await this.getTransactionStatusBadgeClass(index);
     return className?.includes('bg-danger') === true;
+  }
+
+  async isTransactionStatusBadgeDangerForTransaction(transactionId: string) {
+    const rowCount = await this.getHistoryRowCount();
+
+    for (let index = 0; index < rowCount; index++) {
+      const currentTransactionId = await this.getText(
+        this.transactionIdIndexSelector + index,
+        null,
+        this.SHORT_TIMEOUT,
+      );
+
+      if (currentTransactionId && transactionId.includes(currentTransactionId)) {
+        return await this.isTransactionStatusBadgeDanger(index);
+      }
+    }
+
+    return false;
   }
 
   async getFirstTransactionId() {
@@ -215,7 +256,11 @@ export class DetailsPage extends BasePage {
   }
 
   async isFileAlreadyLinkedLabelVisible() {
-    return await this.isElementVisible(this.fileAlreadyLinkedLabelSelector);
+    if (await this.isElementVisible(this.fileAlreadyLinkedLabelSelector)) {
+      return true;
+    }
+
+    return await this.isElementVisible('text=File already linked', null, this.LONG_TIMEOUT);
   }
 
   async isLinkAccountButtonVisible() {
@@ -227,7 +272,15 @@ export class DetailsPage extends BasePage {
   }
 
   async isAccountAlreadyLinkedLabelVisible() {
-    return await this.isElementVisible(this.accountAlreadyLinkedLabelSelector);
+    if (await this.isElementVisible(this.accountAlreadyLinkedLabelSelector)) {
+      return true;
+    }
+
+    return await this.isElementVisible(
+      this.accountAlreadyLinkedTextSelector,
+      null,
+      this.LONG_TIMEOUT,
+    );
   }
 
   async getFileDetailsExpirationTime() {
@@ -297,6 +350,14 @@ export class DetailsPage extends BasePage {
   }
 
   async getBreadCrumbItem(index: number) {
-    return this.window.getByTestId(`${this.breadCrumbItemSelector}${index}`);
+    return this.getElement(`${this.breadCrumbItemSelector}${index}`);
+  }
+
+  private async getHistoryRowCount() {
+    return await this.getElement(this.historyRowsSelector).count();
+  }
+
+  private getTransactionStatusBadgeSelector(index: number) {
+    return this.transactionStatusBadgeIndexSelector.replace('{index}', index.toString());
   }
 }

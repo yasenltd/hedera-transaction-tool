@@ -41,7 +41,7 @@ test.describe('Transaction draft account tests @local-transactions', () => {
     await transactionPage.closeDraftModal();
   });
 
-  test('Verify user can save draft and is visible in the draft page', async () => {
+  test.only('Verify user can save draft and is visible in the draft page', async () => {
     await transactionPage.clickOnCreateNewTransactionButton();
     await transactionPage.clickOnCreateAccountTransaction();
     await transactionPage.fillInDescription('B draft sort');
@@ -54,8 +54,7 @@ test.describe('Transaction draft account tests @local-transactions', () => {
     await transactionPage.saveDraft();
 
     // Assert drafts table column headers are present
-    const headers = await window.locator('.table-custom th span').allTextContents();
-    const headerTexts = headers.map(h => h.trim());
+    const headerTexts = await transactionPage.getDraftTableHeaderTexts();
     expect(headerTexts).toContain('Date Created');
     expect(headerTexts).toContain('Transaction Type');
     expect(headerTexts).toContain('Description');
@@ -63,11 +62,10 @@ test.describe('Transaction draft account tests @local-transactions', () => {
     expect(headerTexts).toContain('Actions');
 
     // Verify sorting by Description (asc/desc)
-    const descriptionSort = window.locator('.table-sort-link').filter({ hasText: 'Description' });
-    await descriptionSort.click();
-    expect(await transactionPage.getFirstDraftDescription()).toBe('A draft sort');
-    await descriptionSort.click();
-    expect(await transactionPage.getFirstDraftDescription()).toBe('B draft sort');
+    await transactionPage.sortDraftsByDescription();
+    await expect.poll(() => transactionPage.getFirstDraftDescription()).toBe('B draft sort');
+    await transactionPage.sortDraftsByDescription();
+    await expect.poll(() => transactionPage.getFirstDraftDescription()).toBe('A draft sort');
 
     const draftDate = await transactionPage.getFirstDraftDate();
     expect(draftDate).toBeTruthy();

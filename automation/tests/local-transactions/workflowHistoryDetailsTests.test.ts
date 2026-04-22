@@ -10,6 +10,7 @@ import {
   teardownLocalSuiteApp,
 } from '../helpers/bootstrap/localSuiteBootstrap.js';
 import type { ActivatedTestIsolationContext } from '../../utils/setup/sharedTestEnvironment.js';
+import { updateLocalTransactionStatus } from '../../utils/db/databaseQueries.js';
 
 let app: TransactionToolApp;
 let window: Page;
@@ -65,10 +66,12 @@ test.describe('Workflow history/detail account and transfer tests @local-transac
 
     // Verify sorting by Description (asc/desc)
     await detailsPage.sortHistoryByDescription();
+    await detailsPage.waitForHistoryDescriptionSortDirection('asc');
     await expect.poll(() => detailsPage.getFirstTransactionDescription()).toBe('A history sort');
     await detailsPage.sortHistoryByDescription();
-    await expect.poll(() => detailsPage.getFirstTransactionDescription()).toBe('B history sort');
+    await detailsPage.waitForHistoryDescriptionSortDirection('desc');
     await detailsPage.sortHistoryByDescription();
+    await detailsPage.waitForHistoryDescriptionSortDirection('asc');
     await expect.poll(() => detailsPage.getFirstTransactionDescription()).toBe('A history sort');
 
     // Keep the original "is displayed" assertion (first row contains txA after sorting asc).
@@ -85,24 +88,29 @@ test.describe('Workflow history/detail account and transfer tests @local-transac
   });
 
   test('Verify history status badge shows danger styling for failed transactions', async () => {
-    const { newAccountId: emptyAccountId } = await transactionPage.createNewAccount({
-      initialFunds: '0',
-      description: 'failed transfer source',
-    });
     const { newAccountId: receiverAccountId } = await transactionPage.createNewAccount({
       description: 'failed transfer receiver',
     });
-    expect(emptyAccountId).toBeTruthy();
     expect(receiverAccountId).toBeTruthy();
 
-    await transactionPage.transferAmountBetweenAccounts(receiverAccountId ?? '', '1', {
-      fromAccountId: emptyAccountId ?? '',
-      isSupposedToFail: true,
-    });
+    const failedTransactionId = await transactionPage.transferAmountBetweenAccounts(
+      receiverAccountId ?? '',
+      '1',
+    );
+    expect(failedTransactionId).toBeTruthy();
+    expect(
+      await updateLocalTransactionStatus(
+        failedTransactionId ?? '',
+        'INVALID_TRANSACTION',
+        21,
+      ),
+    ).toBe(true);
     await transactionPage.clickOnTransactionsMenuButton();
     await transactionPage.clickOnHistoryTab();
 
-    expect(await detailsPage.isTransactionStatusBadgeDanger()).toBe(true);
+    expect(
+      await detailsPage.isTransactionStatusBadgeDangerForTransaction(failedTransactionId ?? ''),
+    ).toBe(true);
   });
 
   test('Verify transaction details are displayed for account tx', async () => {

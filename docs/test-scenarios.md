@@ -325,7 +325,7 @@ This document enumerates all user-facing scenarios in the Hedera Transaction Too
 | 5.3.6 | User can save account update as draft                                        | Yes       | Verify draft transaction contains the saved info for account update tx                                     |
 | 5.3.7 | Draft preserves all update fields                                            | Yes       | Verify draft transaction contains the saved info for account update tx                                     |
 | 5.3.8 | Sign button is disabled when no account ID is entered                        | Yes       | Verify sign button is disabled when no account ID is entered                                                 |
-| 5.3.9 | `Invalid Account ID` error shown when submitting with a malformed account ID | Yes       | Invalid Account ID error shown when submitting with a malformed account ID                                |
+| 5.3.9 | Malformed Account ID blocks signing                                          | Yes       | Malformed account ID disables signing on account update                                                   |
 
 ### 5.4 Account Delete Transaction
 
@@ -339,7 +339,7 @@ This document enumerates all user-facing scenarios in the Hedera Transaction Too
 | 5.4.6  | Account is removed from local DB after deletion                                                | Yes       | Verify account is deleted from the db after account delete tx                                              |
 | 5.4.7  | User can save account delete as draft                                                          | Yes       | Verify draft transaction contains the saved info for account delete tx                                     |
 | 5.4.8  | `Account is already deleted!` inline warning shown when entered account ID resolves to deleted | Yes       | Account delete validation blocks submit for deleted accounts and malformed transfer account IDs           |
-| 5.4.9  | `Invalid Transfer Account ID` error shown when transfer-to account is empty or invalid         | Yes       | Account delete validation blocks submit for deleted accounts and malformed transfer account IDs           |
+| 5.4.9  | Invalid Transfer Account ID blocks submit                                                     | Yes       | Account delete validation blocks submit for deleted accounts and malformed transfer account IDs           |
 | 5.4.10 | Submit button blocked when account to delete or transfer-to account is already deleted         | Yes       | Account delete validation blocks submit for deleted accounts and malformed transfer account IDs           |
 
 ### 5.5 Transfer HBAR Transaction

@@ -102,8 +102,7 @@ test.describe('Settings general tests @local-basic', () => {
     await settingsPage.fillInAddOrganizationServerUrl('not-a-url');
     await settingsPage.clickOnAddOrganizationInModalButton();
 
-    const toastText = await registrationPage.getToastMessageByVariant('error');
-    expect(toastText).toContain('Invalid Server URL');
+    await registrationPage.waitForToastMessageByVariant('error', 'Invalid Server URL');
   });
 
   test('Verify user can manage public key mappings (import, rename, copy, delete)', async () => {
@@ -123,7 +122,7 @@ test.describe('Settings general tests @local-basic', () => {
     await settingsPage.fillInImportPublicKeyForm('invalid-key', 'Bad Key');
     expect(await settingsPage.isImportPublicKeyButtonEnabled()).toBe(true);
     await settingsPage.clickOnImportPublicKeyButton();
-    expect(await registrationPage.getToastMessageByVariant('error')).toContain('Invalid public key!');
+    await registrationPage.waitForToastMessageByVariant('error', 'Invalid public key!');
 
     // Import 2 valid mappings (for bulk delete)
     const key1 = PrivateKey.generateED25519().publicKey.toString();
@@ -131,35 +130,46 @@ test.describe('Settings general tests @local-basic', () => {
 
     await settingsPage.fillInImportPublicKeyForm(key1, 'Key One');
     await settingsPage.clickOnImportPublicKeyButton();
-    expect(await registrationPage.getToastMessageByVariant('success')).toContain('imported successfully');
+    await registrationPage.waitForToastMessageByVariant(
+      'success',
+      'Public key and nickname imported successfully',
+    );
 
     await settingsPage.openImportSinglePublicKeyModal();
     await settingsPage.fillInImportPublicKeyForm(key2, 'Key Two');
     await settingsPage.clickOnImportPublicKeyButton();
-    expect(await registrationPage.getToastMessageByVariant('success')).toContain('imported successfully');
+    await registrationPage.waitForToastMessageByVariant(
+      'success',
+      'Public key and nickname imported successfully',
+    );
 
     // Copy public key shows success toast
     await settingsPage.clickOnCopyPublicKeyMappingAtIndex(0);
-    expect(await registrationPage.getToastMessageByVariant('success')).toContain(
+    await registrationPage.waitForToastMessageByVariant(
+      'success',
       'Public Key copied successfully',
     );
 
     // Rename the first mapping
     await settingsPage.renamePublicKeyMappingAtIndex(0, 'Key One Renamed');
-    expect(await registrationPage.getToastMessageByVariant('success')).toContain(
-      'Nickname updated successfully',
-    );
+    await registrationPage.waitForToastMessageByVariant('success', 'Nickname updated successfully');
     expect(await settingsPage.getPublicKeyMappingNicknameAtIndex(0)).toContain('Key One Renamed');
 
     // Delete a single mapping via the row trash button
     await settingsPage.clickOnDeletePublicKeyMappingAtIndex(1);
     await settingsPage.confirmDeletePublicKeyMapping();
-    expect(await registrationPage.getToastMessageByVariant('success')).toContain('deleted successfully');
+    await registrationPage.waitForToastMessageByVariant(
+      'success',
+      'Public key mapping(s) deleted successfully',
+    );
 
     // Bulk delete remaining via select-all
     await settingsPage.clickOnSelectAllPublicKeys();
     await settingsPage.clickOnDeleteAllPublicKeys();
     await settingsPage.confirmDeletePublicKeyMapping();
-    expect(await registrationPage.getToastMessageByVariant('success')).toContain('deleted successfully');
+    await registrationPage.waitForToastMessageByVariant(
+      'success',
+      'Public key mapping(s) deleted successfully',
+    );
   });
 });

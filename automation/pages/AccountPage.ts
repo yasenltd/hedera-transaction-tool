@@ -35,6 +35,7 @@ export class AccountPage extends BasePage {
   sortAccountNicknameDescSelector = 'menu-sort-account-nickname-desc';
   sortAccountDateAddedAscSelector = 'menu-sort-account-date-added-asc';
   sortAccountDateAddedDescSelector = 'menu-sort-account-date-added-desc';
+  visibleSortAccountsButtonSelector = 'css=[data-testid="button-sort-accounts"]:visible';
   editSelectedAccountNicknameButtonSelector = 'button-edit-selected-account-nickname';
   selectedAccountNicknameInputSelector = 'input-account-nickname';
   // Texts
@@ -89,7 +90,7 @@ export class AccountPage extends BasePage {
   }
 
   async clickOnSortAccountsButton() {
-    await this.click(this.sortAccountsButtonSelector);
+    await this.click(this.visibleSortAccountsButtonSelector, null, this.LONG_TIMEOUT);
   }
 
   async sortByAccountIdAsc() {

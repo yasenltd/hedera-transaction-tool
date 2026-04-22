@@ -148,7 +148,11 @@ pnpm report:playwright
 
 `@local-transactions`
 
-- `tests/local-transactions/transactionTests.test.ts`
+- `tests/local-transactions/transactionAccountCreateExecutionTests.test.ts`
+- `tests/local-transactions/transactionAccountCreateValidationTests.test.ts`
+- `tests/local-transactions/transactionAccountDatabaseTests.test.ts`
+- `tests/local-transactions/transactionAccountDeleteTests.test.ts`
+- `tests/local-transactions/transactionAccountUpdateTests.test.ts`
 - `tests/local-transactions/transactionDraftTests.test.ts`
 - `tests/local-transactions/workflowTests.test.ts`
 - `tests/local-transactions/workflowHistoryDetailsTests.test.ts`

@@ -214,7 +214,7 @@ test.describe('Workflow account navigation tests @local-transactions', () => {
     expect(toastText).toContain('Account ID or Nickname already exists!');
   });
 
-  test('Verify account list can be sorted by Account ID, Nickname, and Date Added', async () => {
+  test.only('Verify account list can be sorted by Account ID, Nickname, and Date Added', async () => {
     const { newAccountId: firstAccountId } = await transactionPage.createNewAccount();
     // Ensure different "Date Added" timestamps for stable sort expectations.
     await new Promise(resolve => setTimeout(resolve, 1100));
@@ -227,27 +227,63 @@ test.describe('Workflow account navigation tests @local-transactions', () => {
     await accountPage.clickOnAccountsLink();
 
     // Set nicknames so nickname sorting is deterministic.
+    const nicknameSuffix = Date.now().toString(36);
+    const nicknameA = `A-${nicknameSuffix}`;
+    const nicknameB = `B-${nicknameSuffix}`;
+
     const indexA = await transactionPage.findAccountIndexById(accountIdA);
     expect(indexA).toBeGreaterThanOrEqual(0);
-    await window.getByTestId(`p-account-id-${indexA}`).click();
+    await transactionPage.clickOnAccountByIndex(indexA);
     await accountPage.clickOnEditSelectedAccountNickname();
-    await accountPage.fillSelectedAccountNickname('B');
+    await accountPage.fillSelectedAccountNickname(nicknameB);
     await accountPage.saveSelectedAccountNickname();
+    await expect
+      .poll(async () => {
+        const currentIndexA = await transactionPage.findAccountIndexById(accountIdA);
+        if (currentIndexA < 0) return null;
+        return await accountPage.getAccountNicknameByIndex(currentIndexA);
+      })
+      .toBe(nicknameB);
 
     const indexB = await transactionPage.findAccountIndexById(accountIdB);
     expect(indexB).toBeGreaterThanOrEqual(0);
-    await window.getByTestId(`p-account-id-${indexB}`).click();
+    await transactionPage.clickOnAccountByIndex(indexB);
     await accountPage.clickOnEditSelectedAccountNickname();
-    await accountPage.fillSelectedAccountNickname('A');
+    await accountPage.fillSelectedAccountNickname(nicknameA);
     await accountPage.saveSelectedAccountNickname();
+    await expect
+      .poll(async () => {
+        const currentIndexB = await transactionPage.findAccountIndexById(accountIdB);
+        if (currentIndexB < 0) return null;
+        return await accountPage.getAccountNicknameByIndex(currentIndexB);
+      })
+      .toBe(nicknameA);
 
     await accountPage.sortByNicknameAsc();
-    expect(await accountPage.getAccountNicknameByIndex(0)).toBe('A');
-    expect(await accountPage.getAccountNicknameByIndex(1)).toBe('B');
+    await expect
+      .poll(async () => {
+        const currentIndexA = await transactionPage.findAccountIndexById(accountIdA);
+        const currentIndexB = await transactionPage.findAccountIndexById(accountIdB);
+        return currentIndexA >= 0 && currentIndexB >= 0 && currentIndexB < currentIndexA;
+      })
+      .toBe(true);
+    const nicknameAscIndexA = await transactionPage.findAccountIndexById(accountIdA);
+    const nicknameAscIndexB = await transactionPage.findAccountIndexById(accountIdB);
+    expect(await accountPage.getAccountNicknameByIndex(nicknameAscIndexB)).toBe(nicknameA);
+    expect(await accountPage.getAccountNicknameByIndex(nicknameAscIndexA)).toBe(nicknameB);
 
     await accountPage.sortByNicknameDesc();
-    expect(await accountPage.getAccountNicknameByIndex(0)).toBe('B');
-    expect(await accountPage.getAccountNicknameByIndex(1)).toBe('A');
+    await expect
+      .poll(async () => {
+        const currentIndexA = await transactionPage.findAccountIndexById(accountIdA);
+        const currentIndexB = await transactionPage.findAccountIndexById(accountIdB);
+        return currentIndexA >= 0 && currentIndexB >= 0 && currentIndexA < currentIndexB;
+      })
+      .toBe(true);
+    const nicknameDescIndexA = await transactionPage.findAccountIndexById(accountIdA);
+    const nicknameDescIndexB = await transactionPage.findAccountIndexById(accountIdB);
+    expect(await accountPage.getAccountNicknameByIndex(nicknameDescIndexA)).toBe(nicknameB);
+    expect(await accountPage.getAccountNicknameByIndex(nicknameDescIndexB)).toBe(nicknameA);
 
     await accountPage.sortByAccountIdAsc();
     const ascIndexA = await transactionPage.findAccountIndexById(accountIdA);

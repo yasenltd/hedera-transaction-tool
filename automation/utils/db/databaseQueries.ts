@@ -1,6 +1,7 @@
 import {
   queryPostgresDatabase,
   queryDatabase,
+  executeDatabase,
   connectPostgresDatabase,
   disconnectPostgresDatabase,
 } from './databaseUtil.js';
@@ -25,6 +26,33 @@ export async function verifyTransactionExists(transactionId: string, transaction
     return row.count > 0;
   } catch (error) {
     console.error('Error verifying transaction:', error);
+    return false;
+  }
+}
+
+/**
+ * Updates a local transaction history row with a failed status code.
+ *
+ * @param transactionId - The transaction ID of the row to update.
+ * @param status - The status text to store.
+ * @param statusCode - The Hedera status code to store.
+ * @return A promise that resolves to true if the update query completed.
+ */
+export async function updateLocalTransactionStatus(
+  transactionId: string,
+  status: string,
+  statusCode: number,
+) {
+  const query = `
+        UPDATE "Transaction"
+        SET status = ?, status_code = ?
+        WHERE transaction_id = ?`;
+
+  try {
+    const changedRows = await executeDatabase(query, [status, statusCode, transactionId]);
+    return changedRows > 0;
+  } catch (error) {
+    console.error('Error updating local transaction status:', error);
     return false;
   }
 }
