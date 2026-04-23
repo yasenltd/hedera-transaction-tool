@@ -64,27 +64,38 @@ test.describe('Workflow history/detail account and transfer tests @local-transac
     expect(headerTexts).toContain('Created At');
     expect(headerTexts).toContain('Actions');
 
+    const isDescriptionBefore = async (firstDescription: string, secondDescription: string) => {
+      const firstIndex = await detailsPage.getHistoryDescriptionRowIndex(firstDescription);
+      const secondIndex = await detailsPage.getHistoryDescriptionRowIndex(secondDescription);
+
+      return firstIndex >= 0 && secondIndex >= 0 && firstIndex < secondIndex;
+    };
+
     // Verify sorting by Description (asc/desc)
     await detailsPage.sortHistoryByDescription();
     await detailsPage.waitForHistoryDescriptionSortDirection('asc');
-    await expect.poll(() => detailsPage.getFirstTransactionDescription()).toBe('A history sort');
+    await expect.poll(() => isDescriptionBefore('A history sort', 'B history sort')).toBe(true);
     await detailsPage.sortHistoryByDescription();
     await detailsPage.waitForHistoryDescriptionSortDirection('desc');
+    await expect.poll(() => isDescriptionBefore('B history sort', 'A history sort')).toBe(true);
     await detailsPage.sortHistoryByDescription();
     await detailsPage.waitForHistoryDescriptionSortDirection('asc');
-    await expect.poll(() => detailsPage.getFirstTransactionDescription()).toBe('A history sort');
+    await expect.poll(() => isDescriptionBefore('A history sort', 'B history sort')).toBe(true);
 
-    // Keep the original "is displayed" assertion (first row contains txA after sorting asc).
+    // Keep the original "is displayed" assertion for txA after sorting asc.
     const newTransactionId = txA;
     const txDescription = 'A history sort';
+    const transactionIndex = await detailsPage.getHistoryDescriptionRowIndex(txDescription);
+    expect(transactionIndex).toBeGreaterThanOrEqual(0);
     await detailsPage.assertTransactionDisplayed(
       newTransactionId ?? '',
       'Account Create',
       txDescription,
+      transactionIndex,
     );
 
     // 4.4.2: Status badge style (success should not be marked as danger).
-    expect(await detailsPage.isTransactionStatusBadgeSuccess()).toBe(true);
+    expect(await detailsPage.isTransactionStatusBadgeSuccess(transactionIndex)).toBe(true);
   });
 
   test('Verify history status badge shows danger styling for failed transactions', async () => {
@@ -99,11 +110,7 @@ test.describe('Workflow history/detail account and transfer tests @local-transac
     );
     expect(failedTransactionId).toBeTruthy();
     expect(
-      await updateLocalTransactionStatus(
-        failedTransactionId ?? '',
-        'INVALID_TRANSACTION',
-        21,
-      ),
+      await updateLocalTransactionStatus(failedTransactionId ?? '', 'INVALID_TRANSACTION', 21),
     ).toBe(true);
     await transactionPage.clickOnTransactionsMenuButton();
     await transactionPage.clickOnHistoryTab();

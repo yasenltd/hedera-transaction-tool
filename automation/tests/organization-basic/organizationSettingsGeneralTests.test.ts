@@ -12,6 +12,11 @@ import {
 } from '../helpers/bootstrap/organizationSuiteBootstrap.js';
 import type { ActivatedTestIsolationContext } from '../../utils/setup/sharedTestEnvironment.js';
 import { createSequentialOrganizationNicknameResolver } from '../helpers/support/organizationNamingSupport.js';
+import {
+  createLocalOnlyOrganizationServerUrl,
+  createLocalOrganizationConnectionForTesting,
+  deleteLocalOrganizationConnectionForTesting,
+} from '../helpers/support/localOrganizationConnectionSupport.js';
 
 let app: TransactionToolApp;
 let window: Page;
@@ -124,7 +129,7 @@ test.describe('Organization Settings (General) tests @organization-basic', () =>
     );
   });
 
-  test('Verify user can edit organization nickname', async () => {
+  test('Verify user can edit organization nickname', async ({}, testInfo) => {
     await settingsPage.clickOnSettingsButton();
     await settingsPage.clickOnOrganisationsTab();
 
@@ -143,11 +148,27 @@ test.describe('Organization Settings (General) tests @organization-basic', () =>
     await organizationPage.editOrganizationNickname(organizationNickname);
 
     // 3.4.12: Editing org nickname to an already-used name shows validation toast.
+    // Seed the second local connection directly because CI provisions only one
+    // live organization server, while the UI rejects duplicate server URLs.
     const secondOrganizationNickname = `${organizationNickname} (2)`;
-    await organizationPage.setupOrganization(secondOrganizationNickname);
+    const secondOrganizationServerUrl = createLocalOnlyOrganizationServerUrl(testInfo);
+    await createLocalOrganizationConnectionForTesting(
+      window,
+      secondOrganizationNickname,
+      secondOrganizationServerUrl,
+    );
+    await organizationPage.waitForElementToBeVisible(
+      organizationPage.editNicknameOrganizationButtonSelector,
+      organizationPage.getLongTimeout(),
+      1,
+    );
 
-    await organizationPage.updateOrganizationNicknameAtIndex(1, organizationNickname);
-    await registrationPage.waitForToastMessageByVariant('error', 'Nickname already exists');
+    try {
+      await organizationPage.updateOrganizationNicknameAtIndex(1, organizationNickname);
+      await registrationPage.waitForToastMessageByVariant('error', 'Nickname already exists');
+    } finally {
+      await deleteLocalOrganizationConnectionForTesting(window, secondOrganizationServerUrl);
+    }
   });
 
   test('Verify error message when user adds non-existing organization', async () => {

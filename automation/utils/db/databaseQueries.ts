@@ -123,6 +123,27 @@ export async function verifyFileExists(fileId: string) {
 }
 
 /**
+ * Updates the locally stored network metadata for a Hedera file.
+ *
+ * The Files page renders file details from cached metadata, so tests that mutate
+ * a file directly through the SDK need to refresh this field explicitly.
+ */
+export async function updateLocalFileMetadata(fileId: string, metaBytes: string) {
+  const query = `
+        UPDATE HederaFile
+        SET metaBytes = ?
+        WHERE file_id = ?`;
+
+  try {
+    const changedRows = await executeDatabase(query, [metaBytes, fileId]);
+    return changedRows > 0;
+  } catch (error) {
+    console.error('Error updating local file metadata:', error);
+    return false;
+  }
+}
+
+/**
  * Verifies if a user with the given email exists in the database.
  *
  * @param {string} email - The email of the user to verify.

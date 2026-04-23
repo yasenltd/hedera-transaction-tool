@@ -177,9 +177,7 @@ test.describe('Organization Contact List tests @organization-basic', () => {
     // Single mode "already exists" error
     await organizationPage.clickOnContactListButton();
     await contactListPage.addNewUser(regularUser.email);
-    expect(await registrationPage.getToastMessageByVariant('error')).toContain(
-      'Failed to sign up user',
-    );
+    await registrationPage.waitForToastMessageByVariant('error', 'Failed to sign up user');
   });
 
   test('Verify admin can elevate a user to admin role', async () => {

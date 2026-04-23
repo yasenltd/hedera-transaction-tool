@@ -47,8 +47,7 @@ export class DetailsPage extends BasePage {
   breadCrumbItemSelector = 'breadcrumb-item-';
   historyTableHeaderSelector = 'css=.table-custom thead th span';
   historyDescriptionSortButtonSelector = 'css=.table-custom thead th:nth-child(3) .table-sort-link';
-  historyDescriptionSortIconSelector =
-    'css=.table-custom thead th:nth-child(3) .table-sort-link i';
+  historyDescriptionSortIconSelector = 'css=.table-custom thead th:nth-child(3) .table-sort-link i';
   firstHistoryDetailsButtonSelector = 'button-transaction-details-0';
   transactionStatusBadgeIndexSelector =
     'css=[data-testid="td-transaction-status-{index}"] span.badge';
@@ -63,20 +62,20 @@ export class DetailsPage extends BasePage {
     await this.click(this.firstHistoryDetailsButtonSelector, null, this.LONG_TIMEOUT);
   }
 
-  async getFirstTransactionCreated() {
-    return await this.getText(this.transactionCreatedAtIndexSelector + '0');
+  async getFirstTransactionCreated(index = 0) {
+    return await this.getText(this.transactionCreatedAtIndexSelector + index.toString());
   }
 
-  async getFirstTransactionStatus() {
-    return await this.getText(this.transactionStatusIndexSelector + '0');
+  async getFirstTransactionStatus(index = 0) {
+    return await this.getText(this.transactionStatusIndexSelector + index.toString());
   }
 
-  async getFirstTransactionType() {
-    return await this.getText(this.transactionTypeIndexSelector + '0');
+  async getFirstTransactionType(index = 0) {
+    return await this.getText(this.transactionTypeIndexSelector + index.toString());
   }
 
-  async getFirstTransactionDescription() {
-    return await this.getText(this.transactionDescriptionIndexSelector + '0');
+  async getFirstTransactionDescription(index = 0) {
+    return await this.getText(this.transactionDescriptionIndexSelector + index.toString());
   }
 
   async getHistoryTableHeaderTexts() {
@@ -139,12 +138,12 @@ export class DetailsPage extends BasePage {
     return false;
   }
 
-  async getFirstTransactionId() {
-    return await this.getText(this.transactionIdIndexSelector + '0');
+  async getFirstTransactionId(index = 0) {
+    return await this.getText(this.transactionIdIndexSelector + index.toString());
   }
 
-  async isTransactionDetailsButtonVisible() {
-    return this.isElementVisible(this.transactionDetailsButtonIndexSelector + '0');
+  async isTransactionDetailsButtonVisible(index = 0) {
+    return this.isElementVisible(this.transactionDetailsButtonIndexSelector + index.toString());
   }
 
   async getTransactionDetailsType() {
@@ -295,25 +294,26 @@ export class DetailsPage extends BasePage {
     expectedId: string,
     expectedType: string,
     expectedDescription: string | null = null,
+    index = 0,
   ) {
-    const transactionId = await this.getFirstTransactionId();
+    const transactionId = await this.getFirstTransactionId(index);
     expect(expectedId.toString()).toContain(transactionId);
 
-    const transactionType = await this.getFirstTransactionType();
+    const transactionType = await this.getFirstTransactionType(index);
     expect(transactionType).toBe(expectedType);
 
     if (expectedDescription) {
-      const transactionDescription = await this.getFirstTransactionDescription();
+      const transactionDescription = await this.getFirstTransactionDescription(index);
       expect(transactionDescription).toBe(expectedDescription);
     }
 
-    const transactionStatus = await this.getFirstTransactionStatus();
+    const transactionStatus = await this.getFirstTransactionStatus(index);
     expect(transactionStatus).toBe('SUCCESS');
 
-    const transactionCreatedAt = await this.getFirstTransactionCreated();
+    const transactionCreatedAt = await this.getFirstTransactionCreated(index);
     expect(transactionCreatedAt).toBeTruthy();
 
-    const isTransactionDetailsButtonVisible = await this.isTransactionDetailsButtonVisible();
+    const isTransactionDetailsButtonVisible = await this.isTransactionDetailsButtonVisible(index);
     expect(isTransactionDetailsButtonVisible).toBe(true);
   }
 
@@ -347,6 +347,20 @@ export class DetailsPage extends BasePage {
 
   async getTransactionDescription() {
     return await this.getText(this.transactionDescriptionSelector);
+  }
+
+  async getHistoryDescriptionRowIndex(expectedDescription: string) {
+    const rowCount = await this.getHistoryRowCount();
+
+    for (let index = 0; index < rowCount; index++) {
+      const currentDescription = await this.getFirstTransactionDescription(index);
+
+      if (currentDescription?.trim() === expectedDescription) {
+        return index;
+      }
+    }
+
+    return -1;
   }
 
   async getBreadCrumbItem(index: number) {

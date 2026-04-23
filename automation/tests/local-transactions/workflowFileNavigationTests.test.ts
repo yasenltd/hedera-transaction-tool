@@ -7,12 +7,13 @@ import { setupEnvironmentForTransactions } from '../../utils/runtime/environment
 import { AccountPage } from '../../pages/AccountPage.js';
 import { FilePage } from '../../pages/FilePage.js';
 import { createSeededLocalUserSession } from '../../utils/seeding/localUserSeeding.js';
-import { Client, FileDeleteTransaction, PrivateKey } from '@hiero-ledger/sdk';
 import {
   setupLocalSuiteApp,
   teardownLocalSuiteApp,
 } from '../helpers/bootstrap/localSuiteBootstrap.js';
 import type { ActivatedTestIsolationContext } from '../../utils/setup/sharedTestEnvironment.js';
+import { updateLocalFileMetadata } from '../../utils/db/databaseQueries.js';
+import { deleteFileFromNetwork } from '../helpers/support/fileNetworkSupport.js';
 
 let app: TransactionToolApp;
 let window: Page;
@@ -23,29 +24,6 @@ let accountPage: AccountPage;
 let filePage: FilePage;
 let isolationContext: ActivatedTestIsolationContext | null = null;
 let payerPrivateKeyDerHex: string | null = null;
-
-const LOCALNET_OPERATOR_ACCOUNT_ID = '0.0.2';
-// Default localnet operator key for account 0.0.2 (ED25519 PKCS8 DER, hex-encoded).
-// This key is used only to pay for the FileDeleteTransaction; the file admin key signature is added separately.
-const LOCALNET_OPERATOR_PRIVATE_KEY_DER_HEX =
-  '302e020100300506032b65700422042091132178e72057a1d7528025956fe39b0b847f200ab59b2fdd367017f3087137';
-
-async function deleteFileFromNetwork(fileId: string, fileAdminPrivateKeyDerHex: string) {
-  const operatorKey = PrivateKey.fromStringDer(LOCALNET_OPERATOR_PRIVATE_KEY_DER_HEX);
-  const fileAdminKey = PrivateKey.fromStringDer(fileAdminPrivateKeyDerHex);
-
-  const client = Client.forLocalNode();
-  client.setOperator(LOCALNET_OPERATOR_ACCOUNT_ID, operatorKey);
-
-  const signedTx = await new FileDeleteTransaction()
-    .setFileId(fileId)
-    .freezeWith(client)
-    .sign(fileAdminKey);
-
-  const response = await signedTx.execute(client);
-
-  await response.getReceipt(client);
-}
 
 test.describe('Workflow file navigation tests @local-transactions', () => {
   test.beforeAll(async () => {
@@ -128,7 +106,13 @@ test.describe('Workflow file navigation tests @local-transactions', () => {
 
     // 9.2.9: "File is deleted" warning shown for deleted files
     expect(payerPrivateKeyDerHex).toBeTruthy();
-    await deleteFileFromNetwork(createdFileId, payerPrivateKeyDerHex ?? '');
+    const deletedFileMetaBytes = await deleteFileFromNetwork(
+      createdFileId,
+      payerPrivateKeyDerHex ?? '',
+    );
+    expect(await updateLocalFileMetadata(createdFileId, deletedFileMetaBytes)).toBe(true);
+    await accountPage.clickOnAccountsLink();
+    await filePage.clickOnFilesMenuButton();
     await filePage.clickOnFileCardByFileId(createdFileId);
     expect(await filePage.isFileDeletedWarningVisible()).toBe(true);
   });

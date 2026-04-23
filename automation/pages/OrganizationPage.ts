@@ -650,6 +650,12 @@ export class OrganizationPage extends BasePage {
 
   async updateOrganizationNicknameAtIndex(index: number, nickname: string) {
     await this.clickOnEditNicknameOrganizationButtonAtIndex(index);
+    await expect(this.getElement(this.visibleOrganizationNicknameInputSelector)).not.toHaveValue(
+      '',
+      {
+        timeout: this.LONG_TIMEOUT,
+      },
+    );
     await this.fillVisibleOrganizationNicknameInput(nickname);
     await this.saveVisibleOrganizationNicknameInput();
   }
