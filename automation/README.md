@@ -137,41 +137,57 @@ pnpm report:playwright
 
 `@local-basic`
 
-- `tests/local-basic/registrationTests.test.ts`
-- `tests/local-basic/loginTests.test.ts`
 - `tests/local-basic/accountResetTests.test.ts`
-- `tests/local-basic/registrationFirstTimeTests.test.ts`
+- `tests/local-basic/loginTests.test.ts`
+- `tests/local-basic/registrationAccountSetupTests.test.ts`
+- `tests/local-basic/registrationPersistenceTests.test.ts`
+- `tests/local-basic/registrationTests.test.ts`
 - `tests/local-basic/settingsGeneralTests.test.ts`
+- `tests/local-basic/settingsKeysImportTests.test.ts`
+- `tests/local-basic/settingsKeysManagementTests.test.ts`
 - `tests/local-basic/settingsKeysTests.test.ts`
 - `tests/local-basic/settingsProfileTests.test.ts`
-- `tests/local-basic/transactionsNavigationTests.test.ts`
 
 `@local-transactions`
 
+- `tests/local-transactions/groupTransactionExecutionTests.test.ts`
+- `tests/local-transactions/groupTransactionItemTests.test.ts`
+- `tests/local-transactions/groupTransactionTests.test.ts`
 - `tests/local-transactions/transactionAccountCreateExecutionTests.test.ts`
 - `tests/local-transactions/transactionAccountCreateValidationTests.test.ts`
 - `tests/local-transactions/transactionAccountDatabaseTests.test.ts`
 - `tests/local-transactions/transactionAccountDeleteTests.test.ts`
 - `tests/local-transactions/transactionAccountUpdateTests.test.ts`
+- `tests/local-transactions/transactionDraftAccountPersistenceTests.test.ts`
+- `tests/local-transactions/transactionDraftFileTests.test.ts`
+- `tests/local-transactions/transactionDraftKeySafetyTests.test.ts`
 - `tests/local-transactions/transactionDraftTests.test.ts`
+- `tests/local-transactions/transactionFileTests.test.ts`
+- `tests/local-transactions/transactionTransferAllowanceTests.test.ts`
+- `tests/local-transactions/workflowFileNavigationTests.test.ts`
 - `tests/local-transactions/workflowTests.test.ts`
 - `tests/local-transactions/workflowHistoryDetailsTests.test.ts`
-- `tests/local-transactions/groupTransactionTests.test.ts`
+- `tests/local-transactions/workflowHistoryFileBreadcrumbDetailsTests.test.ts`
+- `tests/local-transactions/workflowHistoryTransferAllowanceDetailsTests.test.ts`
 
 `@organization-basic`
 
-- `tests/organization-basic/organizationSettingsTests.test.ts`
 - `tests/organization-basic/organizationContactListTests.test.ts`
+- `tests/organization-basic/organizationLoginTests.test.ts`
 - `tests/organization-basic/organizationNotificationTests.test.ts`
+- `tests/organization-basic/organizationSettingsGeneralTests.test.ts`
+- `tests/organization-basic/organizationSettingsRecoveryTests.test.ts`
 
 `@organization-advanced`
 
-- `tests/organization-advanced/organizationTransactionTests.test.ts`
-- `tests/organization-advanced/organizationTransactionObserverTests.test.ts`
-- `tests/organization-advanced/organizationTransactionExecutionTests.test.ts`
-- `tests/organization-advanced/organizationTransactionCompatibilityTests.test.ts`
+- `tests/organization-advanced/organizationGroupCsvLoadTests.test.ts`
 - `tests/organization-advanced/organizationGroupTests.test.ts`
 - `tests/organization-advanced/organizationRegressionTests.test.ts`
+- `tests/organization-advanced/organizationTransactionCompatibilityTests.test.ts`
+- `tests/organization-advanced/organizationTransactionExecutionTests.test.ts`
+- `tests/organization-advanced/organizationTransactionLifecycleTests.test.ts`
+- `tests/organization-advanced/organizationTransactionObserverTests.test.ts`
+- `tests/organization-advanced/organizationTransactionTests.test.ts`
 
 Some organization suites are currently marked `skip` in the source, but they remain listed here because they still belong to the suite structure and CI tag layout.
 

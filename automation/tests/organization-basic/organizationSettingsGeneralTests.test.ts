@@ -174,7 +174,10 @@ test.describe('Organization Settings (General) tests @organization-basic', () =>
   test('Verify error message when user adds non-existing organization', async () => {
     await loginPage.waitForToastToDisappear();
     await organizationPage.setupWrongOrganization(invalidOrganizationNickname);
-    const toastMessage = await registrationPage.getToastMessage();
+    const toastMessage = await registrationPage.waitForToastMessageByVariant(
+      'error',
+      'Organization does not exist. Please check the server URL',
+    );
     expect(toastMessage).toBe('Organization does not exist. Please check the server URL');
     await organizationPage.clickOnCancelAddingOrganizationButton();
     await loginPage.waitForToastToDisappear();
