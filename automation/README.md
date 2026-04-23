@@ -172,11 +172,15 @@ pnpm report:playwright
 
 `@organization-basic`
 
+- `tests/organization-basic/organizationContactListAdminTests.test.ts`
+- `tests/organization-basic/organizationContactListBulkTests.test.ts`
 - `tests/organization-basic/organizationContactListTests.test.ts`
 - `tests/organization-basic/organizationLoginTests.test.ts`
 - `tests/organization-basic/organizationNotificationTests.test.ts`
+- `tests/organization-basic/organizationSettingsConnectionTests.test.ts`
 - `tests/organization-basic/organizationSettingsGeneralTests.test.ts`
 - `tests/organization-basic/organizationSettingsRecoveryTests.test.ts`
+- `tests/organization-basic/organizationSettingsTransactionAccessTests.test.ts`
 
 `@organization-advanced`
 
