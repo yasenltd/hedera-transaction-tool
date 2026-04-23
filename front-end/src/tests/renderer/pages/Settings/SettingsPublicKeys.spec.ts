@@ -25,13 +25,19 @@ vi.mock('@renderer/stores/storeUser', () => ({
   default: vi.fn(() => mocks.userStore),
 }));
 
-vi.mock('@renderer/caches/backend/PublicKeyOwnerCache', () => ({
-  PublicKeyOwnerCache: {
-    inject: vi.fn(() => ({
+vi.mock('@renderer/caches/backend/PublicKeyOwnerCache', () => {
+  class PublicKeyOwnerCache {
+    static inject = vi.fn(() => ({
       lookup: vi.fn(async () => null),
-    })),
-  },
-}));
+    }));
+
+    lookup = vi.fn(async () => null);
+  }
+
+  return {
+    PublicKeyOwnerCache,
+  };
+});
 
 vi.mock('@renderer/utils/ToastManager', () => ({
   ToastManager: {

@@ -83,11 +83,19 @@ vi.mock('@renderer/services/mirrorNodeDataService', () => ({
   getDollarAmount: vi.fn(() => '$1.00'),
 }));
 
-vi.mock('@renderer/caches/backend/PublicKeyOwnerCache.ts', () => ({
-  PublicKeyOwnerCache: {
-    inject: vi.fn(() => ({})),
-  },
-}));
+vi.mock('@renderer/caches/backend/PublicKeyOwnerCache.ts', () => {
+  class PublicKeyOwnerCache {
+    static inject = vi.fn(() => ({
+      lookup: vi.fn(async () => null),
+    }));
+
+    lookup = vi.fn(async () => null);
+  }
+
+  return {
+    PublicKeyOwnerCache,
+  };
+});
 
 vi.mock('@renderer/components/Transaction/Create/txTypeComponentMapping', () => ({
   transactionTypeKeys: {

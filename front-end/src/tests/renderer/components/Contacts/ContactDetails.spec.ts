@@ -76,13 +76,19 @@ vi.mock('@renderer/utils/dateTimeFormat.ts', () => ({
   formatDatePart: vi.fn(() => 'Jan 1, 2026'),
 }));
 
-vi.mock('@renderer/caches/mirrorNode/AccountByPublicKeyCache.ts', () => ({
-  AccountByPublicKeyCache: {
-    inject: vi.fn(() => ({
+vi.mock('@renderer/caches/mirrorNode/AccountByPublicKeyCache.ts', () => {
+  class AccountByPublicKeyCache {
+    static inject = vi.fn(() => ({
       batchLookup: mocks.accountLookup,
-    })),
-  },
-}));
+    }));
+
+    batchLookup = mocks.accountLookup;
+  }
+
+  return {
+    AccountByPublicKeyCache,
+  };
+});
 
 vi.mock('@renderer/utils/ToastManager', () => ({
   ToastManager: {
