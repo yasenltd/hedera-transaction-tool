@@ -114,7 +114,8 @@ vi.mock('@renderer/utils', () => ({
   stringifyHbar: vi.fn(() => '10 ℏ'),
 }));
 
-vi.mock('@hiero-ledger/sdk', () => {
+vi.mock('@hiero-ledger/sdk', async importOriginal => {
+  const actual = await importOriginal<typeof import('@hiero-ledger/sdk')>();
   class Hbar {}
   class KeyList {}
   class PublicKey {
@@ -124,7 +125,7 @@ vi.mock('@hiero-ledger/sdk', () => {
     }
   }
 
-  return { Hbar, KeyList, PublicKey };
+  return { ...actual, Hbar, KeyList, PublicKey };
 });
 
 const AppInputStub = defineComponent({

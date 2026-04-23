@@ -96,17 +96,21 @@ vi.mock('@renderer/utils/transactions', () => ({
   getFormattedDateFromTimestamp: vi.fn(() => 'Dec 31, 2026'),
 }));
 
-vi.mock('@hiero-ledger/sdk', () => ({
-  Client: class Client {},
-  FileId: {
-    fromString: vi.fn((value: string) => ({
-      toStringWithChecksum: vi.fn(() => `${value}-abcde`),
-    })),
-  },
-  FileInfo: {
-    fromBytes: vi.fn(() => mocks.fileInfo),
-  },
-}));
+vi.mock('@hiero-ledger/sdk', async importOriginal => {
+  const actual = await importOriginal<typeof import('@hiero-ledger/sdk')>();
+  return {
+    ...actual,
+    Client: class Client {},
+    FileId: {
+      fromString: vi.fn((value: string) => ({
+        toStringWithChecksum: vi.fn(() => `${value}-abcde`),
+      })),
+    },
+    FileInfo: {
+      fromBytes: vi.fn(() => mocks.fileInfo),
+    },
+  };
+});
 
 const AppInputStub = defineComponent({
   emits: ['blur'],

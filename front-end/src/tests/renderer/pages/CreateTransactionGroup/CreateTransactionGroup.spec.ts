@@ -90,16 +90,20 @@ vi.mock('@renderer/utils/sdk', () => ({
   createTransactionId: vi.fn(() => '0.0.1@1.1'),
 }));
 
-vi.mock('@hiero-ledger/sdk', () => ({
-  KeyList: class KeyList {},
-  PublicKey: {
-    fromString: vi.fn(),
-  },
-  Transaction: {
-    fromBytes: vi.fn(() => ({ transactionMemo: '' })),
-  },
-  TransferTransaction: class TransferTransaction {},
-}));
+vi.mock('@hiero-ledger/sdk', async importOriginal => {
+  const actual = await importOriginal<typeof import('@hiero-ledger/sdk')>();
+  return {
+    ...actual,
+    KeyList: class KeyList {},
+    PublicKey: {
+      fromString: vi.fn(),
+    },
+    Transaction: {
+      fromBytes: vi.fn(() => ({ transactionMemo: '' })),
+    },
+    TransferTransaction: class TransferTransaction {},
+  };
+});
 
 describe('CreateTransactionGroup.vue', () => {
   beforeEach(() => {

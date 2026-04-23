@@ -84,7 +84,7 @@ describe('EmailLoginForm.vue registration mode', () => {
       },
       global: {
         provide: {
-          [GLOBAL_MODAL_LOADER_KEY as symbol]: {
+          [GLOBAL_MODAL_LOADER_KEY]: {
             value: {
               close: vi.fn(),
               open: vi.fn(),

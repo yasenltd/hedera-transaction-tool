@@ -58,13 +58,17 @@ vi.mock('@renderer/utils', () => ({
   isUserLoggedIn: vi.fn((user: unknown) => user !== null),
 }));
 
-vi.mock('@hiero-ledger/sdk', () => ({
-  FileId: {
-    fromString: vi.fn((value: string) => ({
-      toString: vi.fn(() => value),
-    })),
-  },
-}));
+vi.mock('@hiero-ledger/sdk', async importOriginal => {
+  const actual = await importOriginal<typeof import('@hiero-ledger/sdk')>();
+  return {
+    ...actual,
+    FileId: {
+      fromString: vi.fn((value: string) => ({
+        toString: vi.fn(() => value),
+      })),
+    },
+  };
+});
 
 const stubs = {
   AppButton: {

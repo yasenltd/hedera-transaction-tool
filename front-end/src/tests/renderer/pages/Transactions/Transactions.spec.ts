@@ -73,13 +73,19 @@ vi.mock('@renderer/services/organization', () => ({
   importSignatures: vi.fn(),
 }));
 
-vi.mock('@renderer/caches/backend/BackendTransactionCache.ts', () => ({
-  BackendTransactionCache: {
-    inject: vi.fn(() => ({
+vi.mock('@renderer/caches/backend/BackendTransactionCache.ts', () => {
+  class BackendTransactionCache {
+    static inject = vi.fn(() => ({
       lookup: vi.fn(),
-    })),
-  },
-}));
+    }));
+
+    lookup = vi.fn();
+  }
+
+  return {
+    BackendTransactionCache,
+  };
+});
 
 vi.mock('@renderer/utils/ToastManager', () => ({
   ToastManager: {

@@ -1,6 +1,7 @@
 // @vitest-environment happy-dom
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
+import type { Contact } from '@shared/interfaces';
 
 import ContactDetails from '@renderer/components/Contacts/ContactDetails.vue';
 
@@ -23,16 +24,20 @@ const mocks = vi.hoisted(() => ({
   formatPublicKey: vi.fn(async (key: string) => key),
 }));
 
-vi.mock('@hiero-ledger/sdk', () => ({
-  PublicKey: {
-    fromString: vi.fn((key: string) => ({
-      toStringRaw: () => key,
-      _key: {
-        _type: 'ED25519',
-      },
-    })),
-  },
-}));
+vi.mock('@hiero-ledger/sdk', async importOriginal => {
+  const actual = await importOriginal<typeof import('@hiero-ledger/sdk')>();
+  return {
+    ...actual,
+    PublicKey: {
+      fromString: vi.fn((key: string) => ({
+        toStringRaw: () => key,
+        _key: {
+          _type: 'ED25519',
+        },
+      })),
+    },
+  };
+});
 
 vi.mock('@renderer/stores/storeUser', () => ({
   default: vi.fn(() => mocks.userStore),
@@ -100,17 +105,19 @@ vi.mock('@renderer/utils', () => ({
 }));
 
 describe('ContactDetails.vue', () => {
-  const contact = {
+  const contact: Contact = {
     user: {
       id: 20,
       email: 'member@example.com',
       admin: false,
-      status: 'ACTIVE',
+      status: 'NONE',
+      keys: [],
       clients: [],
     },
     userKeys: [
       {
         id: 1,
+        userId: 20,
         publicKey: '302a300506032b6570032100aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
       },
     ],

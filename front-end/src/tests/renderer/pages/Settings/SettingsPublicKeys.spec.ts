@@ -48,11 +48,15 @@ vi.mock('@renderer/utils', () => ({
   ),
 }));
 
-vi.mock('@hiero-ledger/sdk', () => ({
-  PublicKey: {
-    fromString: mocks.publicKeyFromString,
-  },
-}));
+vi.mock('@hiero-ledger/sdk', async importOriginal => {
+  const actual = await importOriginal<typeof import('@hiero-ledger/sdk')>();
+  return {
+    ...actual,
+    PublicKey: {
+      fromString: mocks.publicKeyFromString,
+    },
+  };
+});
 
 const stubs = {
   AppButton: {
