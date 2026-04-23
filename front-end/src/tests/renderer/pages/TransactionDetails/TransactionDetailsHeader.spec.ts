@@ -134,22 +134,8 @@ vi.mock('@renderer/utils', () => ({
   usersPublicRequiredToSign: vi.fn(),
 }));
 
-vi.mock('@renderer/caches/mirrorNode/AccountByIdCache.ts', () => ({
-  AccountByIdCache: {
-    inject: vi.fn(() => ({})),
-  },
-}));
-
-vi.mock('@renderer/caches/mirrorNode/NodeByIdCache.ts', () => ({
-  NodeByIdCache: {
-    inject: vi.fn(() => ({})),
-  },
-}));
-
-vi.mock('@renderer/caches/backend/PublicKeyOwnerCache.ts', () => ({
-  PublicKeyOwnerCache: {
-    inject: vi.fn(() => ({})),
-  },
+vi.mock('@renderer/utils/sdk/getData.ts', () => ({
+  default: {},
 }));
 
 const AppButtonStub = defineComponent({
