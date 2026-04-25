@@ -6,7 +6,7 @@ import { TransactionPage } from './TransactionPage.js';
 import { compareJsonFiles, parsePropertiesContent } from '../utils/data/jsonUtils.js';
 import { generateRandomEmail, generateRandomPassword } from '../utils/data/random.js';
 import { getPrivateKeyEnv, setupEnvironmentForTransactions } from '../utils/runtime/environment.js';
-import { waitForValidStart } from '../utils/runtime/timing.js';
+import { calculateWaitTimeUntilValidStart, waitForValidStart } from '../utils/runtime/timing.js';
 import { createTestUsersBatch } from '../utils/db/databaseUtil.js';
 import {
   clearUserKeyMnemonicHashesByEmail as clearOrganizationUserKeyMnemonicHashesByEmailQuery,
@@ -223,48 +223,16 @@ export class OrganizationPage extends BasePage {
     await this.click(this.signInOrganizationButtonSelector);
   }
 
-  async fillOrganizationLoginEmail(email: string) {
-    await this.fill(this.emailForOrganizationInputSelector, email);
-  }
-
-  async fillOrganizationLoginPassword(password: string) {
-    await this.fill(this.passwordForOrganizationInputSelector, password);
-  }
-
   async isOrganizationLoginFormVisible() {
     return await this.isElementVisible(this.emailForOrganizationInputSelector);
-  }
-
-  async getOrganizationLoginTitleText() {
-    return await this.getText(this.organizationLoginTitleSelector);
-  }
-
-  async getOrganizationLoginNicknameText() {
-    return await this.getText(this.organizationLoginNicknameSelector);
-  }
-
-  async isOrganizationSignInButtonDisabled() {
-    return await this.isDisabled(this.signInOrganizationButtonSelector);
-  }
-
-  async getOrganizationLoginEmailErrorMessage() {
-    return await this.getText(this.organizationLoginInvalidFeedbackSelector, 0);
   }
 
   async getOrganizationLoginPasswordErrorMessage() {
     return await this.getText(this.organizationLoginInvalidFeedbackSelector, 1);
   }
 
-  async clickOnForgotPasswordLink() {
-    await this.click(this.forgotPasswordLinkSelector);
-  }
-
-  async isForgotPasswordModalVisible() {
-    return await this.isElementVisible(this.forgotPasswordModalSelector, null, this.LONG_TIMEOUT);
-  }
-
-  async getForgotPasswordModalTitleText() {
-    return await this.getText(this.forgotPasswordModalTitleSelector);
+  async waitForToastToDisappear() {
+    await this.waitForElementToDisappear(this.toastMessageSelector);
   }
 
   async waitForToastMessage(message: string, timeout: number = this.LONG_TIMEOUT) {
@@ -470,10 +438,6 @@ export class OrganizationPage extends BasePage {
 
   async isNotificationIndicatorElementVisible() {
     return this.isElementVisible(this.notificationsIndicatorElement);
-  }
-
-  async getNotificationElementFromFirstTransaction() {
-    return await this.hasBeforePseudoElement(this.transactionNodeTransactionIdIndexSelector + '0');
   }
 
   /**
@@ -1396,6 +1360,69 @@ export class OrganizationPage extends BasePage {
     await this.signInOrganization(firstUser.email, firstUser.password, globalCredentials.password);
 
     await this.clickOnHistoryTab();
+  }
+
+  async waitForSuccessfulHistoryTransaction(
+    transactionId: string,
+    validStart: string | null = null,
+    timeout = this.DEFAULT_TIMEOUT * 30,
+  ) {
+    return await this.waitForHistoryTransactionStatus(
+      transactionId,
+      'SUCCESS',
+      validStart,
+      timeout,
+    );
+  }
+
+  async waitForHistoryTransactionStatus(
+    transactionId: string,
+    expectedStatus: string,
+    validStart: string | null = null,
+    timeout = this.DEFAULT_TIMEOUT * 30,
+    retryInterval = this.SHORT_TIMEOUT,
+  ): Promise<{
+    transactionId: string | null;
+    transactionType: string | null;
+    validStart: string | null;
+    detailsButton: boolean;
+    [key: string]: any;
+  } | null> {
+    let matchingTransactionDetails: {
+      transactionId: string | null;
+      transactionType: string | null;
+      validStart: string | null;
+      detailsButton: boolean;
+      [key: string]: any;
+    } | null = null;
+
+    const waitTimeUntilValidStart = validStart ? calculateWaitTimeUntilValidStart(validStart) : 0;
+    // For scheduled transactions, wait until valid-start and then allow the full timeout for execution/indexing.
+    const effectiveTimeout =
+      validStart && waitTimeUntilValidStart > 0 ? waitTimeUntilValidStart + timeout : timeout;
+
+    await expect
+      .poll(
+        async () => {
+          // Re-open History each attempt to avoid stale table snapshots.
+          await this.transactionPage.clickOnTransactionsMenuButton();
+          await this.clickOnHistoryTab();
+
+          const transactionDetails = await this.getHistoryTransactionDetails(transactionId);
+          if (transactionDetails?.status?.trim() === expectedStatus) {
+            matchingTransactionDetails = transactionDetails;
+          }
+
+          return transactionDetails?.status?.trim() ?? null;
+        },
+        {
+          timeout: effectiveTimeout,
+          intervals: [retryInterval],
+        },
+      )
+      .toBe(expectedStatus);
+
+    return matchingTransactionDetails;
   }
 
   async updateSystemFile(fileId: string, timeForExecution = 10, isSignRequiredFromCreator = false) {
