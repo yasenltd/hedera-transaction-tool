@@ -1253,6 +1253,10 @@ export class OrganizationPage extends BasePage {
       await this.transactionPage.clickOnFileServiceLink();
       await this.transactionPage.clickOnUpdateFileSublink();
     });
+    // Explicitly set the payer to the complex multi-sig account; the auto-fill
+    // default is non-deterministic and may pick a simple-key account, which
+    // skips the multi-sig signing requirement the test depends on.
+    await this.transactionPage.fillInPayerAccountId(complexAccountId);
     await this.setDateTimeAheadBy(timeForExecution);
 
     await this.transactionPage.clickOnComplexTab();

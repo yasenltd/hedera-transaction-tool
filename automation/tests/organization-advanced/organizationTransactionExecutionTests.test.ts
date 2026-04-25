@@ -103,7 +103,7 @@ test.describe('Organization Transaction execution-type tests @organization-advan
     expect(transactionDetails?.status).toBe('SUCCESS');
   });
 
-  test.skip('Verify user can execute file update with complex account', async () => {
+  test('Verify user can execute file update with complex account', async () => {
     const { fileId } = await organizationPage.ensureComplexFileExists(
       complexKeyAccountId,
       COMPLEX_FILE_EXECUTION_DELAY_SECONDS,
