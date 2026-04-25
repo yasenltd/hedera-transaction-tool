@@ -172,7 +172,6 @@ watch(
             <AppButton
               :disabled="itemsToBeSigned.length === 0"
               color="primary"
-              data-testid="button-sign-transaction-file"
               type="submit"
               >Sign and Update File
             </AppButton>
@@ -220,7 +219,6 @@ watch(
         </div>
         <h3
           class="text-center text-title text-bold mt-4"
-          data-testid="h3-sign-transaction-file-empty-title"
         >
           No transaction to sign.
         </h3>

@@ -99,10 +99,8 @@ export class TransactionPage extends BasePage {
   receiverSigRequiredSwitchSelector = 'switch-receiver-sig-required';
   receiverSigRequiredSwitchForUpdateSelector = 'switch-receiver-sig-required';
   acceptStakingRewardsSwitchSelector = 'switch-accept-staking-rewards';
-  discardModalDraftButtonSelector = 'button-discard-draft-for-group-modal';
   buttonSignTransactionSelector = 'button-sign-transaction';
   buttonCancelTransactionSelector = 'button-cancel-transaction';
-  closeCompletedTxButtonSelector = 'button-close-completed-tx';
   addComplexButtonIndex = 'button-complex-key-add-element-';
   selectThresholdValueByIndex = 'select-complex-key-threshold-';
   selectThresholdNumberIndex = 'button-complex-key-add-element-threshold-';
@@ -120,25 +118,19 @@ export class TransactionPage extends BasePage {
   draftContinueButtonIndexSelector = 'button-draft-continue-';
   confirmDeleteAccountButtonSelector = 'button-confirm-delete-account';
   singleTransactionButtonSelector = 'span-single-transaction';
-  transactionGroupButtonSelector = 'span-group-transaction';
   uploadFileButtonSelector = '#append-transaction-file[type="file"]';
   insertAccountIdButtonSelector = 'button-insert-account-id';
   moreDropdownButtonSelector = 'button-more-dropdown-lg';
   transactionFileActionsDropdownSelector = 'button-more-dropdown-sm';
-  signTransactionsFromFileOptionSelector = 'button-more-dropdown-sm-item-signTransactionFile';
   importSignaturesFromFileOptionSelector = 'button-more-dropdown-sm-item-importSignaturesFromFile';
-  signTransactionFileButtonSelector = 'button-sign-transaction-file';
-  signTransactionFileEmptyTitleSelector = 'h3-sign-transaction-file-empty-title';
   transactionListMoreDropdownSelector = 'button-more-dropdown-sm';
   importSignaturesMenuItemSelector = 'button-more-dropdown-sm-item-importSignaturesFromFile';
-  importButtonSelector = 'button-transaction-page-import';
   confirmImportButtonSelector = 'button-import-files-public';
   saveGotoSettingsButtonSelector = 'button-save-goto-settings';
   gotoSettingsButtonSelector = 'button-goto-settings';
   addApproverButtonSelector = 'button-add-approver';
   addApproverStructureElementButtonSelector = 'button-approver-structure-edit-add-element-0';
-  addApproverStructurePublicKeyButtonSelector =
-    'button-approver-structure-edit-add-element-public-key-0';
+  addApproverStructurePublicKeyButtonSelector = 'button-approver-structure-edit-add-element-public-key-0';
   firstApproverEmailSelector = 'span-email-0';
   addApproverUserButtonSelector = 'button-add-user';
 
@@ -146,10 +138,6 @@ export class TransactionPage extends BasePage {
   confirmTransactionModalSelector = 'modal-confirm-transaction';
   spanCreateNewComplexKeyButtonSelector = 'span-create-new-complex-key';
   updateAccountIdFetchedDivSelector = 'div-account-info-fetched';
-  transactionSelectionAccountMenuSelector = 'menu-link-account';
-  transactionSelectionFileMenuSelector = 'menu-link-file';
-  transactionSelectionNodeMenuSelector = 'menu-link-node';
-  transactionSelectionSystemMenuSelector = 'menu-link-system';
   //Messages
   textTypeTransactionSelector = 'p-type-transaction';
   textTransactionIdSelector = 'p-transaction-id';
@@ -159,17 +147,13 @@ export class TransactionPage extends BasePage {
   transactionTypeHeaderSelector = 'h2-transaction-type';
   transactionDetailsCreatedAtSelector = 'p-transaction-details-created-at';
   transactionDetailsIdSelector = 'p-transaction-details-id';
-  emptyTransactionsTextSelector = 'p-empty-transaction-text';
   approveAllowanceTransactionMemoSelector = 'input-transaction-memo';
   //Indexes
   accountIdPrefixSelector = 'p-account-id-';
-  accountDeletedWarningSelector = 'p-account-is-deleted';
   draftDetailsDateIndexSelector = 'span-draft-tx-date-';
   draftDetailsTypeIndexSelector = 'span-draft-tx-type-';
   draftDetailsDescriptionIndexSelector = 'span-draft-tx-description-';
   draftDetailsIsTemplateCheckboxSelector = 'checkbox-is-template-';
-  draftTableHeaderTextSelector = 'css=.table-custom th span';
-  draftDescriptionSortSelector = 'css=.table-sort-link:has-text("Description")';
 
   // Combined method to verify all elements on Create transaction page
   async verifyAccountCreateTransactionElements() {

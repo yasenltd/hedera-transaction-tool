@@ -79,8 +79,7 @@ export class OrganizationPage extends BasePage {
   deleteNextButtonSelector = 'button-delete-next';
   addObserverButtonSelector = 'button-add-observer';
   addUserButtonSelector = 'button-add-user';
-  openDatePickerButtonSelector =
-    '[data-testid="date-picker-valid-start"] [data-test-id="dp-input"]';
+  openDatePickerButtonSelector = '[data-testid="date-picker-valid-start"] [data-test-id="dp-input"]';
   datePickerCalendarSelector = 'css=.dp__instance_calendar';
   datePickerInputSelector = 'css=.dp__time_input';
   timePickerIconSelector = 'css=.dp--tp-wrap button[aria-label="Open time picker"]';
@@ -98,22 +97,17 @@ export class OrganizationPage extends BasePage {
   transactionHeaderSubmitButtonSelector = 'css=form button[type="submit"]';
   nextTransactionButtonSelector = 'button-next-org-transaction';
   cancelAddingOrganizationButtonSelector = 'button-cancel-adding-org';
-  rejectAllTransactionsButtonSelector = 'button-reject-group';
-  approveAllTransactionsButtonSelector = 'button-approve-group';
   signAllTransactionsButtonSelector = 'button-sign-group';
   confirmSignAllButtonSelector = 'button-sign-all-confirm';
   confirmCancelAllButtonSelector = 'button-cancel-all-confirm';
   confirmGroupActionButtonSelector = 'button-confirm-group-action';
-  cancelGroupActionButtonSelector = 'button-cancel-group-action';
   confirmCancelButtonSelector = 'button-cancel-transaction-confirm';
   confirmTransactionModalSelector = 'modal-confirm-transaction';
   confirmTransactionModalTitleSelector = 'h3';
   signAllTransactionsModalTitle = 'Sign all transactions?';
-  cancelAllTransactionsModalTitle = 'Cancel all transactions?';
   discardGroupModalButtonSelector = 'button-discard-group-modal';
   discardDraftForGroupModalButtonSelector = 'button-discard-draft-for-group-modal';
   deleteGroupModalButtonSelector = 'button-delete-group-modal';
-  forgotPasswordLinkSelector = 'css=.form-login .link-primary.cursor-pointer';
   // Inputs
   organizationNicknameInputSelector = 'input-organization-nickname';
   serverUrlInputSelector = 'input-server-url';
@@ -123,12 +117,7 @@ export class OrganizationPage extends BasePage {
   editOrganizationNicknameInputSelector = 'input-edit-nickname';
   visibleOrganizationNicknameInputSelector = 'css=[data-testid="input-edit-nickname"]:visible';
   // Texts
-  organizationLoginTitleSelector = 'css=.container-dark-border h4.text-title';
-  organizationLoginNicknameSelector = 'css=.container-dark-border .text-pink';
   organizationLoginInvalidFeedbackSelector = 'css=.form-login .invalid-feedback';
-  forgotPasswordModalSelector =
-    'css=[data-testid="modal-confirm-transaction"][style*="display: block"]:has(h3:has-text("Forgot password"))';
-  forgotPasswordModalTitleSelector = `${this.forgotPasswordModalSelector} h3`;
   organizationNicknameTextSelector = 'span-organization-nickname';
   transactionDetailsIdSelector = 'p-transaction-details-id';
   transactionValidStartSelector = 'p-transaction-details-valid-start';
@@ -152,7 +141,6 @@ export class OrganizationPage extends BasePage {
   transactionNodeSignButtonIndexSelector = 'button-transaction-node-sign-';
   transactionNodeDetailsButtonIndexSelector = 'button-transaction-node-details-';
   transactionNodeTransactionIdListSelector = `css=[data-testid^="${this.transactionNodeTransactionIdIndexSelector}"]`;
-
   stageBubbleIndexSelector = 'div-stepper-nav-item-bubble-';
   observerIndexSelector = 'span-group-email-';
   userListIndexSelector = 'span-email-';
@@ -1130,10 +1118,6 @@ export class OrganizationPage extends BasePage {
     return this.complexAccountId[0];
   }
 
-  async clickOnReadyForReviewTab() {
-    await this.click(this.readyForReviewTabSelector);
-  }
-
   async clickOnReadyToSignTab() {
     await this.click(this.readyToSignTabSelector);
   }
@@ -1315,8 +1299,6 @@ export class OrganizationPage extends BasePage {
 
   async ensureComplexFileExists(
     complexAccountId: string,
-    globalCredentials: Credentials,
-    firstUser: UserDetails,
     timeForExecution = 10,
     isSignRequiredFromCreator = true,
   ) {
@@ -1705,10 +1687,6 @@ export class OrganizationPage extends BasePage {
 
   async clickOnSubmitSignButtonByIndex(index: number) {
     await this.click(this.transactionNodeSignButtonIndexSelector + index, null, 5000);
-  }
-
-  async isReadyToSignDetailsButtonVisibleByIndex(index: number) {
-    return await this.isElementVisible(this.transactionNodeDetailsButtonIndexSelector + index);
   }
 
   async clickOnReadyToSignDetailsButtonByIndex(index: number) {
