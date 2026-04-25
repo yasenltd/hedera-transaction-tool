@@ -48,7 +48,6 @@ export class SettingsPage extends BasePage {
   lightTabButtonSelector = 'tab-appearance-light';
   systemTabButtonSelector = 'tab-appearance-system';
   restoreButtonSelector = 'button-restore';
-  continueButtonSelector = 'button-continue';
   continueIndexButtonSelector = 'button-continue-index';
   continueNicknameButtonSelector = 'button-continue-nickname';
   continuePhraseButtonSelector = 'button-continue-phrase';
@@ -73,7 +72,6 @@ export class SettingsPage extends BasePage {
   allKeysTabSelector = 'tab-All';
   privateKeyFilterTabSelector = 'tab-Imported from Private Key';
   recoveryPhraseFilterDropdownSelector = 'dropdown-recovery-phrase-filter';
-  appVersionValueSelector = 'app-version-value';
   connectOrganizationButtonSelector = 'css=button:has-text("Connect now")';
   addOrganizationInModalButtonSelector = 'button-add-organization-in-modal';
   importPublicKeyDropdownButtonSelector = 'button-import-public-dropdown';
@@ -85,7 +83,6 @@ export class SettingsPage extends BasePage {
 
   // Text
   decryptedPrivateKeySelector = 'span-private-key-0';
-  invalidPasswordMessageSelector = 'css=.invalid-feedback:has-text("Invalid password")';
   organizationsEmptyStateSelector = 'text=There are no connected organizations.';
   publicKeysTableHeaderSelector = 'css=.table-custom thead th';
 
@@ -133,7 +130,6 @@ export class SettingsPage extends BasePage {
     this.currentIndex = numericValue.toString();
   }
 
-  // Function to verify keys exist for a given index and user's email
   async verifyKeysExistByIndexAndEmail(email: string, index: number): Promise<boolean> {
     const row = await getKeyPairByIndexAndEmail(email, index);
     return row !== null && row.public_key !== undefined && row.private_key !== undefined;
@@ -155,10 +151,6 @@ export class SettingsPage extends BasePage {
 
   async clickOnSettingsButton(): Promise<void> {
     await this.click(this.settingsButtonSelector);
-  }
-
-  async clickOnGeneralTab(): Promise<void> {
-    await this.click(this.generalTabButtonSelector);
   }
 
   async clickOnKeysTab(): Promise<void> {
@@ -286,14 +278,6 @@ export class SettingsPage extends BasePage {
     return await this.isElementActive(this.lightTabButtonSelector);
   }
 
-  async isAppVersionVisible(): Promise<boolean> {
-    return await this.isElementVisible(this.appVersionValueSelector);
-  }
-
-  async getAppVersionText(): Promise<string> {
-    return ((await this.getText(this.appVersionValueSelector)) ?? '').trim();
-  }
-
   async clickOnRestoreButton(): Promise<void> {
     const maxRetries = 30;
     let attempt = 0;
@@ -309,10 +293,6 @@ export class SettingsPage extends BasePage {
     throw new Error(
       `Failed to click on restore button and see continue button after ${maxRetries} attempts`,
     );
-  }
-
-  async clickOnContinueButton(): Promise<void> {
-    await this.click(this.continueButtonSelector, null, this.VERY_LONG_TIMEOUT);
   }
 
   async clickOnDeleteKeyAllButton(): Promise<void> {
@@ -501,14 +481,6 @@ export class SettingsPage extends BasePage {
 
   async clickOnChangePasswordButton(): Promise<void> {
     await this.click(this.changePasswordButtonSelector);
-  }
-
-  async isChangePasswordButtonDisabled(): Promise<boolean> {
-    return await this.isDisabled(this.changePasswordButtonSelector);
-  }
-
-  async getInvalidPasswordMessage(): Promise<string> {
-    return ((await this.getText(this.invalidPasswordMessageSelector)) ?? '').trim();
   }
 
   async clickOnConfirmChangePassword(): Promise<void> {

@@ -12,7 +12,6 @@ export class ContactListPage extends BasePage {
   // Buttons
   removeContactButtonSelector = 'button-remove-account-from-contact-list';
   elevateContactButtonSelector = 'button-elevate-to-admin-from-contact-list';
-
   /* Selectors */
   addNewContactButtonSelector = 'button-add-new-contact';
   changeContactNicknameButtonSelector = 'span-change-nickname';
@@ -24,12 +23,8 @@ export class ContactListPage extends BasePage {
   newUserEmailInputSelector = 'input-new-user-email';
   multipleEmailsModeSwitchSelector = 'switch-multiple-emails-mode';
   multipleEmailsTextareaSelector = 'textarea-multiple-emails';
-  // Texts
-  contactListEmailSelector = 'p-contact-email';
-  noContactsFoundSelector = 'p-no-contacts-found';
   // Indexes
   contactEmailIndexSelector = 'p-contact-email-';
-  contactNotificationIndicatorIndexSelector = 'span-contact-notification-indicator-';
   contactListPublicKeyIndexSelector = 'p-contact-public-key-';
   contactListExpandAssociatedAccountsButtonSelector = 'span-expand-associated-accounts-';
   contactListAssociatedAccountIdIndexSelector = 'p-associated-account-id-';
@@ -45,46 +40,6 @@ export class ContactListPage extends BasePage {
 
   async isContactVisible(email: string) {
     return await this.isElementVisible(this.contactEmailIndexSelector + email);
-  }
-
-  async isContactHidden(email: string) {
-    return await this.isElementHidden(this.contactEmailIndexSelector + email);
-  }
-
-  async getContactListContactCount() {
-    return await this.countElements(this.contactEmailIndexSelector);
-  }
-
-  async isNoContactsFoundMessageVisible() {
-    return await this.isElementVisible(this.noContactsFoundSelector);
-  }
-
-  async isNewUserIndicatorVisible(email: string) {
-    return await this.isElementVisible(
-      this.contactNotificationIndicatorIndexSelector + email,
-      null,
-      this.LONG_TIMEOUT * 2,
-    );
-  }
-
-  async isRemoveContactButtonVisible() {
-    return await this.isElementVisible(this.removeContactButtonSelector);
-  }
-
-  async isRemoveContactButtonHidden() {
-    return await this.isElementHidden(this.removeContactButtonSelector);
-  }
-
-  async isAddNewContactButtonHidden() {
-    return await this.isElementHidden(this.addNewContactButtonSelector);
-  }
-
-  async isAddNewContactButtonEnabled() {
-    return await this.isButtonEnabled(this.addNewContactButtonSelector);
-  }
-
-  async getContactListEmailText() {
-    return await this.getText(this.contactListEmailSelector);
   }
 
   async isExpandAssociatedAccountsButtonVisible(index: number) {

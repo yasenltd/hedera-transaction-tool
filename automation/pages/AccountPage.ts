@@ -15,12 +15,10 @@ export class AccountPage extends BasePage {
 
   // Buttons
   editButtonSelector = 'button-edit-account';
-  removeButtonSelector = 'button-remove-account-card';
   removeMultipleButtonSelector = 'button-remove-multiple-accounts';
 
   /* Selectors */
   addNewButtonSelector = 'button-add-new-account';
-  createNewLinkSelector = 'link-create-new-account';
   addExistingLinkSelector = 'link-add-existing-account';
   accountsLinkSelector = 'button-menu-accounts';
   deleteFromNetworkLinkSelector = 'button-delete-from-network';
@@ -28,16 +26,6 @@ export class AccountPage extends BasePage {
   confirmUnlinkButtonSelector = 'button-confirm-unlink-account';
   linkAccountButtonSelector = 'button-link-account-id';
   selectManyAccountsButtonSelector = 'button-select-many-accounts';
-  sortAccountsButtonSelector = 'button-sort-accounts';
-  sortAccountIdAscSelector = 'menu-sort-account-id-asc';
-  sortAccountIdDescSelector = 'menu-sort-account-id-desc';
-  sortAccountNicknameAscSelector = 'menu-sort-account-nickname-asc';
-  sortAccountNicknameDescSelector = 'menu-sort-account-nickname-desc';
-  sortAccountDateAddedAscSelector = 'menu-sort-account-date-added-asc';
-  sortAccountDateAddedDescSelector = 'menu-sort-account-date-added-desc';
-  visibleSortAccountsButtonSelector = 'css=[data-testid="button-sort-accounts"]:visible';
-  editSelectedAccountNicknameButtonSelector = 'button-edit-selected-account-nickname';
-  selectedAccountNicknameInputSelector = 'input-account-nickname';
   // Texts
   accountIdTextSelector = 'p-account-data-account-id';
   evmAddressTextSelector = 'p-account-data-evm-address';
@@ -58,15 +46,9 @@ export class AccountPage extends BasePage {
   existingAccountIdInputSelector = 'input-existing-account-id';
   multiSelectCheckboxSelector = 'checkbox-multiple-account-id-';
   fillAccountIdScreenshotSelector = 'fill-account-id-';
-  accountIdListPrefixSelector = 'p-account-id-';
-  accountNicknameListPrefixSelector = 'p-account-nickname-';
 
   async clickOnEditButton() {
     await this.click(this.editButtonSelector);
-  }
-
-  async clickOnRemoveButton() {
-    await this.click(this.removeButtonSelector);
   }
 
   async clickOnRemoveMultipleButton() {
@@ -77,70 +59,12 @@ export class AccountPage extends BasePage {
     await this.click(this.addNewButtonSelector);
   }
 
-  async clickOnCreateNewLink() {
-    await this.click(this.createNewLinkSelector);
-  }
-
   async clickOnAddExistingLink() {
     await this.click(this.addExistingLinkSelector);
   }
 
   async clickOnAccountsLink() {
     await this.click(this.accountsLinkSelector);
-  }
-
-  async clickOnSortAccountsButton() {
-    await this.click(this.visibleSortAccountsButtonSelector, null, this.LONG_TIMEOUT);
-  }
-
-  async sortByAccountIdAsc() {
-    await this.clickOnSortAccountsButton();
-    await this.click(this.sortAccountIdAscSelector);
-  }
-
-  async sortByAccountIdDesc() {
-    await this.clickOnSortAccountsButton();
-    await this.click(this.sortAccountIdDescSelector);
-  }
-
-  async sortByNicknameAsc() {
-    await this.clickOnSortAccountsButton();
-    await this.click(this.sortAccountNicknameAscSelector);
-  }
-
-  async sortByNicknameDesc() {
-    await this.clickOnSortAccountsButton();
-    await this.click(this.sortAccountNicknameDescSelector);
-  }
-
-  async sortByDateAddedAsc() {
-    await this.clickOnSortAccountsButton();
-    await this.click(this.sortAccountDateAddedAscSelector);
-  }
-
-  async sortByDateAddedDesc() {
-    await this.clickOnSortAccountsButton();
-    await this.click(this.sortAccountDateAddedDescSelector);
-  }
-
-  async clickOnEditSelectedAccountNickname() {
-    await this.click(this.editSelectedAccountNicknameButtonSelector);
-  }
-
-  async fillSelectedAccountNickname(nickname: string) {
-    await this.fill(this.selectedAccountNicknameInputSelector, nickname);
-  }
-
-  async saveSelectedAccountNickname() {
-    await this.pressKey('Tab');
-  }
-
-  async getAccountIdByIndex(index: number) {
-    return await this.getText(this.accountIdListPrefixSelector + index);
-  }
-
-  async getAccountNicknameByIndex(index: number) {
-    return await this.getText(this.accountNicknameListPrefixSelector + index);
   }
 
   async getAccountIdText() {
@@ -267,10 +191,6 @@ export class AccountPage extends BasePage {
 
   async clickOnLinkAccountButton() {
     await this.click(this.linkAccountButtonSelector);
-  }
-
-  async isLinkAccountButtonDisabled() {
-    return await this.isDisabled(this.linkAccountButtonSelector);
   }
 
   async isUnlinkedAccountsListEmpty() {

@@ -603,14 +603,6 @@ export class RegistrationPage extends BasePage {
     await this.click(this.generateAgainButtonSelector);
   }
 
-  async isConfirmPasswordFieldVisible() {
-    return await this.isElementVisible(
-      this.confirmPasswordInputSelector,
-      null,
-      this.VERY_LONG_TIMEOUT,
-    );
-  }
-
   async getPublicKey() {
     return await this.getText(this.publicKeySpanSelector);
   }
