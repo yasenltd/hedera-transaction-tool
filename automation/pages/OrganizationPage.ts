@@ -865,18 +865,27 @@ export class OrganizationPage extends BasePage {
   }
 
   async logInAndSignTransactionByAllUsers(encryptionPassword: string, txId: string) {
+    console.log(
+      `[logInAndSignTransactionByAllUsers] starting - txId=${txId}, totalUsersToSign=${this.users.length - 1}`,
+    );
     for (let i = 1; i < this.users.length; i++) {
-      console.log(`Signing transaction for user ${i}`);
       const user = this.users[i];
+      console.log(`[logInAndSignTransactionByAllUsers] user ${i} (${user.email}) signing...`);
       // Close any lingering draft modals before login
       await this.closeDraftModal(this.discardDraftForGroupModalButtonSelector);
       await this.signInOrganization(user.email, user.password, encryptionPassword);
       await this.transactionPage.clickOnTransactionsMenuButton();
       await this.clickOnReadyToSignTab();
+      const visibleCount = await this.countElements(this.transactionNodeTransactionIdIndexSelector);
+      console.log(
+        `[logInAndSignTransactionByAllUsers] user ${i} sees ${visibleCount} transaction(s) in Ready to Sign`,
+      );
       await this.clickOnSubmitSignButtonByTransactionId(txId);
       await this.waitForElementToDisappear(this.toastMessageSelector);
       await this.logoutFromOrganization();
+      console.log(`[logInAndSignTransactionByAllUsers] user ${i} signed and logged out`);
     }
+    console.log('[logInAndSignTransactionByAllUsers] all users signed');
   }
 
   async addComplexKeyAccountWithNestedThresholds(users = 99) {
@@ -1282,52 +1291,95 @@ export class OrganizationPage extends BasePage {
     isSignRequiredFromCreator = false,
     complexAccountId: string,
   ) {
+    console.log(
+      `[fileCreate] start - timeForExecution=${timeForExecution}s, complexAccountId=${complexAccountId}, isSignRequiredFromCreator=${isSignRequiredFromCreator}`,
+    );
     await this.startNewTransaction(async () => {
       await this.transactionPage.clickOnFileServiceLink();
       await this.transactionPage.clickOnFileCreateTransaction();
     });
+
+    const autoFilledPayer = await this.transactionPage.getPayerAccountId();
+    console.log(
+      `[fileCreate] auto-filled payer on form: ${autoFilledPayer} (overriding to complex ${complexAccountId})`,
+    );
+
+    // Explicitly set the payer to the complex multi-sig account so the test
+    // deterministically exercises the "file create with complex account" scenario.
+    // The auto-fill default is non-deterministic across runs.
+    await this.transactionPage.fillInPayerAccountId(complexAccountId);
+
+    // Use the creator's public key for the file key (simple). A complex file key
+    // built from an account reference (addAccountAtDepth) prevented the backend's
+    // signer analysis from surfacing the txn in the other key holders' Ready to
+    // Sign tabs, which blocked multi-sig completion.
     await this.transactionPage.clickOnComplexTab();
     await this.transactionPage.clickOnCreateNewComplexKeyButton();
-
-    await this.transactionPage.addAccountAtDepth('0', complexAccountId);
-
+    const creatorPublicKey = await this.getFirstPublicKeyByEmail(this.users[0].email);
+    console.log(`[fileCreate] file key set to creator pubkey: ${creatorPublicKey?.slice(0, 16)}...`);
+    await this.transactionPage.addPublicKeyAtDepth('0', creatorPublicKey);
     await this.transactionPage.clickOnDoneButtonForComplexKeyCreation();
+
     await this.setDateTimeAheadBy(timeForExecution);
 
-    return await this.processTransaction(isSignRequiredFromCreator);
+    console.log('[fileCreate] submitting transaction...');
+    const result = await this.processTransaction(isSignRequiredFromCreator);
+    console.log(
+      `[fileCreate] submitted - txId=${result.txId}, validStart=${JSON.stringify(result.validStart)}`,
+    );
+    return result;
   }
 
   async ensureComplexFileExists(
     complexAccountId: string,
     timeForExecution = 10,
+    globalCredentials: Credentials,
+    firstUser: UserDetails,
     isSignRequiredFromCreator = true,
-  ) {
-    let txId, validStart, fileId: string | null;
-    if (this.complexFileId.length === 0) {
-      console.log('Creating a new complex file');
-      ({ txId, validStart } = await this.fileCreate(
-        timeForExecution,
-        isSignRequiredFromCreator,
-        complexAccountId,
-      ));
-      await this.closeDraftModal();
-      console.log('DEBUG: ensureComplexFileExists txId =', txId);
-      console.log('DEBUG: ensureComplexFileExists validStart =', JSON.stringify(validStart));
-      // File Create only needs payer signature (already signed by creator)
-      // Transaction goes directly to "Awaiting Execution" - no additional signatures needed
-      await this.transactionPage.clickOnTransactionsMenuButton();
-      await waitForValidStart(validStart ?? '');
-      // Wait a bit for mirror node to index the executed transaction
-      await new Promise(resolve => setTimeout(resolve, this.LONG_TIMEOUT));
-      await this.clickOnHistoryTab();
-      const txResponse = await this.transactionPage.mirrorGetTransactionResponse(txId ?? '');
-      fileId = txResponse?.entity_id;
-      this.complexFileId.push(fileId ?? '');
-      return { txId, fileId };
-    } else {
-      fileId = this.complexFileId[0];
-      return { fileId };
+  ): Promise<{ txId?: string | null; validStart?: string | null; fileId: string | null }> {
+    if (this.complexFileId.length > 0) {
+      console.log(
+        `[ensureComplexFileExists] returning cached fileId=${this.complexFileId[0]}`,
+      );
+      return { fileId: this.complexFileId[0] };
     }
+
+    console.log(
+      `[ensureComplexFileExists] no cached file - creating new one (complexAccountId=${complexAccountId}, timeForExecution=${timeForExecution}s)`,
+    );
+    const { txId, validStart } = await this.fileCreate(
+      timeForExecution,
+      isSignRequiredFromCreator,
+      complexAccountId,
+    );
+    console.log(
+      `[ensureComplexFileExists] fileCreate returned txId=${txId}, validStart=${JSON.stringify(validStart)}`,
+    );
+    await this.closeDraftModal();
+
+    // Payer is the complex multi-sig account, so the remaining key holders must
+    // sign before the network will execute the File Create.
+    console.log('[ensureComplexFileExists] running signTxByAllUsersAndRefresh...');
+    await this.signTxByAllUsersAndRefresh(globalCredentials, firstUser, txId ?? '');
+    console.log('[ensureComplexFileExists] signTxByAllUsersAndRefresh done');
+
+    console.log(
+      `[ensureComplexFileExists] waiting for SUCCESS in history for txId=${txId}, validStart=${JSON.stringify(validStart)}`,
+    );
+    const transactionDetails = await this.waitForSuccessfulHistoryTransaction(
+      txId ?? '',
+      validStart,
+    );
+    if (!transactionDetails) {
+      throw new Error(`File create transaction ${txId} did not reach SUCCESS in history`);
+    }
+    console.log('[ensureComplexFileExists] history reached SUCCESS - querying mirror node');
+
+    const txResponse = await this.transactionPage.mirrorGetTransactionResponse(txId ?? '');
+    const fileId = txResponse?.entity_id ?? null;
+    console.log(`[ensureComplexFileExists] mirror returned fileId=${fileId}`);
+    this.complexFileId.push(fileId ?? '');
+    return { txId, validStart, fileId };
   }
 
   async signTxByAllUsersAndRefresh(
@@ -1897,6 +1949,11 @@ export class OrganizationPage extends BasePage {
           await this.clickOnSubmitSignButtonByIndex(i);
           return;
         }
+      }
+      if (attempt === 0 || attempt === 10 || attempt === 30) {
+        console.log(
+          `[clickOnSubmitSignButtonByTransactionId] attempt=${attempt} looking for ${normalizedTransactionId}, found ${count} rows: [${lastSeenIds.join(', ') || 'empty'}]`,
+        );
       }
       await new Promise(resolve => setTimeout(resolve, retryDelay));
     }
