@@ -129,6 +129,8 @@ export class TransactionPage extends BasePage {
   importSignaturesFromFileOptionSelector = 'button-more-dropdown-sm-item-importSignaturesFromFile';
   signTransactionFileButtonSelector = 'button-sign-transaction-file';
   signTransactionFileEmptyTitleSelector = 'h3-sign-transaction-file-empty-title';
+  transactionListMoreDropdownSelector = 'button-more-dropdown-sm';
+  importSignaturesMenuItemSelector = 'button-more-dropdown-sm-item-importSignaturesFromFile';
   importButtonSelector = 'button-transaction-page-import';
   confirmImportButtonSelector = 'button-import-files-public';
   saveGotoSettingsButtonSelector = 'button-save-goto-settings';
@@ -268,18 +270,6 @@ export class TransactionPage extends BasePage {
     await this.click(this.transactionsMenuButtonSelector);
   }
 
-  async clickOnSingleTransactionButton() {
-    await this.click(this.singleTransactionButtonSelector);
-  }
-
-  async clickOnTransactionGroupButton() {
-    await this.click(this.transactionGroupButtonSelector);
-  }
-
-  async clickOnCreateNewDropdown() {
-    await this.click(this.createNewTransactionButtonSelector);
-  }
-
   async clickOnAccountsMenuButton() {
     await this.click(this.accountsMenuButtonSelector);
   }
@@ -318,67 +308,17 @@ export class TransactionPage extends BasePage {
     return await this.isElementVisible(this.createNewTransactionButtonSelector, null, timeout);
   }
 
-  async isDraftsTabVisible() {
-    return await this.isElementVisible(this.draftsTabSelector);
-  }
-
-  async isHistoryTabVisible() {
-    return await this.isElementVisible(this.historyTabSelector);
-  }
-
   async clickOnHistoryTab() {
     await this.click(this.historyTabSelector);
   }
 
-  async isTransactionOptionVisible() {
-    return await this.isElementVisible(this.singleTransactionButtonSelector);
-  }
-
-  async isTransactionGroupOptionVisible() {
-    return await this.isElementVisible(this.transactionGroupButtonSelector);
-  }
-
-  async isTransactionSelectionModalVisible() {
-    return await this.isElementVisible(this.transactionSelectionAccountMenuSelector);
-  }
-
-  async areTransactionSelectionGroupsVisible() {
-    const checks = await Promise.all([
-      this.isElementVisible(this.transactionSelectionAccountMenuSelector),
-      this.isElementVisible(this.transactionSelectionFileMenuSelector),
-      this.isElementVisible(this.transactionSelectionNodeMenuSelector),
-      this.isElementVisible(this.transactionSelectionSystemMenuSelector),
-    ]);
-
-    return checks.every(isTrue => isTrue);
-  }
-
-  async isEmptyTransactionsTextVisible() {
-    return await this.isElementVisible(this.emptyTransactionsTextSelector);
-  }
-
-  async getEmptyTransactionsText() {
-    return ((await this.getText(this.emptyTransactionsTextSelector)) ?? '').trim();
-  }
-
   async clickOnImportButton() {
-    await this.click(this.importButtonSelector);
+    await this.click(this.transactionListMoreDropdownSelector);
+    await this.click(this.importSignaturesMenuItemSelector);
   }
 
   async clickOnTransactionFileActionsDropdown() {
     await this.click(this.transactionFileActionsDropdownSelector);
-  }
-
-  async clickOnSignTransactionsFromFileOption() {
-    await this.click(this.signTransactionsFromFileOptionSelector);
-  }
-
-  async isSignTransactionFileButtonVisible() {
-    return await this.isElementVisible(this.signTransactionFileButtonSelector);
-  }
-
-  async isSignTransactionFileEmptyModalVisible() {
-    return await this.isElementVisible(this.signTransactionFileEmptyTitleSelector);
   }
 
   async isImportSignaturesFromFileOptionVisible() {
@@ -387,6 +327,15 @@ export class TransactionPage extends BasePage {
 
   async clickOnConfirmImportButton() {
     await this.click(this.confirmImportButtonSelector);
+    await this.waitForElementToDisappear(
+      this.confirmImportButtonSelector,
+      this.DEFAULT_TIMEOUT,
+      this.LONG_TIMEOUT * 2,
+    );
+  }
+
+  async closeImportModal() {
+    await this.pressKey('Escape');
   }
 
   async isConfirmImportButtonDisabled() {
@@ -582,18 +531,6 @@ export class TransactionPage extends BasePage {
     } else {
       return await this.isElementHidden(this.accountIdPrefixSelector + index);
     }
-  }
-
-  async clickOnAccountByIndex(index: number) {
-    await this.click(this.accountIdPrefixSelector + index);
-  }
-
-  async isAccountDeletedWarningVisible() {
-    return await this.isElementVisible(
-      this.accountDeletedWarningSelector,
-      null,
-      this.VERY_LONG_TIMEOUT,
-    );
   }
 
   async ensureAccountExists() {
@@ -1056,10 +993,6 @@ export class TransactionPage extends BasePage {
     await this.click(enabledSignButtonSelector);
   }
 
-  async clickOnCloseButtonForCompletedTransaction() {
-    await this.click(this.closeCompletedTxButtonSelector);
-  }
-
   async clickOnExportTransactionButton(index: string) {
     await this.isElementVisible(this.moreDropdownButtonSelector);
     await this.click(this.moreDropdownButtonSelector);
@@ -1491,22 +1424,9 @@ export class TransactionPage extends BasePage {
     return await this.getText(this.draftDetailsDescriptionIndexSelector + '0');
   }
 
-  async getDraftTableHeaderTexts() {
-    const headerText = await this.getText(this.draftTableHeaderTextSelector, null, this.LONG_TIMEOUT);
-    return headerText?.split(',').map(header => header.trim()) ?? [];
-  }
-
-  async sortDraftsByDescription() {
-    await this.click(this.draftDescriptionSortSelector, null, this.LONG_TIMEOUT);
-  }
-
   private getVisibleToastMessageSelector(message: string) {
     const escapedMessage = message.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
     return `${this.toastMessageSelector}:visible:has-text("${escapedMessage}")`;
-  }
-
-  async getFirstDraftIsTemplateCheckboxVisible() {
-    return await this.isElementVisible(this.draftDetailsIsTemplateCheckboxSelector + '0');
   }
 
   async clickOnFirstDraftIsTemplateCheckbox() {
@@ -1515,10 +1435,6 @@ export class TransactionPage extends BasePage {
 
   async clickOnFirstDraftDeleteButton() {
     await this.click(this.draftDeleteButtonIndexSelector + '0');
-  }
-
-  async isFirstDraftDeleteButtonVisible() {
-    return await this.isElementVisible(this.draftDeleteButtonIndexSelector + '0');
   }
 
   async clickOnFirstDraftContinueButton() {
