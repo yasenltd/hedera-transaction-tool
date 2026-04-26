@@ -85,6 +85,98 @@ export async function createLocalOrganizationConnectionForTesting(
   );
 }
 
+type ConnectionStatus = 'connected' | 'disconnected' | 'upgradeRequired';
+type DisconnectReason = 'upgradeRequired' | 'manual' | 'error' | 'compatibilityConflict';
+
+export async function setOrganizationConnectionStatusForTesting(
+  page: Page,
+  serverUrl: string,
+  status: ConnectionStatus,
+  reason?: DisconnectReason,
+) {
+  await page.evaluate(
+    ({ serverUrl, status, reason }) => {
+      type ConnectionStore = {
+        setConnectionStatus: (
+          serverUrl: string,
+          status: string,
+          reason?: string,
+        ) => void;
+      };
+
+      type VueAppContainer = HTMLElement & {
+        __vue_app__?: {
+          config?: {
+            globalProperties?: {
+              $pinia?: { _s?: Map<string, ConnectionStore> };
+            };
+          };
+        };
+      };
+
+      const appRoot = document.querySelector('#app') as VueAppContainer | null;
+      const store = appRoot?.__vue_app__?.config?.globalProperties?.$pinia?._s?.get(
+        'organizationConnection',
+      );
+
+      if (!store?.setConnectionStatus) {
+        throw new Error('Unable to access organizationConnection store');
+      }
+
+      store.setConnectionStatus(serverUrl, status, reason);
+    },
+    { serverUrl, status, reason },
+  );
+}
+
+type VersionStatus = 'current' | 'updateAvailable' | 'belowMinimum';
+
+export async function setOrganizationVersionStateForTesting(
+  page: Page,
+  serverUrl: string,
+  status: VersionStatus,
+  latestVersion = '1.0.0',
+) {
+  await page.evaluate(
+    ({ serverUrl, status, latestVersion }) => {
+      type VersionData = {
+        latestSupportedVersion: string;
+        minimumSupportedVersion: string;
+        updateUrl: string | null;
+      };
+
+      type TestHooks = {
+        setVersionDataForOrg: (serverUrl: string, data: VersionData) => void;
+        setVersionStatusForOrg: (serverUrl: string, status: string) => void;
+      };
+
+      const hooks = (window as unknown as { __testHooks__?: TestHooks }).__testHooks__;
+      if (!hooks?.setVersionDataForOrg || !hooks?.setVersionStatusForOrg) {
+        throw new Error('Test hooks for version state are not available on window');
+      }
+
+      hooks.setVersionDataForOrg(serverUrl, {
+        latestSupportedVersion: latestVersion,
+        minimumSupportedVersion: '0.0.1',
+        updateUrl: null,
+      });
+      hooks.setVersionStatusForOrg(serverUrl, status);
+    },
+    { serverUrl, status, latestVersion },
+  );
+}
+
+export async function resetOrganizationVersionStateForTesting(page: Page, serverUrl: string) {
+  await page.evaluate(serverUrl => {
+    type TestHooks = {
+      resetVersionStatusForOrg: (serverUrl: string) => void;
+    };
+
+    const hooks = (window as unknown as { __testHooks__?: TestHooks }).__testHooks__;
+    hooks?.resetVersionStatusForOrg?.(serverUrl);
+  }, serverUrl);
+}
+
 export async function deleteLocalOrganizationConnectionForTesting(page: Page, serverUrl: string) {
   await page.evaluate(async serverUrl => {
     type LocalOrganization = {

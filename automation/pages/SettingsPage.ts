@@ -85,6 +85,10 @@ export class SettingsPage extends BasePage {
   decryptedPrivateKeySelector = 'span-private-key-0';
   organizationsEmptyStateSelector = 'text=There are no connected organizations.';
   publicKeysTableHeaderSelector = 'css=.table-custom thead th';
+  organizationsTableHeaderSelector = 'css=.table-custom thead th';
+  organizationConnectionStatusBadgeSelector = 'connection-status-badge';
+  organizationVersionInfoCellSelector = 'css=.table-custom tbody tr td:nth-child(4)';
+  organizationServerUrlCellSelector = 'css=.table-custom tbody tr td:nth-child(2) p';
 
   // Input
   selectAllKeysCheckboxSelector = 'checkbox-select-all-keys';
@@ -180,6 +184,30 @@ export class SettingsPage extends BasePage {
   async getPublicKeysTableHeaderText(): Promise<string> {
     const headers = await this.getElement(this.publicKeysTableHeaderSelector).allTextContents();
     return headers.map(h => h.trim()).join(' ');
+  }
+
+  async getOrganizationsTableHeaders(): Promise<string[]> {
+    const headers = await this.getElement(this.organizationsTableHeaderSelector).allTextContents();
+    return headers.map(h => h.trim());
+  }
+
+  async getOrganizationConnectionStatusBadgeText(rowIndex = 0): Promise<string> {
+    const text = await this.getText(this.organizationConnectionStatusBadgeSelector, rowIndex);
+    return (text ?? '').trim();
+  }
+
+  async getOrganizationServerUrlAtIndex(rowIndex = 0): Promise<string> {
+    const text = await this.getElement(this.organizationServerUrlCellSelector)
+      .nth(rowIndex)
+      .textContent();
+    return (text ?? '').trim();
+  }
+
+  async getOrganizationVersionInfoText(rowIndex = 0): Promise<string> {
+    const text = await this.getElement(this.organizationVersionInfoCellSelector)
+      .nth(rowIndex)
+      .textContent();
+    return (text ?? '').trim();
   }
 
   async clickOnImportPublicKeyDropdown(): Promise<void> {

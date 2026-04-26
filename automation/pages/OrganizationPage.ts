@@ -694,10 +694,6 @@ export class OrganizationPage extends BasePage {
     await this.click(this.userListIndexSelector + index);
   }
 
-  async getUserOfObserverList(index: number) {
-    return await this.getText(this.userListIndexSelector + index);
-  }
-
   /**
    * Opens the date picker.
    */

@@ -169,9 +169,9 @@ This document enumerates all user-facing scenarios in the Hedera Transaction Too
 | 3.4.1  | Empty state shows "There are no connected organizations" message                    | Yes as Component Test | shows organizations empty state when no organizations are connected |
 | 3.4.2  | User can add a new organization via modal                                           | Yes       | Setup (organizationSettingsTests beforeAll)                   |
 | 3.4.3  | Error message when adding non-existing organization URL                             | Yes       | Verify error message when user adds non-existing organization |
-| 3.4.4  | Organization table shows: Nickname, Server URL, Status, Version Info                | No        |                                                               |
-| 3.4.5  | Status badge shows connected/disconnected/upgradeRequired                           | No        |                                                               |
-| 3.4.6  | Version info shows Update Required/Update Available/Current badges                  | No        |                                                               |
+| 3.4.4  | Organization table shows: Nickname, Server URL, Status, Version Info                | Yes       | Verify organizations table headers and seeded row are rendered |
+| 3.4.5  | Status badge shows connected/disconnected/upgradeRequired                           | Yes       | Verify status badge text for each connection state            |
+| 3.4.6  | Version info shows Update Required/Update Available/Current badges                  | Yes       | Verify version info badge text for each version state         |
 | 3.4.7  | User can edit organization nickname                                                 | Yes       | Verify user can edit organization nickname                    |
 | 3.4.8  | User can delete an organization connection                                          | Yes       | Verify user can delete an organization                        |
 | 3.4.9  | Organization deletion is verified in the database                                   | Yes       | Verify user can delete an organization                        |
@@ -239,10 +239,10 @@ This document enumerates all user-facing scenarios in the Hedera Transaction Too
 | 4.2.1 | Transaction page shows 6 tabs (Drafts, Ready for Review, Ready to Sign, In Progress, Ready for Execution, History) | Yes as Component Test | shows organization transaction tabs and import signatures action in organization mode                       |
 | 4.2.2 | Notification badges appear on relevant tabs                                                                        | No        |                                                                                                             |
 | 4.2.3 | "Import Signatures from File" option is available (org only)                                                       | Yes as Component Test | shows organization transaction tabs and import signatures action in organization mode                       |
-| 4.2.4 | User can import .tx2 (V2) signatures                                                                               | Skipped   | Verify user can export and import transaction and a large number of signatures for TTv1->TTv2 compatibility |
-| 4.2.5 | User can import .zip (V1) signatures                                                                               | Skipped   | Verify user can import superfluous signatures from TTv1 format                                              |
-| 4.2.6 | Import fails when user lacks transaction visibility                                                                | Skipped   | Verify user cannot import signatures without visibility of transaction from TTv1 format                     |
-| 4.2.7 | Import succeeds with superfluous signatures                                                                        | Skipped   | Verify user can import superfluous signatures from TTv1 format                                              |
+| 4.2.4 | User can import .tx2 (V2) signatures                                                                               | Yes       | Verify user can export and import transaction and a large number of signatures for TTv1->TTv2 compatibility |
+| 4.2.5 | User can import .zip (V1) signatures                                                                               | Yes       | Verify user can import superfluous signatures from TTv1 format                                              |
+| 4.2.6 | Import fails when user lacks transaction visibility                                                                | Yes       | Verify user cannot import signatures without visibility of transaction from TTv1 format                     |
+| 4.2.7 | Import succeeds with superfluous signatures                                                                        | Yes       | Verify user can import superfluous signatures from TTv1 format                                              |
 
 ### 4.3 Drafts Tab
 
@@ -767,17 +767,17 @@ This document enumerates all user-facing scenarios in the Hedera Transaction Too
 
 | #      | Scenario                                      | Automated | Covered By                                               |
 | ------ | --------------------------------------------- | --------- | -------------------------------------------------------- |
-| 11.4.1 | File create with complex key account succeeds | Skipped   | Verify user can execute file create with complex account |
-| 11.4.2 | File update with complex key account succeeds | Skipped   | Verify user can execute file update with complex account |
-| 11.4.3 | File append with complex key account succeeds | Skipped   | Verify user can execute file append with complex account |
+| 11.4.1 | File create with complex key account succeeds | Yes       | Verify user can execute file create with complex account |
+| 11.4.2 | File update with complex key account succeeds | Yes       | Verify user can execute file update with complex account |
+| 11.4.3 | File append with complex key account succeeds | Yes       | Verify user can execute file append with complex account |
 
 ### 11.5 Signature Import/Export (TTv1 <-> TTv2)
 
 | #      | Scenario                                                         | Automated | Covered By                                                                                                  |
 | ------ | ---------------------------------------------------------------- | --------- | ----------------------------------------------------------------------------------------------------------- |
-| 11.5.1 | Export .tx file, sign offline with 75 users, zip+import, execute | Skipped   | Verify user can export and import transaction and a large number of signatures for TTv1->TTv2 compatibility |
-| 11.5.2 | Import superfluous signatures from TTv1 format                   | Skipped   | Verify user can import superfluous signatures from TTv1 format                                              |
-| 11.5.3 | Import blocked when user lacks transaction visibility            | Skipped   | Verify user cannot import signatures without visibility of transaction from TTv1 format                     |
+| 11.5.1 | Export .tx file, sign offline with 75 users, zip+import, execute | Yes       | Verify user can export and import transaction and a large number of signatures for TTv1->TTv2 compatibility |
+| 11.5.2 | Import superfluous signatures from TTv1 format                   | Yes       | Verify user can import superfluous signatures from TTv1 format                                              |
+| 11.5.3 | Import blocked when user lacks transaction visibility            | Yes       | Verify user cannot import signatures without visibility of transaction from TTv1 format                     |
 
 ### 11.6 Council-Scale Transactions (Regression)
 
@@ -909,29 +909,29 @@ This document enumerates all user-facing scenarios in the Hedera Transaction Too
 | ------------------------------- | --------------- | ------------- | ------------------------ | ------- | -------- | ---------- | ----------------------- |
 | 1. Registration                 | 22              | 14            | 6                        | 0       | 2        | 91%        | 91%                     |
 | 2. Login                        | 17              | 13            | 4                        | 0       | 0        | 100%       | 100%                    |
-| 3. Settings                     | 78              | 54            | 14                       | 0       | 10       | 87%        | 87%                     |
-| 4. Transactions List            | 34              | 16            | 10                       | 5       | 3        | 76%        | 91%                     |
+| 3. Settings                     | 78              | 57            | 14                       | 0       | 7        | 91%        | 91%                     |
+| 4. Transactions List            | 34              | 20            | 10                       | 1       | 3        | 88%        | 91%                     |
 | 5. Transaction Creation         | 101             | 76            | 0                        | 1       | 24       | 75%        | 76%                     |
 | 6. Transaction Details          | 26              | 23            | 0                        | 0       | 3        | 88%        | 88%                     |
 | 7. Transaction Groups           | 39              | 29            | 5                        | 0       | 5        | 87%        | 87%                     |
 | 8. Accounts                     | 30              | 17            | 13                       | 0       | 0        | 100%       | 100%                    |
 | 9. Files                        | 29              | 20            | 9                        | 0       | 0        | 100%       | 100%                    |
 | 10. Contact List                | 23              | 13            | 9                        | 1       | 0        | 96%        | 100%                    |
-| 11. Org Transaction Workflows   | 24              | 16            | 0                        | 8       | 0        | 67%        | 100%                    |
+| 11. Org Transaction Workflows   | 24              | 22            | 0                        | 2       | 0        | 92%        | 100%                    |
 | 12. Notifications               | 10              | 0             | 0                        | 5       | 5        | 0%         | 50%                     |
 | 13. Navigation and Layout       | 12              | 9             | 0                        | 0       | 3        | 75%        | 75%                     |
 | 14. Error Handling / Edge Cases | 17              | 8             | 0                        | 0       | 9        | 47%        | 47%                     |
 | 15. Upgrade                     | 3               | 0             | 0                        | 0       | 3        | 0%         | 0%                      |
-| **Total**                       | **465**         | **308**       | **70**                   | **20**  | **67**   | **81%**    | **86%**                 |
+| **Total**                       | **465**         | **321**       | **70**                   | **10**  | **64**   | **84%**    | **86%**                 |
 
 The `Automated Component Test` column counts scenarios covered by frontend renderer/component tests.
 The migrated frontend package coverage currently comes from 63 Vitest component test cases across 16 spec files.
 
 Coverage % is calculated as `(Automated E2E + Automated Component Test) / Total Scenarios`, rounded to the nearest whole percentage.
-Skipped and Manual scenarios are not counted as covered. For the total row: `(308 + 70) / 465 = 81.29%`, rounded to `81%`.
+Skipped and Manual scenarios are not counted as covered. For the total row: `(321 + 70) / 465 = 84.09%`, rounded to `84%`.
 
 Coverage % with Skipped is calculated as `(Automated E2E + Automated Component Test + Skipped) / Total Scenarios`, rounded to the nearest whole percentage.
-Manual scenarios are not counted as covered. For the total row: `(308 + 70 + 20) / 465 = 85.59%`, rounded to `86%`.
+Manual scenarios are not counted as covered. For the total row: `(321 + 70 + 10) / 465 = 86.24%`, rounded to `86%`.
 
 ### Release Testing Guide
 
@@ -991,6 +991,6 @@ These scenarios cover edge cases and error handling. Verify periodically or afte
 1. **Upgrade (0%)** - Update notifications, version enforcement for org features, version status badges
 2. **Notifications (0%)** - Re-enable or replace skipped in-app notification tests; add email preference toggle coverage
 3. **Error Handling / Edge Cases (47%)** - Network failures, validation edge cases, form limits
-4. **Transactions List (68%)** - Re-enable signature import compatibility tests, org tab notification badges, history table features, drafts table sort and pagination
-5. **Organization Transaction Workflows (67%)** - Re-enable complex-key file transaction and signature import/export compatibility tests
+4. **Transactions List (88%)** - Re-enable Ready for Review tab coverage, org tab notification badges, history table pagination, drafts table sort and pagination
+5. **Organization Transaction Workflows (92%)** - Re-enable council-scale (57-user) regression coverage
 6. **Contact List (96%)** - Approver duplicate handling (skipped; Approvers feature flag disabled)

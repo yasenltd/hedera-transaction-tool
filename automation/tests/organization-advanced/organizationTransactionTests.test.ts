@@ -5,7 +5,6 @@ import { TransactionPage } from '../../pages/TransactionPage.js';
 import { flushRateLimiter } from '../../utils/db/databaseUtil.js';
 import { setDialogMockState } from '../../utils/runtime/dialogMocks.js';
 import type { TransactionToolApp } from '../../utils/runtime/appSession.js';
-import { waitForValidStart } from '../../utils/runtime/timing.js';
 import { setupOrganizationAdvancedFixture } from '../helpers/fixtures/organizationAdvancedFixture.js';
 import {
   setupOrganizationSuiteApp,
@@ -237,10 +236,7 @@ test.describe('Organization Transaction status/signing tests @organization-advan
       creator.password,
       globalCredentials.password,
     );
-    await waitForValidStart(validStart ?? '');
-
-    await transactionPage.clickOnTransactionsMenuButton();
-    await organizationPage.clickOnHistoryTab();
+    await organizationPage.waitForSuccessfulHistoryTransaction(executedTxId ?? '', validStart);
 
     const normalizedCanceledTxId = (canceledTxId ?? '').replace(/\s+/g, '');
     const normalizedExecutedTxId = (executedTxId ?? '').replace(/\s+/g, '');
