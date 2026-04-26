@@ -29,6 +29,7 @@ let complexKeyAccountId: string;
 const resolveOrganizationNickname = createSequentialOrganizationNicknameResolver();
 
 test.describe('Organization Transaction status/signing tests @organization-advanced', () => {
+  test.describe.configure({ mode: 'parallel' });
   test.slow();
 
   test.beforeAll(async () => {

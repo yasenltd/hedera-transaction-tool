@@ -18,6 +18,7 @@ const COMPLEX_FILE_EXECUTION_DELAY_SECONDS = 30;
 const resolveOrganizationNickname = createSequentialOrganizationNicknameResolver();
 
 test.describe('Organization Transaction execution-type tests @organization-advanced', () => {
+  test.describe.configure({ mode: 'parallel' });
   registerOrganizationAdvancedSuiteHooks({
     resolveOrganizationNickname,
     onSuiteReady: suite => {

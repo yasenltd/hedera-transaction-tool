@@ -17,6 +17,7 @@ let complexKeyAccountId: string;
 const resolveOrganizationNickname = createSequentialOrganizationNicknameResolver();
 
 test.describe('Organization Transaction status/signing lifecycle tests @organization-advanced', () => {
+  test.describe.configure({ mode: 'parallel' });
   registerOrganizationAdvancedSuiteHooks({
     resolveOrganizationNickname,
     onSuiteReady: suite => {

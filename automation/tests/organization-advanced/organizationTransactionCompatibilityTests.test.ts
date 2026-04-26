@@ -58,6 +58,7 @@ async function expectSuccessfulAccountCreateInHistory(
 }
 
 test.describe('Organization Transaction compatibility tests @organization-advanced', () => {
+  test.describe.configure({ mode: 'parallel' });
   test.slow();
 
   test.beforeAll(async () => {
